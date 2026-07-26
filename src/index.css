@@ -1,0 +1,804 @@
+@import "tailwindcss";
+
+/* ── Design Tokens · Graphite（石墨）──
+   原则：颜色≤4 系、灰色带一点品牌冷调（环境色）、品牌色只出现在可点击处 */
+@theme {
+  --color-paper: #f7f7f5; /* 页面背景 */
+  --color-surface: #ffffff; /* 卡片 */
+  --color-ink: #232323; /* 正文 */
+  --color-ink-2: #737373; /* 辅助文字 */
+  --color-ink-3: #a3a3a0; /* 弱提示 */
+  --color-line: #ececea; /* 分割线/描边 */
+  --color-hover: #ececea; /* hover 底 */
+  --color-wash: #f1f1ef; /* 用户消息底/浅色块 */
+  --color-brand: #4b4b52; /* 品牌石墨 */
+  --color-accent: #2f3135; /* 主按钮（深石墨近黑） */
+
+  --shadow-card: 0 1px 2px rgb(35 35 35 / 0.04), 0 4px 16px rgb(35 35 35 / 0.05);
+  --shadow-float: 0 2px 4px rgb(35 35 35 / 0.05), 0 12px 32px rgb(35 35 35 / 0.08);
+
+  /* Observe 页暗色变体（暗场仪器）：层板明度差按最差屏容错拉开 */
+  --color-obs: #0e0f12; /* 机身（近黑，含蓝） */
+  --color-obs-2: #1a1c22; /* 层板（卡片/输入框） */
+  --color-obs-ink: #ececef; /* 正文 */
+  --color-obs-ink2: #a0a1ab; /* 辅助文字 */
+  --color-obs-line: #2c2e36; /* 描边（受光边） */
+  --color-obs-wash: #262830; /* 浅色块 */
+
+  /* ── 测量色制度（design-system）：全站只有一个中性带 + 三个测量色 ──
+     measure（观测蓝）＝当前被测/选中/可交互；caution（谨慎琥珀）＝高不确定性；
+     alert（警示红）＝失败/越界。把 Tailwind 彩色 palette 全部收编到三色，
+     业务代码无需逐处改：indigo/sky/teal/violet/emerald ⇒ measure，
+     amber ⇒ caution，red/rose ⇒ alert。成功不设绿色（中性 + ✓）。 */
+  --color-measure-100: #dbe6fb;
+  --color-measure-200: #b9cef7;
+  --color-measure-300: #96b4f2;
+  --color-measure-400: #6f95ec;
+  --color-measure-500: #4f7ce4;
+  --color-measure-600: #3d63c4;
+  --color-measure-700: #32509e;
+  --color-caution-100: #f3e4c6;
+  --color-caution-200: #e9d0a0;
+  --color-caution-300: #ddb877;
+  --color-caution-400: #cf9c4a;
+  --color-caution-500: #b98430;
+  --color-caution-600: #9a6b26;
+  --color-caution-700: #7c551f;
+  --color-alert-200: #efb0b0;
+  --color-alert-300: #e78e8e;
+  --color-alert-400: #dd6666;
+  --color-alert-500: #c94b4b;
+  --color-alert-600: #ad3535;
+
+  --color-indigo-100: var(--color-measure-100);
+  --color-indigo-200: var(--color-measure-200);
+  --color-indigo-300: var(--color-measure-300);
+  --color-indigo-400: var(--color-measure-400);
+  --color-indigo-500: var(--color-measure-500);
+  --color-sky-200: var(--color-measure-200);
+  --color-sky-300: var(--color-measure-300);
+  --color-sky-400: var(--color-measure-400);
+  --color-teal-100: var(--color-measure-100);
+  --color-teal-300: var(--color-measure-300);
+  --color-teal-400: var(--color-measure-400);
+  --color-violet-300: var(--color-measure-300);
+  --color-violet-400: var(--color-measure-400);
+  --color-emerald-100: var(--color-measure-100);
+  --color-emerald-200: var(--color-measure-200);
+  --color-emerald-300: var(--color-measure-300);
+  --color-emerald-400: var(--color-measure-400);
+  --color-emerald-500: var(--color-measure-500);
+  --color-emerald-600: var(--color-measure-600);
+  --color-emerald-700: var(--color-measure-700);
+  --color-amber-100: var(--color-caution-100);
+  --color-amber-200: var(--color-caution-200);
+  --color-amber-300: var(--color-caution-300);
+  --color-amber-400: var(--color-caution-400);
+  --color-amber-500: var(--color-caution-500);
+  --color-amber-600: var(--color-caution-600);
+  --color-amber-700: var(--color-caution-700);
+  --color-red-200: var(--color-alert-200);
+  --color-red-300: var(--color-alert-300);
+  --color-red-400: var(--color-alert-400);
+  --color-red-500: var(--color-alert-500);
+  --color-red-600: var(--color-alert-600);
+  --color-rose-300: var(--color-alert-300);
+  --color-rose-400: var(--color-alert-400);
+
+  /* 圆角三档制度：r-sm 6px（控件）/ r-md 10px（卡片容器）/ full 仅状态圆点。
+     既有 class 全局归位，无需逐处改 */
+  --radius-sm: 6px;
+  --radius-md: 6px;
+  --radius-lg: 6px;
+  --radius-xl: 10px;
+  --radius-2xl: 10px;
+  --radius-3xl: 10px;
+}
+
+/* Observe（显微镜）模式：整个应用壳一起换成暗色，避免亮框嵌暗屏的割裂感。
+   运行时覆盖同名 token，所有组件自动适配，无需逐个改组件 */
+.obs-theme {
+  --color-paper: #0e0f12;
+  --color-surface: #1a1c22;
+  --color-ink: #ececef;
+  --color-ink-2: #a0a1ab;
+  --color-ink-3: #6d6d76;
+  --color-line: #2c2e36;
+  --color-hover: #262830;
+  --color-wash: #262830;
+  --color-brand: #a5b4fc;
+  --color-accent: #6366f1;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.35);
+  --shadow-float: 0 2px 4px rgb(0 0 0 / 0.35), 0 12px 32px rgb(0 0 0 / 0.5);
+}
+.obs-theme *::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.14);
+}
+.obs-theme *::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.26);
+}
+
+/* ── DS0 · Motion Token（唯一事实源，宪法 §3/§7）──
+   动效三档：即时反馈（hover/按钮/候选淡出）=fast；信息展开（弹层/抽屉/折叠）=base；
+   真实采样事件（token 落位/阶段入场）=event。无限动画只留加载 spinner。
+   Radius 不在此处定义：唯一事实源是 @theme（r-sm 6 / r-md 10 / full 仅状态圆点）。 */
+:root {
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 360ms;
+  --ease-instrument: cubic-bezier(0.2, 0, 0, 1);
+  --ease-event: cubic-bezier(0.2, 0.7, 0, 1);
+}
+
+:root {
+  font-family: "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 细滚动条 */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgb(35 35 35 / 0.12);
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(35 35 35 / 0.24);
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 助手回答里的 Markdown 元素：以 8px 系为节奏 */
+.md-answer :is(p, ul, ol, blockquote, table) {
+  margin: 12px 0;
+}
+.md-answer .code-block {
+  margin: 16px 0;
+}
+.md-answer :is(p, ul, ol):first-child {
+  margin-top: 0;
+}
+.md-answer :is(p, ul, ol, .code-block):last-child {
+  margin-bottom: 0;
+}
+.md-answer ul {
+  list-style: disc;
+  padding-left: 20px;
+}
+.md-answer ol {
+  list-style: decimal;
+  padding-left: 20px;
+}
+.md-answer li {
+  margin: 4px 0;
+}
+.md-answer h1,
+.md-answer h2,
+.md-answer h3 {
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: 24px 0 8px;
+}
+.md-answer :is(h1, h2, h3):first-child {
+  margin-top: 0;
+}
+.md-answer h1 {
+  font-size: 22px;
+}
+.md-answer h2 {
+  font-size: 18px;
+}
+.md-answer h3 {
+  font-size: 16px;
+}
+.md-answer code {
+  background: rgb(35 35 35 / 0.06);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 0.85em;
+}
+
+/* 代码块：顶部语言标签 + 复制按钮 */
+.md-answer .code-block {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  background: #fbfbfa;
+}
+.md-answer .code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--color-ink-2);
+  border-bottom: 1px solid var(--color-line);
+  user-select: none;
+}
+.md-answer .code-copy {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 2px 8px;
+  color: var(--color-ink-2);
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+.md-answer .code-copy:hover {
+  background: var(--color-hover);
+  color: var(--color-ink);
+}
+.md-answer .code-block pre {
+  padding: 12px 16px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-ink);
+}
+.md-answer .code-block code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+}
+/* 无语言裸 pre 兜底 */
+.md-answer > pre,
+.md-answer pre:not(.code-block pre) {
+  background: #fbfbfa;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.md-answer blockquote {
+  border-left: 2px solid var(--color-line);
+  padding-left: 12px;
+  color: var(--color-ink-2);
+}
+.md-answer a {
+  color: var(--color-brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.md-answer table {
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.md-answer th,
+.md-answer td {
+  border: 1px solid var(--color-line);
+  padding: 6px 12px;
+}
+.md-answer th {
+  background: var(--color-wash);
+  font-weight: 500;
+}
+
+/* 加载页 Logo：静态，加载反馈由进度条/spinner 承担（同屏单一活动反馈） */
+.logo-breathe {
+  /* 动画已按动效审查移除 */
+}
+
+/* 细环 spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--color-line);
+  border-top-color: var(--color-ink-2);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Observe 正文的 token 单元：背景深浅 = 该步熵（内联 style 赋色）。
+   普通 token 直接落位不动画；按压语言 = 底色瞬时加深（行内元素不用 scale） */
+.token-unit {
+  border-radius: 4px;
+  padding: 0 1px;
+  margin: 0 0.5px;
+  cursor: pointer;
+  transition: outline-color 0.12s, background-color 0.12s;
+  outline: 1px solid transparent;
+  color: inherit;
+  font: inherit;
+  white-space: pre-wrap;
+}
+@keyframes token-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* AVP Team 协作流（视觉语法 Flow）：Artifact 入场 + 交接光点沿连接线下行 */
+.team-artifact-in {
+  animation: team-artifact-in var(--motion-slow) var(--ease-event);
+}
+@keyframes team-artifact-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.team-flow-dot {
+  position: absolute;
+  left: -3.5px;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgb(165 180 252 / 0.9);
+  animation: team-flow-dot 1.4s ease-in-out infinite;
+}
+@keyframes team-flow-dot {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: calc(100% - 6px);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-artifact-in,
+  .team-flow-dot {
+    animation: none;
+  }
+}
+.token-unit:hover:not(:disabled) {
+  outline-color: rgb(139 143 248 / 0.55);
+}
+.token-unit:active:not(:disabled) {
+  background-color: rgb(139 143 248 / 0.28) !important;
+  transition-duration: 0.04s;
+}
+.token-unit:disabled {
+  cursor: progress;
+}
+/* 导演系统场面（仅生成中、每 token 一次性入场，由真实熵/top-2 差距分级）：
+ *  flow = 轻量高光扫过；birth = 犹豫点凝聚成形；storm = 连续犹豫段的强化入场。
+ *  数据不达标的步保持默认淡入——没有装饰性动画，每个动画都有证据。 */
+.token-scene-flow {
+  animation: scene-flow var(--motion-base) var(--ease-instrument);
+}
+@keyframes scene-flow {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.token-scene-birth {
+  animation: scene-birth var(--motion-base) var(--ease-instrument);
+}
+@keyframes scene-birth {
+  from {
+    opacity: 0;
+  }
+}
+.token-scene-storm {
+  animation: scene-storm var(--motion-base) var(--ease-instrument);
+}
+@keyframes scene-storm {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Token 即入口：点击的词原地裂变成候选堆（在文本流内推挤展开，不弹 Modal）。
+ *  每个候选透明度 ∝ 真实概率；选中者高亮。 */
+.token-fission {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin: 0 4px;
+  padding: 3px 8px;
+  border: 1px solid rgb(139 143 248 / 0.35);
+  border-radius: 10px;
+  background: rgb(139 143 248 / 0.06);
+  vertical-align: middle;
+  animation: fission-in var(--motion-base) var(--ease-instrument);
+}
+@keyframes fission-in {
+  from {
+    opacity: 0;
+  }
+}
+.token-fission-cand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--color-ink-2);
+  background: rgb(139 143 248 / 0.08);
+}
+.token-fission-chosen {
+  color: var(--color-ink);
+  background: rgb(139 143 248 / 0.22);
+  outline: 1px solid rgb(139 143 248 / 0.5);
+}
+.token-fission-act {
+  padding: 1px 7px;
+  border-radius: 6px;
+  border: 1px solid var(--color-line);
+  font-size: 11px;
+  color: var(--color-ink-2);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.token-fission-act:hover {
+  color: var(--color-ink);
+  border-color: rgb(139 143 248 / 0.5);
+}
+
+/* Birth Scene：落选候选在各自概率位原位淡入→淡出（不位移/缩放/模糊，动效只回答「哪个被采样」）；
+ *  胜者一次 opacity 显影；说明行随场面淡入。全部一次性播放，无循环。 */
+.birth-scene-cand {
+  transform: translate(-50%, -50%);
+  translate: var(--bs-dx) var(--bs-dy);
+  animation-name: birth-scene-scatter;
+  animation-timing-function: var(--ease-instrument);
+  animation-fill-mode: forwards;
+  white-space: nowrap;
+}
+@keyframes birth-scene-scatter {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.birth-scene-winner {
+  display: inline-block;
+  animation: birth-scene-condense var(--motion-slow) var(--ease-event);
+}
+@keyframes birth-scene-condense {
+  from {
+    opacity: 0;
+  }
+}
+.birth-scene-note {
+  animation: token-in var(--motion-base) var(--ease-instrument);
+}
+/* 粒子成字（Sprint 5）：候选化作粒子从自己的圆周位置飞向中心汇聚成字，
+ *  大小/时长 ∝ 真实概率（由内联样式提供），一次性播放后消失 */
+.birth-scene-converge {
+  transform: translate(-50%, -50%);
+  translate: var(--bs-dx) var(--bs-dy);
+  animation-name: birth-scene-converge;
+  animation-timing-function: var(--ease-instrument);
+  animation-fill-mode: forwards;
+}
+@keyframes birth-scene-converge {
+  from {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .birth-scene-cand {
+    animation: none;
+    opacity: 0;
+  }
+  .birth-scene-converge {
+    animation: none;
+    opacity: 0;
+  }
+  .birth-scene-winner,
+  .birth-scene-note {
+    animation: none;
+  }
+}
+
+/* Team 收束过渡（规划页 P3）：TeamFlow → TeamPanel 的一次短淡入下移 */
+.team-fold-in {
+  animation: team-fold-in var(--motion-base) var(--ease-instrument);
+}
+@keyframes team-fold-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-fold-in {
+    animation: none;
+  }
+}
+
+/* token 内换行符的可见标记：低调但可辨认，说明这个 token 携带了换行 */
+.token-nl {
+  font-size: 10px;
+  opacity: 0.38;
+  margin-left: 1px;
+  user-select: none;
+}
+
+/* 安静阅读模式下的异常词：琥珀点式下划线静态标记，吸引注意而不打断阅读（无辉光） */
+.token-anomaly {
+  text-decoration: underline dotted rgb(207 156 74 / 0.65);
+  text-underline-offset: 3px;
+}
+
+/* 生成阶段分区：推理段折叠区块（左边线 + 暗色 + 小字），回答段正常正文 */
+.phase-think {
+  border-left: 2px solid rgb(139 143 248 / 0.35);
+  border-radius: 4px;
+  background: rgb(139 143 248 / 0.04);
+  padding: 2px 10px 6px;
+}
+.phase-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: rgb(139 143 248 / 0.85);
+  padding: 4px 0;
+  cursor: pointer;
+  user-select: none;
+}
+.phase-caret {
+  display: inline-block;
+  transition: transform var(--motion-fast);
+  font-size: 10px;
+}
+.phase-body {
+  font-size: 13px;
+  opacity: 0.72;
+}
+.phase-label {
+  margin: 10px 0 4px;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  color: rgb(148 163 184 / 0.7);
+  user-select: none;
+}
+
+/* 模型控制 token（推理段结束 / end_of_sentence 等）：灰色小标签，与正文区分但仍可点击钻取 */
+.token-special {
+  font-size: 11px;
+  padding: 0 6px;
+  margin: 0 3px;
+  border-radius: 6px;
+  border: 1px solid rgb(148 163 184 / 0.25);
+  background: rgb(148 163 184 / 0.08);
+  color: rgb(148 163 184 / 0.75);
+  vertical-align: 1px;
+  user-select: none;
+}
+
+.token-selected {
+  outline-color: rgb(139 143 248);
+}
+.token-forced {
+  text-decoration: underline;
+  text-decoration-color: rgb(129 140 248);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+/* 规则标注：正文只承载 warn（2px 琥珀波浪，单一语义）；info 级命中只进摘要条与出生档案，
+   避免载玻片上叠满批注（点开出生卡看规则 ID/阈值/实际值） */
+.token-rule-warn {
+  text-decoration: underline wavy rgb(245 176 76 / 0.9);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* token 流字体栈：数字/拉丁用等宽，中文回退系统黑体（中文无等宽字形，
+   行内混排靠 line-height 锁定基线，不承诺中文可数性） */
+[data-testid="token-text"] {
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", monospace;
+}
+
+/* token hover 浮层：轻微上浮渐显 */
+.token-tip {
+  animation: tip-in 0.12s ease-out;
+}
+@keyframes tip-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── 统一浮层系统 ──
+   L2 Popover：纯淡入 + 2px 下移（阅读锚点稳定，不缩放）；L3 Drawer：自右滑入、视口全高、头底钉死中间滚动。
+   任何浮层永不把页面撑高、永不产生页面级第二滚动条 */
+.ovl-pop {
+  animation: pop-in var(--motion-fast) var(--ease-instrument);
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.ovl-drawer {
+  animation: drawer-in var(--motion-base) var(--ease-instrument);
+}
+@keyframes drawer-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.ovl-mask {
+  animation: mask-in var(--motion-fast) var(--ease-instrument);
+}
+@keyframes mask-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 等待首 token：静态状态点（活动反馈由后续真实 token 流本身承担） */
+.breath-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #8b8ff8;
+  opacity: 0.7;
+}
+
+/* 采样舱：候选显影（120ms fade-in + 轻微上浮 settle）与选中 token 穿越阈面。
+ *  克制：无粒子喷发、无镜头飞行；opacity/transform 由真实概率驱动（内联样式）。 */
+.chamber-cand {
+  animation: chamber-cand-in var(--motion-base) var(--ease-instrument);
+}
+@keyframes chamber-cand-in {
+  from {
+    translate: 0 -5px;
+  }
+}
+.chamber-drop {
+  animation: chamber-drop var(--motion-slow) var(--ease-event) forwards;
+}
+@keyframes chamber-drop {
+  0% {
+    opacity: 1;
+    top: -20px;
+  }
+  100% {
+    opacity: 0.1;
+    top: 34px;
+  }
+}
+/* Focus Lens：选中某步时检查器从右侧长出 */
+.focus-lens-in {
+  animation: focus-lens-in var(--motion-base) var(--ease-instrument);
+}
+@keyframes focus-lens-in {
+  from {
+    opacity: 0;
+    translate: 14px 0;
+  }
+}
+/* 阈线脉冲：每个 token 穿越瞬间，光条中段亮一下再散开 */
+.chamber-bar-pulse {
+  animation: chamber-bar-pulse var(--motion-slow) var(--ease-event) forwards;
+}
+@keyframes chamber-bar-pulse {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scaleX(0.25);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scaleX(1.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .token-unit,
+  .token-scene-flow,
+  .token-scene-birth,
+  .token-scene-storm,
+  .token-fission,
+  .birth-scene-cand,
+  .token-tip,
+  .ovl-pop,
+  .ovl-drawer,
+  .ovl-mask,
+  .chamber-cand,
+  .chamber-drop {
+    animation: none;
+  }
+  .chamber-bar-pulse {
+    animation: none;
+    opacity: 0;
+  }
+  .breath-dot {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* 生成中的光标：静态竖条（文字流动本身即活动反馈，不再闪烁） */
+.typing-cursor::after {
+  content: "▍";
+  color: var(--color-ink-2);
+  margin-left: 1px;
+}
+
+/* 犹豫点续播按钮：静态，可点击性由 hover/focus 边框底色表达（不呼吸） */
+.demo-resume-pulse {
+  /* 呼吸动画已按动效审查移除 */
+}
+
+/* 犹豫切片：概率条静态完整显示，数值可即时比较（不做生长动画） */
+.slice-bar-grow {
+  /* 生长动画已按动效审查移除 */
+}
+
+/* 首屏底部信息卡：矮视口隐藏，不遮挡主按钮（P4：入口必须可达） */
+@media (max-height: 960px) {
+  .landing-bottom-cards {
+    display: none;
+  }
+  .landing-hero-scroll > div {
+    padding-bottom: 2.5rem;
+  }
+}
+
+/* ── 减弱动态全局兜底（宪法 §7）：细粒度规则之外的漏网动画/过渡一律近零时长 ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
