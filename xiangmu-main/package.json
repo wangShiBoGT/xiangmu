@@ -1,0 +1,47 @@
+{
+  "name": "webgpu-llm-chat",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "loadtest": "node scripts/loadtest.mjs",
+    "extract-stats": "node scripts/extract-demo-stats.mjs",
+    "prebuild": "node scripts/extract-demo-stats.mjs"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "dompurify": "^3.4.12",
+    "mammoth": "^1.12.0",
+    "marked": "^18.0.7",
+    "pdfjs-dist": "^5.6.205",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwindcss": "^4.3.3",
+    "three": "0.185.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.13.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "0.185.0",
+    "@vitejs/plugin-basic-ssl": "^2.3.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autocannon": "^8.0.0",
+    "jsdom": "^27.0.1",
+    "oxlint": "^1.71.0",
+    "typescript": "~6.0.2",
+    "vite": "^7.3.6",
+    "vitest": "^4.1.10"
+  }
+}

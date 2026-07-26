@@ -1,0 +1,673 @@
+{
+ "label": "理解层演示 · distilgpt2（英文）",
+ "modelId": "distilgpt2",
+ "prompt": "The sky is blue because",
+ "promptTokens": [
+  "The",
+  " sky",
+  " is",
+  " blue",
+  " because"
+ ],
+ "attentionNote": "最后一层各注意力头平均、对 prompt 段归一化（理解层演示模型实测，非主聊天模型内部数据）",
+ "steps": [
+  {
+   "attention": [
+    0.74512,
+    0.07271,
+    0.05036,
+    0.04388,
+    0.08794
+   ],
+   "topk": [
+    {
+     "text": " it",
+     "prob": 0.27286
+    },
+    {
+     "text": " of",
+     "prob": 0.22396
+    },
+    {
+     "text": " the",
+     "prob": 0.14714
+    },
+    {
+     "text": " you",
+     "prob": 0.04459
+    },
+    {
+     "text": " there",
+     "prob": 0.04162
+    },
+    {
+     "text": " we",
+     "prob": 0.0359
+    },
+    {
+     "text": " I",
+     "prob": 0.00997
+    },
+    {
+     "text": " a",
+     "prob": 0.00942
+    }
+   ],
+   "chosen": {
+    "text": " of",
+    "prob": 0.22396
+   }
+  },
+  {
+   "attention": [
+    0.79413,
+    0.05067,
+    0.04486,
+    0.03023,
+    0.08012
+   ],
+   "topk": [
+    {
+     "text": " the",
+     "prob": 0.38832
+    },
+    {
+     "text": " a",
+     "prob": 0.10196
+    },
+    {
+     "text": " its",
+     "prob": 0.03768
+    },
+    {
+     "text": " an",
+     "prob": 0.01906
+    },
+    {
+     "text": " it",
+     "prob": 0.01421
+    },
+    {
+     "text": " this",
+     "prob": 0.01417
+    },
+    {
+     "text": " how",
+     "prob": 0.01227
+    },
+    {
+     "text": " our",
+     "prob": 0.01068
+    }
+   ],
+   "chosen": {
+    "text": " the",
+    "prob": 0.38832
+   }
+  },
+  {
+   "attention": [
+    0.80039,
+    0.06957,
+    0.04168,
+    0.03391,
+    0.05445
+   ],
+   "topk": [
+    {
+     "text": " sun",
+     "prob": 0.05413
+    },
+    {
+     "text": " moon",
+     "prob": 0.02904
+    },
+    {
+     "text": " sky",
+     "prob": 0.02097
+    },
+    {
+     "text": " blue",
+     "prob": 0.01629
+    },
+    {
+     "text": " light",
+     "prob": 0.01292
+    },
+    {
+     "text": " clouds",
+     "prob": 0.01055
+    },
+    {
+     "text": " fact",
+     "prob": 0.00975
+    },
+    {
+     "text": " dark",
+     "prob": 0.00853
+    }
+   ],
+   "chosen": {
+    "text": " darkness",
+    "prob": 0.00287
+   }
+  },
+  {
+   "attention": [
+    0.79555,
+    0.04444,
+    0.03671,
+    0.03391,
+    0.08939
+   ],
+   "topk": [
+    {
+     "text": ".",
+     "prob": 0.24876
+    },
+    {
+     "text": ",",
+     "prob": 0.15553
+    },
+    {
+     "text": " of",
+     "prob": 0.12272
+    },
+    {
+     "text": " and",
+     "prob": 0.07734
+    },
+    {
+     "text": " that",
+     "prob": 0.0387
+    },
+    {
+     "text": " in",
+     "prob": 0.03528
+    },
+    {
+     "text": "!",
+     "prob": 0.01094
+    },
+    {
+     "text": ".\"",
+     "prob": 0.0103
+    }
+   ],
+   "chosen": {
+    "text": " and",
+    "prob": 0.07734
+   }
+  },
+  {
+   "attention": [
+    0.76341,
+    0.06811,
+    0.05085,
+    0.0411,
+    0.07652
+   ],
+   "topk": [
+    {
+     "text": " the",
+     "prob": 0.27749
+    },
+    {
+     "text": " it",
+     "prob": 0.04324
+    },
+    {
+     "text": " because",
+     "prob": 0.04151
+    },
+    {
+     "text": " darkness",
+     "prob": 0.04046
+    },
+    {
+     "text": " light",
+     "prob": 0.02676
+    },
+    {
+     "text": " there",
+     "prob": 0.01828
+    },
+    {
+     "text": " so",
+     "prob": 0.01345
+    },
+    {
+     "text": " dark",
+     "prob": 0.01265
+    }
+   ],
+   "chosen": {
+    "text": " the",
+    "prob": 0.27749
+   }
+  },
+  {
+   "attention": [
+    0.83109,
+    0.05883,
+    0.03745,
+    0.02546,
+    0.04717
+   ],
+   "topk": [
+    {
+     "text": " sun",
+     "prob": 0.08214
+    },
+    {
+     "text": " light",
+     "prob": 0.04707
+    },
+    {
+     "text": " moon",
+     "prob": 0.04698
+    },
+    {
+     "text": " stars",
+     "prob": 0.04498
+    },
+    {
+     "text": " darkness",
+     "prob": 0.03414
+    },
+    {
+     "text": " wind",
+     "prob": 0.03272
+    },
+    {
+     "text": " sky",
+     "prob": 0.0318
+    },
+    {
+     "text": " clouds",
+     "prob": 0.02346
+    }
+   ],
+   "chosen": {
+    "text": " moon",
+    "prob": 0.04698
+   }
+  },
+  {
+   "attention": [
+    0.78753,
+    0.04055,
+    0.04328,
+    0.03117,
+    0.09747
+   ],
+   "topk": [
+    {
+     "text": ".",
+     "prob": 0.21863
+    },
+    {
+     "text": " is",
+     "prob": 0.20006
+    },
+    {
+     "text": ",",
+     "prob": 0.09818
+    },
+    {
+     "text": " and",
+     "prob": 0.05187
+    },
+    {
+     "text": "'s",
+     "prob": 0.0375
+    },
+    {
+     "text": "�",
+     "prob": 0.02721
+    },
+    {
+     "text": "light",
+     "prob": 0.0254
+    },
+    {
+     "text": ".\"",
+     "prob": 0.01305
+    }
+   ],
+   "chosen": {
+    "text": " itself",
+    "prob": 0.00547
+   }
+  },
+  {
+   "attention": [
+    0.69452,
+    0.08709,
+    0.04294,
+    0.07583,
+    0.09962
+   ],
+   "topk": [
+    {
+     "text": ".",
+     "prob": 0.39739
+    },
+    {
+     "text": ",",
+     "prob": 0.17939
+    },
+    {
+     "text": " is",
+     "prob": 0.05783
+    },
+    {
+     "text": " and",
+     "prob": 0.03443
+    },
+    {
+     "text": ").",
+     "prob": 0.02372
+    },
+    {
+     "text": ".\"",
+     "prob": 0.0184
+    },
+    {
+     "text": " because",
+     "prob": 0.01664
+    },
+    {
+     "text": ";",
+     "prob": 0.01482
+    }
+   ],
+   "chosen": {
+    "text": ".",
+    "prob": 0.39739
+   }
+  },
+  {
+   "attention": [
+    0.81236,
+    0.06218,
+    0.03545,
+    0.04153,
+    0.04849
+   ],
+   "topk": [
+    {
+     "text": "\n",
+     "prob": 0.17238
+    },
+    {
+     "text": " The",
+     "prob": 0.1264
+    },
+    {
+     "text": " It",
+     "prob": 0.06858
+    },
+    {
+     "text": "�",
+     "prob": 0.0525
+    },
+    {
+     "text": " This",
+     "prob": 0.03431
+    },
+    {
+     "text": " But",
+     "prob": 0.02816
+    },
+    {
+     "text": " And",
+     "prob": 0.02151
+    },
+    {
+     "text": " If",
+     "prob": 0.02046
+    }
+   ],
+   "chosen": {
+    "text": "\n",
+    "prob": 0.17238
+   }
+  },
+  {
+   "attention": [
+    0.89795,
+    0.03722,
+    0.02124,
+    0.0212,
+    0.02239
+   ],
+   "topk": [
+    {
+     "text": "\n",
+     "prob": 0.37683
+    },
+    {
+     "text": "The",
+     "prob": 0.1144
+    },
+    {
+     "text": "I",
+     "prob": 0.02559
+    },
+    {
+     "text": "�",
+     "prob": 0.02507
+    },
+    {
+     "text": "This",
+     "prob": 0.02444
+    },
+    {
+     "text": "\"",
+     "prob": 0.02252
+    },
+    {
+     "text": "In",
+     "prob": 0.019
+    },
+    {
+     "text": "It",
+     "prob": 0.01895
+    }
+   ],
+   "chosen": {
+    "text": "\n",
+    "prob": 0.37683
+   }
+  },
+  {
+   "attention": [
+    0.89306,
+    0.04092,
+    0.02186,
+    0.02235,
+    0.0218
+   ],
+   "topk": [
+    {
+     "text": "\n",
+     "prob": 0.15645
+    },
+    {
+     "text": "The",
+     "prob": 0.12347
+    },
+    {
+     "text": "This",
+     "prob": 0.03003
+    },
+    {
+     "text": "I",
+     "prob": 0.02978
+    },
+    {
+     "text": "It",
+     "prob": 0.02323
+    },
+    {
+     "text": "In",
+     "prob": 0.02219
+    },
+    {
+     "text": "\"",
+     "prob": 0.02108
+    },
+    {
+     "text": "A",
+     "prob": 0.0191
+    }
+   ],
+   "chosen": {
+    "text": "The",
+    "prob": 0.12347
+   }
+  },
+  {
+   "attention": [
+    0.86033,
+    0.06828,
+    0.02893,
+    0.02766,
+    0.01481
+   ],
+   "topk": [
+    {
+     "text": " sky",
+     "prob": 0.08153
+    },
+    {
+     "text": " sun",
+     "prob": 0.0397
+    },
+    {
+     "text": " moon",
+     "prob": 0.03222
+    },
+    {
+     "text": " stars",
+     "prob": 0.01153
+    },
+    {
+     "text": " Moon",
+     "prob": 0.01005
+    },
+    {
+     "text": " dark",
+     "prob": 0.00849
+    },
+    {
+     "text": " night",
+     "prob": 0.00811
+    },
+    {
+     "text": " light",
+     "prob": 0.00806
+    }
+   ],
+   "chosen": {
+    "text": " moon",
+    "prob": 0.03222
+   }
+  },
+  {
+   "attention": [
+    0.86552,
+    0.03005,
+    0.03466,
+    0.02182,
+    0.04795
+   ],
+   "topk": [
+    {
+     "text": " is",
+     "prob": 0.45382
+    },
+    {
+     "text": " has",
+     "prob": 0.04443
+    },
+    {
+     "text": ",",
+     "prob": 0.03681
+    },
+    {
+     "text": "'s",
+     "prob": 0.0349
+    },
+    {
+     "text": " and",
+     "prob": 0.03408
+    },
+    {
+     "text": " itself",
+     "prob": 0.02135
+    },
+    {
+     "text": " was",
+     "prob": 0.02019
+    },
+    {
+     "text": " will",
+     "prob": 0.01296
+    }
+   ],
+   "chosen": {
+    "text": " is",
+    "prob": 0.45382
+   }
+  },
+  {
+   "attention": [
+    0.80042,
+    0.04667,
+    0.02162,
+    0.09157,
+    0.03972
+   ],
+   "topk": [
+    {
+     "text": " blue",
+     "prob": 0.15163
+    },
+    {
+     "text": " a",
+     "prob": 0.11708
+    },
+    {
+     "text": " the",
+     "prob": 0.08196
+    },
+    {
+     "text": " bright",
+     "prob": 0.03257
+    },
+    {
+     "text": " dark",
+     "prob": 0.0291
+    },
+    {
+     "text": " white",
+     "prob": 0.0271
+    },
+    {
+     "text": " red",
+     "prob": 0.02257
+    },
+    {
+     "text": " green",
+     "prob": 0.01924
+    }
+   ],
+   "chosen": {
+    "text": " blue",
+    "prob": 0.15163
+   }
+  }
+ ]
+}
