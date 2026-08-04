@@ -1973,7 +1973,7 @@ export default function ObservePage({
             {!usedPrompt && phase === "idle" && (
               <div className="mt-2">
                 {/* 生成标本台：单屏主角——满幅、占去首屏绝大部分视觉重量的观测装置 */}
-                <div className="relative left-1/2 h-[min(68vh,720px)] min-h-[440px] w-[100cqw] -translate-x-1/2 px-6 pb-40">
+                <div className="relative left-1/2 h-[min(68vh,720px)] min-h-[440px] w-[100cqw] -translate-x-1/2 px-6">
                   <Suspense fallback={<div className="h-full" />}>
                     <InstrumentCluster
                       mode={
@@ -2052,13 +2052,13 @@ export default function ObservePage({
                       </div>
                     )}
                   {demoNote && demoPhase === "playing" && (
-                    <p className="pointer-events-none absolute bottom-14 left-1/2 -translate-x-1/2 rounded-md border border-obs-line bg-obs-2/90 px-3 py-1 text-[12px] text-obs-ink select-none">
+                    <p className="pointer-events-none absolute bottom-52 left-1/2 -translate-x-1/2 rounded-md border border-obs-line bg-obs-2/90 px-3 py-1 text-[12px] text-obs-ink select-none">
                       {demoNote}
                     </p>
                   )}
                   {/* Focus Lens：选中某步时从右侧长出的局部采样检查器；未选中时显示此刻卡 */}
                   {demoFocus !== null && demoSteps[demoFocus] ? (
-                    <div className="focus-lens-in absolute right-6 top-8 z-10 max-h-[380px] w-[min(310px,85cqw)] overflow-y-auto pb-40">
+                    <div className="focus-lens-in absolute right-6 top-8 z-10 max-h-[380px] w-[min(310px,85cqw)] overflow-y-auto">
                       <SamplingInspector
                         step={demoSteps[demoFocus]}
                         stepIndex={demoFocus}
@@ -2081,7 +2081,7 @@ export default function ObservePage({
                       demoPhase === "done") &&
                     demoIdx >= 0 &&
                     demoSteps.length > 0 && (
-                      <div className="absolute right-6 top-8 z-10 w-[min(280px,80cqw)] pb-40">
+                      <div className="absolute right-6 top-8 z-10 w-[min(280px,80cqw)]">
                         <MomentCard
                           steps={demoSteps}
                           index={Math.min(demoIdx, demoSteps.length - 1)}
@@ -2108,7 +2108,7 @@ export default function ObservePage({
                   {(demoPhase === "playing" || demoPhase === "done") &&
                     demoIdx >= 0 &&
                     demoSteps.length > 0 && (
-                      <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2">
+                      <div className="absolute bottom-52 left-1/2 z-10 -translate-x-1/2">
                         <ThinkingCaption
                           steps={demoSteps}
                           index={Math.min(demoIdx, demoSteps.length - 1)}
@@ -2164,7 +2164,7 @@ export default function ObservePage({
                       </div>
                     )}
                   {/* 仪器底部动作栏 */}
-                  <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5">
+                  <div className="absolute bottom-44 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5">
                     {(demoPhase === "idle" || demoPhase === "loading") && (
                       <div className="flex flex-wrap items-center justify-center gap-2">
                         <button
@@ -2630,7 +2630,7 @@ export default function ObservePage({
                   {/* 实时人话翻译：思考字幕居中底部；单步详情由右栏 Sampling Inspector 承担，
                       舞台上不再叠浮动此刻卡（避免与曲线/右栏互相遮挡） */}
                   {displaySteps.length > 0 && !forkView && (
-                    <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2">
+                    <div className="absolute bottom-44 left-1/2 z-10 -translate-x-1/2">
                       <ThinkingCaption
                         steps={displaySteps as TokenStep[]}
                         index={displaySteps.length - 1}
@@ -2697,7 +2697,7 @@ export default function ObservePage({
                         storm={birthScene.storm}
                       />
                     )}
-                    <div className="absolute bottom-1 left-1/2 z-10 -translate-x-1/2">
+                    <div className="absolute bottom-44 left-1/2 z-10 -translate-x-1/2">
                       <ThinkingCaption
                         steps={displaySteps as TokenStep[]}
                         index={displaySteps.length - 1}

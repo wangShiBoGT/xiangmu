@@ -762,7 +762,7 @@ export default function InstrumentCluster({
     ? peakSteps.reduce((a, b) => (steps[b].entropy > steps[a].entropy ? b : a))
     : -1;
   return (
-    <div className="relative h-full min-h-[380px] w-full pb-40">
+    <div className="relative h-full min-h-[380px] w-full">
       <div ref={mountRef} className="absolute inset-0" />
       {/* 概率场文字：前 4 名候选，投影跟随、随概率衰减淡出 */}
       {[0, 1, 2, 3].map((j) => (
@@ -782,14 +782,14 @@ export default function InstrumentCluster({
         style={{ opacity: 0 }}
       />
       {/* 坐标图例：收在左下角极小一块，不当说明书 */}
-      <div className="pointer-events-none absolute left-3 bottom-3 text-[11px] leading-[1.6] tracking-wide text-obs-ink2/55 select-none">
+      <div className="pointer-events-none absolute left-3 bottom-44 text-[11px] leading-[1.6] tracking-wide text-obs-ink2/55 select-none">
         X 生成步 · Y 选中概率 · 亮/色 = top-k 集中度/mass
         <br />◆ 熵峰 · 底轨 = 到达节奏{branch ? " · 黄虚线 = 干预分支" : ""}
       </div>
       {/* 默认结论：最值得观察处（点击联动） */}
       {topPeak >= 0 && mode !== "sampling" && focus === null && (
         <button
-          className="absolute left-1/2 bottom-14 -translate-x-1/2 rounded-md border border-obs-line bg-obs-2/85 px-3 py-1 text-[12px] text-obs-ink transition-colors hover:border-obs-ink2/50"
+          className="absolute left-1/2 bottom-52 -translate-x-1/2 rounded-md border border-obs-line bg-obs-2/85 px-3 py-1 text-[12px] text-obs-ink transition-colors hover:border-obs-ink2/50"
           onClick={() => onFocus(topPeak)}
         >
           第 {topPeak + 1} 步的已记录候选分布最分散 →
@@ -797,7 +797,7 @@ export default function InstrumentCluster({
       )}
       {/* hover 信息下沉底部信息条：不再遮挡三维场景里的词 */}
       {hover && hs && (
-        <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 max-w-[80%] -translate-x-1/2 whitespace-nowrap rounded-md border border-obs-line bg-obs-2/95 px-4 py-1.5 text-[12px] leading-relaxed text-obs-ink shadow-float">
+        <div className="pointer-events-none absolute bottom-44 left-1/2 z-10 max-w-[80%] -translate-x-1/2 whitespace-nowrap rounded-md border border-obs-line bg-obs-2/95 px-4 py-1.5 text-[12px] leading-relaxed text-obs-ink shadow-float">
           <span className="text-[14px] font-medium">「{shortText(hs.text)}」</span>
           <span className="ml-2 tabular-nums text-obs-ink2">
             第 {hover.step + 1} 步 · P={hs.prob.toFixed(3)} · 熵 {hs.entropy.toFixed(2)}
