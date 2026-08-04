@@ -64,6 +64,7 @@ import {
 import { MODELS, getModel, loadCustomModels } from "./lib/models";
 import LandingHero from "./components/LandingHero";
 const JourneyPage = lazy(() => import("./components/JourneyPage"));
+const EnhancedInputDemo = lazy(() => import("./components/EnhancedInputDemo"));
 import {
   parseDocument,
   buildDocPrompt,
@@ -158,6 +159,7 @@ function App() {
     | "archive"
     | "benchmark"
     | "journey"
+    | "enhanced-input-demo"
   >("workspace");
   /** 从 Workspace 启动一次 Run：携带提示词进入显微镜层自动开跑 */
   const [workspacePrompt, setWorkspacePrompt] = useState<string | null>(null);
@@ -998,6 +1000,12 @@ function App() {
             onGoDiscover={() => setView("discover")}
             onGoObserve={() => setView("observe")}
           />
+        )}
+
+        {!showLanding && view === "enhanced-input-demo" && (
+          <Suspense fallback={<div className="flex-1 bg-obs" />}>
+            <EnhancedInputDemo />
+          </Suspense>
         )}
 
         {!showLanding && view === "create" && (

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EnhancedInput 组件测试</title>
+  <script type="module">
+    import { createElement as h } from 'https://esm.sh/react@18.3.1';
+    import { createRoot } from 'https://esm.sh/react-dom@18.3.1/client';
+    import { useState } from 'https://esm.sh/react@18.3.1';
+
+    // 模拟 EnhancedInput 组件的核心功能
+    function EnhancedInput({ value, onChange, onSend, isGenerating, tokensPerSecond, disabled, placeholder }) {
+      const [rows, setRows] = useState(1);
+
+      const handleChange = (e) => {
+        onChange(e.target.value);
+
+        // 自动调整高度
+        const textarea = e.target;
+        textarea.rows = 1;
+        const lineHeight = 24;
+        const minRows = 1;
+        const maxRows = 8;
+        const scrollRows = Math.floor(textarea.scrollHeight / lineHeight);
+        const newRows = Math.max(minRows, Math.min(maxRows, scrollRows));
+        setRows(newRows);
+      };
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          onSend();
+        }
+      };
+
+      return h('div', { className: 'input-container' },
+        h('div', { className: 'input-wrapper' },
+          h('textarea', {
+            className: 'enhanced-textarea',
+            value,
+            onChange: handleChange,
+            onKeyDown: handleKeyDown,
+            placeholder: placeholder || '输入消息...',
+            rows,
+            disabled: disabled || isGenerating
+          }),
+          h('button', {
+            className: `send-button ${!value.trim() || isGenerating ? 'disabled' : ''}`,
+            onClick: onSend,
+            disabled: !value.trim() || isGenerating
+          }, '→')
+        ),
+        isGenerating && h('div', { className: 'status' },
+          h('span', { className: 'pulse' }),
+          ' 生成中',
+          tokensPerSecond && ` · ${tokensPerSecond.toFixed(1)} tokens/s`
+        ),
+        h('div', { className: 'hints' },
+          'Enter 发送 · Shift + Enter 换行'
+        )
+      );
+    }
+
+    function App() {
+      const [value1, setValue1] = useState('');
+      const [value2, setValue2] = useState('');
+      const [isGenerating, setIsGenerating] = useState(false);
+      const [messages, setMessages] = useState([]);
+
+      const handleSend1 = () => {
+        if (value1.trim()) {
+          setMessages([...messages, value1]);
+          setValue1('');
+        }
+      };
+
+      const handleSend2 = () => {
+        if (value2.trim()) {
+          setIsGenerating(true);
+          setTimeout(() => {
+            setMessages([...messages, value2]);
+            setValue2('');
+            setIsGenerating(false);
+          }, 2000);
+        }
+      };
+
+      return h('div', { className: 'app' },
+        h('h1', null, 'EnhancedInput 组件测试'),
+
+        messages.length > 0 && h('div', { className: 'messages' },
+          h('h2', null, '发送的消息'),
+          ...messages.map((msg, i) =>
+            h('div', { key: i, className: 'message' }, msg)
+          )
+        ),
+
+        h('div', { className: 'demo-section' },
+          h('h2', null, '演示 1：基础输入框'),
+          h('p', null, '支持快捷键和自动调整高度'),
+          h(EnhancedInput, {
+            value: value1,
+            onChange: setValue1,
+            onSend: handleSend1,
+            placeholder: '试试输入多行文本...'
+          })
+        ),
+
+        h('div', { className: 'demo-section' },
+          h('h2', null, '演示 2：生成状态'),
+          h('p', null, '显示生成速度、禁用输入'),
+          h(EnhancedInput, {
+            value: value2,
+            onChange: setValue2,
+            onSend: handleSend2,
+            placeholder: '发送后模拟 2 秒生成...',
+            isGenerating,
+            tokensPerSecond: 23.5,
+            disabled: isGenerating
+          })
+        )
+      );
+    }
+
+    createRoot(document.getElementById('root')).render(h(App));
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0f;
+      color: #e5e7eb;
+      padding: 2rem;
+    }
+
+    .app {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 2rem;
+      color: #fff;
+    }
+
+    h2 {
+      font-size: 16px;
+      margin-bottom: 0.75rem;
+      color: #fff;
+    }
+
+    p {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 1rem;
+    }
+
+    .messages {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .message {
+      background: rgba(79, 70, 229, 0.1);
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 14px;
+      word-wrap: break-word;
+    }
+
+    .demo-section {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-container {
+      margin-top: 1rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border-radius: 12px;
+      padding: 0.75rem 4rem 0.75rem 1rem;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+
+    .enhanced-textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #1f2937;
+      font-family: inherit;
+    }
+
+    .enhanced-textarea::placeholder {
+      color: #9ca3af;
+    }
+
+    .enhanced-textarea:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .send-button {
+      position: absolute;
+      right: 0.5rem;
+      bottom: 0.5rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: #4f46e5;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .send-button:hover:not(.disabled) {
+      background: #4338ca;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+      transform: scale(1.05);
+    }
+
+    .send-button:active:not(.disabled) {
+      transform: scale(0.95);
+    }
+
+    .send-button.disabled {
+      background: #6b7280;
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4f46e5;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .hints {
+      margin-top: 0.5rem;
+      font-size: 11px;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>

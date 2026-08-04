@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "dev",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "C:\\Users\\73469\\Desktop\\webgpu-llm-chat\\dev-server.bat"],
       "port": 5173
     }
   ]
