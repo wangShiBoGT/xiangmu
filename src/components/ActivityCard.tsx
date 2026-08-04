@@ -41,55 +41,60 @@ export default function ActivityCard({
       case "thinking":
         return {
           icon: isRunning ? (
-            <IconThinking className="h-4 w-4 text-blue-400" />
+            <IconThinking className="h-5 w-5 animate-pulse text-brand-400" />
           ) : (
-            <IconCheck className="h-4 w-4 text-blue-400" />
+            <IconCheck className="h-5 w-5 text-success-500" />
           ),
-          border: "border-blue-500/30",
-          bg: "bg-blue-500/5",
-          headerBg: "bg-blue-500/10",
-          textColor: "text-blue-400",
+          border: "border-brand-500/30",
+          bg: "bg-brand-500/5",
+          headerBg: "hover:bg-brand-500/10",
+          textColor: "text-obs-ink",
+          statusDot: isRunning ? "bg-brand-400 shadow-[0_0_8px_rgba(79,124,228,0.6)] animate-pulse" : "bg-success-500",
         };
       case "command":
         return {
           icon: isRunning ? (
-            <IconLoader className="h-4 w-4 animate-spin text-emerald-400" />
+            <IconLoader className="h-5 w-5 animate-spin text-success-500" />
           ) : (
-            <IconCheck className="h-4 w-4 text-emerald-400" />
+            <IconCheck className="h-5 w-5 text-success-500" />
           ),
-          border: "border-emerald-500/30",
-          bg: "bg-emerald-500/5",
-          headerBg: "bg-emerald-500/10",
-          textColor: "text-emerald-400",
+          border: "border-success-500/30",
+          bg: "bg-success-500/5",
+          headerBg: "hover:bg-success-500/10",
+          textColor: "text-obs-ink",
+          statusDot: isRunning ? "bg-success-500 animate-pulse" : "bg-success-500",
         };
       case "file-read":
       case "file-write":
         return {
           icon: isRunning ? (
-            <IconLoader className="h-4 w-4 animate-spin text-purple-400" />
+            <IconLoader className="h-5 w-5 animate-spin text-measure-400" />
           ) : (
-            <IconFile className="h-4 w-4 text-purple-400" />
+            <IconFile className="h-5 w-5 text-measure-400" />
           ),
-          border: "border-purple-500/30",
-          bg: "bg-purple-500/5",
-          headerBg: "bg-purple-500/10",
-          textColor: "text-purple-400",
+          border: "border-measure-500/30",
+          bg: "bg-measure-500/5",
+          headerBg: "hover:bg-measure-500/10",
+          textColor: "text-obs-ink",
+          statusDot: isRunning ? "bg-measure-400 animate-pulse" : "bg-measure-400",
         };
       case "result":
         return {
-          icon: <IconCheck className="h-4 w-4 text-obs-ink2" />,
+          icon: <IconCheck className="h-5 w-5 text-obs-ink2" />,
           border: "border-obs-line",
           bg: "bg-obs-2/50",
-          headerBg: "bg-obs-2",
-          textColor: "text-obs-ink2",
+          headerBg: "hover:bg-obs-line/20",
+          textColor: "text-obs-ink",
+          statusDot: "bg-obs-ink3",
         };
       default:
         return {
-          icon: <IconCheck className="h-4 w-4 text-obs-ink2" />,
+          icon: <IconCheck className="h-5 w-5 text-obs-ink2" />,
           border: "border-obs-line",
           bg: "bg-obs-2/50",
-          headerBg: "bg-obs-2",
-          textColor: "text-obs-ink2",
+          headerBg: "hover:bg-obs-line/20",
+          textColor: "text-obs-ink",
+          statusDot: "bg-obs-ink3",
         };
     }
   };
@@ -98,52 +103,36 @@ export default function ActivityCard({
 
   return (
     <div
-      className={`group relative my-3 overflow-hidden rounded-lg border ${style.border} ${style.bg} transition-all duration-200`}
+      className={`group relative mb-3 overflow-hidden rounded-xl border ${style.border} ${style.bg} shadow-md transition-all duration-200`}
     >
-      {/* 顶部进度条 - 仅在运行中显示 */}
-      {isRunning && (
-        <div className="absolute left-0 top-0 h-0.5 w-full overflow-hidden bg-obs-line/20">
-          <div
-            className={`h-full ${style.headerBg} animate-pulse`}
-            style={{
-              width: "100%",
-              animation: "progress-shimmer 2s ease-in-out infinite",
-            }}
-          />
-        </div>
-      )}
-
       {/* 头部 */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className={`flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors ${style.headerBg} hover:opacity-80`}
+        className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${style.headerBg}`}
       >
-        <div className="flex items-center gap-2.5">
-          {style.icon}
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2">
-              <span className={`text-[13px] font-medium ${style.textColor}`}>
-                {title}
-              </span>
-              {duration !== undefined && !isRunning && (
-                <span className="flex items-center gap-1 text-[11px] text-obs-ink3">
-                  <IconClock className="h-3 w-3" />
-                  {duration}s
-                </span>
-              )}
-              {isRunning && (
-                <span className="text-[11px] text-obs-ink3 animate-pulse">
-                  进行中...
-                </span>
-              )}
-            </div>
-            {metadata && (
-              <span className="text-[11px] font-mono text-obs-ink3">
-                {metadata}
+        {/* 状态指示器 - 圆点 */}
+        <div className={`h-3 w-3 rounded-full ${style.statusDot}`} />
+
+        {style.icon}
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className={`text-[14px] font-semibold ${style.textColor}`}>
+              {title}
+            </span>
+            {duration !== undefined && !isRunning && (
+              <span className="rounded-full bg-obs-line/30 px-2 py-0.5 text-[11px] font-medium text-obs-ink3">
+                {duration}s
               </span>
             )}
           </div>
+          {metadata && (
+            <div className="mt-0.5 text-[12px] font-mono text-obs-ink3 truncate">
+              {metadata}
+            </div>
+          )}
         </div>
+
         <IconChevronDown
           className={`h-4 w-4 text-obs-ink3 transition-transform duration-200 ${
             expanded ? "rotate-180" : ""
@@ -153,26 +142,12 @@ export default function ActivityCard({
 
       {/* 内容区域 */}
       {expanded && (
-        <div className="border-t border-obs-line/30 px-4 py-3 text-[13px] leading-relaxed text-obs-ink2">
-          {children}
+        <div className="animate-in slide-in-from-top-2 duration-200 border-t border-obs-line/50 px-4 py-3">
+          <div className="text-[14px] leading-relaxed text-obs-ink2">
+            {children}
+          </div>
         </div>
       )}
     </div>
   );
-}
-
-// 进度条动画
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes progress-shimmer {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(100%);
-    }
-  }
-`;
-if (typeof document !== "undefined") {
-  document.head.appendChild(style);
 }
