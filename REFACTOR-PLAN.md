@@ -7,7 +7,7 @@
 
 ## P0 - 必须立即修复
 
-### 1. 删除装饰性动画 ✅ 进行中
+### 1. 删除装饰性动画 ✅ 已完成
 **违规内容**:
 - `scene-flow/scene-birth/scene-storm` - 装饰性"场景"系统
 - `birth-scene-scatter/converge` - 过度戏剧化的粒子效果
@@ -20,11 +20,11 @@
 - `drawer-in/mask-in/pop-in` - UI 组件进出
 - `thinking-*` - 思考状态呼吸（已实现，保留）
 
-**执行**: 删除 CSS 中的装饰性 @keyframes，移除对应的 class 引用
+**执行**: ✅ 已删除 8 个装饰性 @keyframes
 
 ---
 
-### 2. 去除发光效果 ✅ 进行中
+### 2. 去除发光效果 ✅ 已完成
 **违规内容**:
 - `rgb(139 143 248 / 0.55)` - 蓝紫色发光，出现 15+ 处
 - AINexus 中的 `shadow-[0_0_20px_rgba(...)]` glow 效果
@@ -35,9 +35,11 @@
 - Outline 改为实线边框
 - 删除所有 glow shadow
 
+**执行**: ✅ 已全部替换为设计 token
+
 ---
 
-### 3. 去除渐变背景 ✅ 进行中
+### 3. 去除渐变背景 ✅ 已完成
 **违规内容**:
 - AINexus: `bg-gradient-to-br from-white/5 to-transparent`
 - AINexus: `bg-gradient-to-r from-blue-500 to-blue-400`
@@ -46,6 +48,8 @@
 **替换方案**:
 - 使用纯色背景 `bg-obs-2` 或 `bg-obs-line/10`
 - 进度条用纯色 `bg-measure-500`
+
+**执行**: ✅ 已全部改为纯色
 
 ---
 

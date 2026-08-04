@@ -14,22 +14,30 @@
   --color-brand: #4b4b52; /* 品牌石墨 */
   --color-accent: #2f3135; /* 主按钮（深石墨近黑） */
 
-  --shadow-card: 0 1px 2px rgb(35 35 35 / 0.04), 0 4px 16px rgb(35 35 35 / 0.05);
-  --shadow-float: 0 2px 4px rgb(35 35 35 / 0.05), 0 12px 32px rgb(35 35 35 / 0.08);
+  --shadow-sm: 0 1px 2px rgb(35 35 35 / 0.05);
+  --shadow-md: 0 2px 8px rgb(35 35 35 / 0.08), 0 1px 2px rgb(35 35 35 / 0.06);
+  --shadow-lg: 0 4px 16px rgb(35 35 35 / 0.12), 0 2px 4px rgb(35 35 35 / 0.08);
+  --shadow-xl: 0 8px 32px rgb(35 35 35 / 0.16), 0 4px 8px rgb(35 35 35 / 0.1);
+
+  /* 保留旧变量兼容 */
+  --shadow-card: var(--shadow-md);
+  --shadow-float: var(--shadow-lg);
 
   /* Observe 页暗色变体（暗场仪器）：层板明度差按最差屏容错拉开 */
   --color-obs: #0e0f12; /* 机身（近黑，含蓝） */
   --color-obs-2: #1a1c22; /* 层板（卡片/输入框） */
+  --color-obs-3: #242630; /* 更深一层 */
   --color-obs-ink: #ececef; /* 正文 */
+  --color-obs-ink-highlight: #fafafa; /* 高亮文字 */
   --color-obs-ink2: #a0a1ab; /* 辅助文字 */
+  --color-obs-ink3: #6d6d76; /* 弱提示 */
   --color-obs-line: #2c2e36; /* 描边（受光边） */
   --color-obs-wash: #262830; /* 浅色块 */
 
   /* ── 测量色制度（design-system）：全站只有一个中性带 + 三个测量色 ──
      measure（观测蓝）＝当前被测/选中/可交互；caution（谨慎琥珀）＝高不确定性；
-     alert（警示红）＝失败/越界。把 Tailwind 彩色 palette 全部收编到三色，
-     业务代码无需逐处改：indigo/sky/teal/violet/emerald ⇒ measure，
-     amber ⇒ caution，red/rose ⇒ alert。成功不设绿色（中性 + ✓）。 */
+     alert（警示红）＝失败/越界。成功绿单独定义。 */
+  --color-measure-50: #eef2fe;
   --color-measure-100: #dbe6fb;
   --color-measure-200: #b9cef7;
   --color-measure-300: #96b4f2;
@@ -37,6 +45,17 @@
   --color-measure-500: #4f7ce4;
   --color-measure-600: #3d63c4;
   --color-measure-700: #32509e;
+
+  /* 品牌主色（蓝紫渐变基础） */
+  --color-brand-50: #eef2fe;
+  --color-brand-400: #6f95ec;
+  --color-brand-500: #4f7ce4;
+  --color-brand-600: #3d63c4;
+
+  /* 成功色（翠绿） */
+  --color-success-100: #d1fae5;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
   --color-caution-100: #f3e4c6;
   --color-caution-200: #e9d0a0;
   --color-caution-300: #ddb877;
@@ -108,8 +127,14 @@
   --color-wash: #262830;
   --color-brand: #a5b4fc;
   --color-accent: #6366f1;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.35);
-  --shadow-float: 0 2px 4px rgb(0 0 0 / 0.35), 0 12px 32px rgb(0 0 0 / 0.5);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.2);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 0.25), 0 1px 2px rgb(0 0 0 / 0.15);
+  --shadow-lg: 0 4px 16px rgb(0 0 0 / 0.3), 0 2px 4px rgb(0 0 0 / 0.2);
+  --shadow-xl: 0 8px 32px rgb(0 0 0 / 0.35), 0 4px 8px rgb(0 0 0 / 0.25);
+
+  /* 保留旧变量兼容 */
+  --shadow-card: var(--shadow-md);
+  --shadow-float: var(--shadow-lg);
 }
 .obs-theme *::-webkit-scrollbar-thumb {
   background: rgb(255 255 255 / 0.14);
@@ -119,15 +144,19 @@
 }
 
 /* ── DS0 · Motion Token（唯一事实源，宪法 §3/§7）──
-   动效三档：即时反馈（hover/按钮/候选淡出）=fast；信息展开（弹层/抽屉/折叠）=base；
-   真实采样事件（token 落位/阶段入场）=event。无限动画只留加载 spinner。
-   Radius 不在此处定义：唯一事实源是 @theme（r-sm 6 / r-md 10 / full 仅状态圆点）。 */
+   动效四档：即时反馈=instant；快速交互=fast；标准过渡=base；复杂动画=slow
+   无限动画只留加载 spinner。 */
 :root {
+  --motion-instant: 80ms;
   --motion-fast: 120ms;
   --motion-base: 200ms;
   --motion-slow: 360ms;
+
+  /* 缓动曲线 */
   --ease-instrument: cubic-bezier(0.2, 0, 0, 1);
   --ease-event: cubic-bezier(0.2, 0.7, 0, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-circ: cubic-bezier(0.85, 0, 0.15, 1);
 }
 
 :root {
