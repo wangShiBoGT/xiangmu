@@ -77,17 +77,27 @@ export default function ModelSelect({
 
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
+
+    // 延迟注册点击外部关闭事件，避免立即触发
+    const timeoutId = setTimeout(() => {
+      const onDown = (e: MouseEvent) => {
+        if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      };
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setOpen(false);
+      };
+      document.addEventListener("mousedown", onDown);
+      document.addEventListener("keydown", onKey);
+
+      // 返回清理函数
+      return () => {
+        document.removeEventListener("mousedown", onDown);
+        document.removeEventListener("keydown", onKey);
+      };
+    }, 100); // 100ms 延迟，足够让鼠标移动到菜单上
+
     return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
+      clearTimeout(timeoutId);
     };
   }, [open]);
 
