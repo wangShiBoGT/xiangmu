@@ -298,7 +298,7 @@ export default function TeamFlow({
   return (
     <section
       aria-label="AI 团队协作流"
-      className="mx-auto w-[min(720px,92vw)] rounded-md border-2 border-border bg-bg-float px-4 py-3 text-left shadow-[var(--shadow-tooltip)]"
+      className="mx-auto w-[min(720px,92vw)] rounded-md border-2 border-obs-line bg-obs-2 px-4 py-3 text-left shadow-float"
     >
       {!compact && (
         <div className="mb-2 flex flex-col gap-1.5">

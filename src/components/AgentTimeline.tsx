@@ -44,7 +44,7 @@ export default function AgentTimeline({
   const segments = modelSegments(events, steps.length);
   const segModels = [...new Set(segments.map((s) => s.model).filter(Boolean))];
   return (
-    <section className="mt-4 rounded-md border-2 border-border bg-bg-float p-4 shadow-[var(--shadow-tooltip)]">
+    <section className="mt-4 rounded-md border-2 border-obs-line bg-obs-2 p-4 shadow-float">
       <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-obs-ink2/70 select-none">
         Agent Timeline · 工具调用与决策点
       </p>

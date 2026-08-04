@@ -91,7 +91,7 @@ export default function ActivityLog({
   return (
     <nav
       aria-label="关键时刻"
-      className="rounded-md border-2 border-border bg-bg-float px-3 py-2.5 shadow-[var(--shadow-tooltip)]"
+      className="rounded-md border-2 border-obs-line bg-obs-2 px-3 py-2.5 shadow-float"
     >
       <p className="text-[11px] font-medium tracking-[0.18em] text-obs-ink2/70 select-none">
         关键时刻 · 点开看证据
