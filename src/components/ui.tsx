@@ -13,12 +13,12 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
-  const baseStyles = "inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyles = "inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-obs";
 
   const variantStyles = {
-    primary: "bg-brand-500 text-white shadow-md hover:bg-brand-600 hover:shadow-lg active:scale-95",
-    secondary: "border border-obs-line bg-obs-2 text-obs-ink hover:bg-obs-line/30",
-    ghost: "text-obs-ink3 hover:bg-obs-line/30 hover:text-obs-ink"
+    primary: "bg-brand-500 text-white shadow-md hover:bg-brand-600 hover:shadow-lg active:scale-95 focus:ring-brand-500/50",
+    secondary: "border border-obs-line bg-obs-2 text-obs-ink hover:bg-obs-line/30 hover:border-obs-ink3 focus:ring-obs-ink3/50",
+    ghost: "text-obs-ink3 hover:bg-obs-line/30 hover:text-obs-ink focus:ring-obs-ink3/50"
   };
 
   const sizeStyles = {
@@ -46,7 +46,7 @@ interface CardProps {
 
 export function Card({ children, className = '', noPadding = false }: CardProps) {
   return (
-    <div className={`overflow-hidden rounded-xl border border-obs-line bg-obs-2 shadow-md ${className}`}>
+    <div className={`overflow-hidden rounded-xl border border-obs-line bg-obs-2 shadow-md transition-all duration-200 hover:shadow-lg ${className}`}>
       {noPadding ? children : <div className="px-4 py-3">{children}</div>}
     </div>
   );
