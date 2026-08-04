@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code artifacts (should not be committed)
+.agents/
+.codex/
+.cursor/
+.devin/
+.devin-backup-*/
+.temp-impeccable/
+.impeccable/
