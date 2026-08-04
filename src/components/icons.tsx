@@ -357,6 +357,24 @@ export function IconActivity({ className }: IconProps) {
   );
 }
 
+/** 金钱 / 美元 / 成本 */
+export function IconDollar({ className }: IconProps) {
+  return (
+    <Base className={className}>
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </Base>
+  );
+}
+
+/** 消息 / 对话 / 聊天 */
+export function IconMessageSquare({ className }: IconProps) {
+  return (
+    <Base className={className}>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </Base>
+  );
+}
+
 /** 思考 / 推理（呼吸动画版）：用于 AI 思考状态 */
 export function IconThinking({ className }: IconProps) {
   return (
