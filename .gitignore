@@ -31,3 +31,5 @@ dist-ssr
 .devin-backup-*/
 .temp-impeccable/
 .impeccable/
+.claude/skills/impeccable/
+.claude/settings.local.json
