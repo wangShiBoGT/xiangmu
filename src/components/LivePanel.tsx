@@ -117,12 +117,15 @@ function PlannerCard({ plan }: { plan: PlanSide }) {
 
 /** Observe 右侧实时面板，主次随阶段重排：
  *  生成中——候选榜是主角（置顶实时刷新）；生成后——候选榜是末步冻结帧，
- *  折叠为单行，曲线与运行参数上位。全部数据来自真实推理记录。 */
+ *  折叠为单行,曲线与运行参数上位。全部数据来自真实推理记录。 */
 export default function LivePanel({
   steps,
   running,
   selected,
   planSide,
+  device,
+  modelName,
+  params,
 }: {
   steps: TokenStep[];
   running: boolean;
@@ -130,6 +133,12 @@ export default function LivePanel({
   selected?: number | null;
   /** 规划子运行进行中且正文未到：右栏改为 Planner 侧卡（真实读数） */
   planSide?: PlanSide | null;
+  /** 设备类型：webgpu / wasm */
+  device?: string | null;
+  /** 模型名称 */
+  modelName?: string;
+  /** 采样参数 */
+  params?: { temperature: number; topP: number } | null;
 }) {
   const [candsOpen, setCandsOpen] = useState(false);
   const selStep =
@@ -278,6 +287,69 @@ export default function LivePanel({
       </section>
   );
 
+  const systemStatusSection = (
+    <section className="rounded-md border border-obs-line bg-obs-2 p-4">
+      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-obs-ink2/70 select-none">
+        运行状态
+      </p>
+      <div className="mt-3 space-y-2">
+        {/* 设备状态 */}
+        <div className="flex items-center justify-between">
+          <span className="text-[12px] text-obs-ink2">设备</span>
+          <span className={`text-[12px] font-medium ${device === "webgpu" ? "text-emerald-400" : "text-amber-400"}`}>
+            {device === "webgpu" ? "WebGPU (GPU 加速)" : device === "wasm" ? "WASM (CPU)" : "未知"}
+          </span>
+        </div>
+
+        {/* 模型信息 */}
+        {modelName && (
+          <div className="flex items-center justify-between">
+            <span className="text-[12px] text-obs-ink2">模型</span>
+            <span className="text-[12px] text-obs-ink truncate max-w-[180px]" title={modelName}>
+              {modelName}
+            </span>
+          </div>
+        )}
+
+        {/* 采样参数 */}
+        {params && (
+          <>
+            <div className="flex items-center justify-between">
+              <span className="text-[12px] text-obs-ink2">Temperature</span>
+              <span className="font-mono text-[12px] tabular-nums text-obs-ink">
+                {params.temperature}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[12px] text-obs-ink2">Top-P</span>
+              <span className="font-mono text-[12px] tabular-nums text-obs-ink">
+                {params.topP}
+              </span>
+            </div>
+          </>
+        )}
+
+        {/* Token 计数 */}
+        <div className="flex items-center justify-between">
+          <span className="text-[12px] text-obs-ink2">已生成</span>
+          <span className="font-mono text-[12px] tabular-nums text-obs-ink">
+            {steps.length} tokens
+          </span>
+        </div>
+
+        {/* 平均速度 */}
+        {avgTps !== null && (
+          <div className="flex items-center justify-between">
+            <span className="text-[12px] text-obs-ink2">平均速度</span>
+            <span className="font-mono text-[12px] tabular-nums text-obs-ink">
+              {avgTps.toFixed(1)} tok/s
+            </span>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+
   return (
     <aside className="hidden w-[340px] shrink-0 space-y-3 overflow-y-auto p-4 lg:block">
       {running ? (
@@ -290,6 +362,7 @@ export default function LivePanel({
                 stepIndex={steps.length - 1}
                 total={steps.length}
               />
+              {systemStatusSection}
               <section className="rounded-md border border-obs-line bg-obs-2 px-4 py-3">
                 <p className="space-y-1 text-[13px] leading-relaxed text-obs-ink">
                   {peakIdx >= 0 && (
@@ -314,6 +387,7 @@ export default function LivePanel({
       ) : steps.length === 0 ? null : (
         <>
           {/* 分段耗时已归位到主舱流水线时间轴（remove-plan：同一读数只留一个位置） */}
+          {systemStatusSection}
           {chartsSection}
           {candidatesSection}
         </>

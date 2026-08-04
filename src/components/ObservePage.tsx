@@ -3163,7 +3163,7 @@ export default function ObservePage({
                 <button
                   aria-label="停止并保留已生成"
                   title="停止并保留已生成：准备阶段（检索/规划）也会立即停下"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-indigo-500 text-white hover:opacity-85"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-obs-line bg-obs-2 text-obs-ink transition-colors hover:bg-obs hover:border-obs-ink2/50"
                   onClick={interrupt}
                 >
                   <IconStop className="h-[18px] w-[18px]" />
@@ -3180,15 +3180,15 @@ export default function ObservePage({
               )}
             </div>
           </div>
-          <p className="mt-2.5 flex items-center justify-center gap-3 text-[12px] text-obs-ink2/70 select-none">
+          <p className="mt-2.5 text-center text-[12px] text-obs-ink2/70 select-none">
             {phase === "running" && (
-              <span className="text-amber-200/80">
+              <span className="block mb-1 text-amber-200/80">
                 运行中 · 输入已锁定；停止会保留已生成内容
               </span>
             )}
-            <span>所有概率与曲线来自真实推理，数据不出设备</span>
+            <span className="block">所有概率与曲线来自真实推理，数据不出设备</span>
             {(webOn || agentOn) && (
-              <span className="text-obs-ink2/50">
+              <span className="block mt-1 text-obs-ink2/50">
                 子运行真实发生才记录；失败也如实入档（ok:false）
               </span>
             )}
@@ -3216,6 +3216,9 @@ export default function ObservePage({
                 }
               : null
           }
+          device={device}
+          modelName={modelName}
+          params={params}
         />
       )}
       </>
