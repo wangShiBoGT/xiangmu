@@ -91,7 +91,7 @@ export default function ChatMessage({
                 key={url.slice(-24) + i}
                 src={url}
                 alt={`用户图片 ${i + 1}`}
-                className="h-24 max-w-40 rounded-md object-cover border border-line"
+                className="h-24 max-w-40 rounded-lg object-cover border border-obs-line shadow-sm"
               />
             ))}
           </div>
@@ -99,13 +99,13 @@ export default function ChatMessage({
         {message.attachments?.map((name) => (
           <span
             key={name}
-            className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-3 py-1 text-[13px] text-ink-2"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-obs-line bg-obs-2 px-3 py-1.5 text-[13px] text-obs-ink2 shadow-sm"
           >
-            <IconFile className="h-3.5 w-3.5 text-ink-3" />
+            <IconFile className="h-3.5 w-3.5 text-obs-ink3" />
             {name}
           </span>
         ))}
-        <div className="max-w-[85%] rounded-md bg-wash px-4 py-2.5 text-[16px] leading-[1.75] text-ink whitespace-pre-wrap">
+        <div className="max-w-[70%] rounded-2xl bg-brand-500 px-4 py-3 text-[15px] leading-[1.75] text-white shadow-md whitespace-pre-wrap">
           {message.displayContent ?? message.content}
         </div>
       </div>
@@ -129,8 +129,8 @@ export default function ChatMessage({
     <div data-testid="msg-assistant" ref={bodyRef}>
       {!showThinking && thinking !== null && !thinkingDone && (
         // 推理段显示已关闭时也要有生成迹象，避免整个思考期间界面空白
-        <div className="mb-4 inline-flex items-center gap-2 text-[13px] text-ink-3 select-none">
-          <IconThinking className="h-4 w-4 text-blue-400" />
+        <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-brand-500/10 px-3 py-2 text-[13px] text-brand-400 select-none">
+          <IconThinking className="h-4 w-4 animate-pulse" />
           <span>
             正在推理…
             {thinkSeconds !== null && thinkSeconds > 0
@@ -156,7 +156,7 @@ export default function ChatMessage({
       {answer && (
         <div
           data-testid="answer"
-          className={`md-answer text-[16px] leading-[1.75] text-ink ${
+          className={`md-answer text-[15px] leading-[1.75] text-obs-ink ${
             isRunning ? "typing-cursor" : ""
           }`}
           dangerouslySetInnerHTML={{ __html: renderMarkdown(answer) }}
@@ -164,15 +164,15 @@ export default function ChatMessage({
       )}
       {/* AI 正在生成但还没有内容时显示思考状态 */}
       {isRunning && !answer && thinking === null && (
-        <div className="flex items-center gap-3 text-[14px] text-ink-2">
-          <IconThinking className="h-5 w-5 text-blue-400" />
+        <div className="flex items-center gap-3 rounded-lg bg-brand-500/10 px-3 py-2 text-[14px] text-brand-400">
+          <IconThinking className="h-5 w-5 animate-pulse" />
           <span>正在生成回答...</span>
         </div>
       )}
       {!isRunning && message.content && (
-        <div className="mt-3 flex gap-1 text-[13px] text-ink-3">
+        <div className="mt-3 flex gap-1">
           <button
-            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-hover hover:text-ink-2 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] text-obs-ink3 transition-colors hover:bg-obs-line/30 hover:text-obs-ink"
             onClick={copy}
           >
             {copied ? (
@@ -184,7 +184,7 @@ export default function ChatMessage({
           </button>
           {isLast && (
             <button
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-hover hover:text-ink-2 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] text-obs-ink3 transition-colors hover:bg-obs-line/30 hover:text-obs-ink"
               onClick={onRegenerate}
             >
               <IconRefresh className="h-3.5 w-3.5" />
