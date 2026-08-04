@@ -1973,7 +1973,7 @@ export default function ObservePage({
             {!usedPrompt && phase === "idle" && (
               <div className="mt-2">
                 {/* 生成标本台：单屏主角——满幅、占去首屏绝大部分视觉重量的观测装置 */}
-                <div className="relative left-1/2 h-[min(68vh,720px)] min-h-[440px] w-[100cqw] -translate-x-1/2 px-6">
+                <div className="relative left-1/2 h-[min(68vh,720px)] min-h-[440px] w-[100cqw] -translate-x-1/2 px-6 pb-40">
                   <Suspense fallback={<div className="h-full" />}>
                     <InstrumentCluster
                       mode={
@@ -2058,7 +2058,7 @@ export default function ObservePage({
                   )}
                   {/* Focus Lens：选中某步时从右侧长出的局部采样检查器；未选中时显示此刻卡 */}
                   {demoFocus !== null && demoSteps[demoFocus] ? (
-                    <div className="focus-lens-in absolute right-6 top-8 z-10 max-h-[380px] w-[min(310px,85cqw)] overflow-y-auto">
+                    <div className="focus-lens-in absolute right-6 top-8 z-10 max-h-[380px] w-[min(310px,85cqw)] overflow-y-auto pb-40">
                       <SamplingInspector
                         step={demoSteps[demoFocus]}
                         stepIndex={demoFocus}
@@ -2081,7 +2081,7 @@ export default function ObservePage({
                       demoPhase === "done") &&
                     demoIdx >= 0 &&
                     demoSteps.length > 0 && (
-                      <div className="absolute right-6 top-8 z-10 w-[min(280px,80cqw)]">
+                      <div className="absolute right-6 top-8 z-10 w-[min(280px,80cqw)] pb-40">
                         <MomentCard
                           steps={demoSteps}
                           index={Math.min(demoIdx, demoSteps.length - 1)}
@@ -2123,7 +2123,7 @@ export default function ObservePage({
                     demoPhase === "paused" ||
                     demoPhase === "done") &&
                     demoSteps.length > 0 && (
-                      <div className="absolute bottom-2 right-6 flex items-center gap-1 rounded-md border border-obs-line bg-obs-2/85 px-1.5 py-1">
+                      <div className="absolute bottom-44 right-6 flex items-center gap-1 rounded-md border border-obs-line bg-obs-2/85 px-1.5 py-1">
                         <button
                           aria-label="上一步"
                           className="rounded-md px-2 py-0.5 text-[12px] text-obs-ink2 transition-colors hover:text-obs-ink disabled:opacity-30"

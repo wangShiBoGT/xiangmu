@@ -762,7 +762,7 @@ export default function InstrumentCluster({
     ? peakSteps.reduce((a, b) => (steps[b].entropy > steps[a].entropy ? b : a))
     : -1;
   return (
-    <div className="relative h-full min-h-[380px] w-full">
+    <div className="relative h-full min-h-[380px] w-full pb-40">
       <div ref={mountRef} className="absolute inset-0" />
       {/* 概率场文字：前 4 名候选，投影跟随、随概率衰减淡出 */}
       {[0, 1, 2, 3].map((j) => (

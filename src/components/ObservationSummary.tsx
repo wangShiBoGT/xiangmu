@@ -94,7 +94,7 @@ export default function ObservationSummary({
   if (steps.length === 0) return null;
 
   return (
-    <div className="mb-6 rounded-md border border-obs-line bg-obs-2/70">
+    <div className="mb-6 rounded-md border-2 border-border bg-bg-float shadow-[var(--shadow-tooltip)]">
       {/* 仪器读数行 */}
       <div className="flex items-baseline justify-between border-b border-obs-line/60 px-4 py-2.5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-obs-ink2/70 select-none">

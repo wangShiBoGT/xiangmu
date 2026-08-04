@@ -426,7 +426,7 @@ export default function LandingHero({
       {/* 主体：谜题 → 谜底 → 真实证据切片 → 入口（锚点 A1–A4；首屏第一层无术语无技术卖点）
           矮视口可滚动，主按钮永远可达（P4：不允许存在点不到的入口） */}
       <div className="landing-hero-scroll relative z-20 flex flex-1 flex-col overflow-y-auto px-6">
-       <div className="m-auto flex w-full flex-col items-center py-10 pb-40">
+       <div className="m-auto flex w-full flex-col items-center py-10 pb-96">
         <h2 className="max-w-[680px] text-center text-[clamp(24px,4vw,40px)] font-semibold tracking-[-0.02em] leading-[1.35]">
           为什么同一句问题，AI 每次回答都不一样？
         </h2>

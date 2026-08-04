@@ -37,7 +37,7 @@ export default function SentenceRibbon({
   return (
     <div
       ref={ref}
-      className="sentence-ribbon pointer-events-auto mx-auto max-w-[min(640px,88%)] overflow-x-auto whitespace-nowrap rounded-md border border-obs-line/60 bg-obs-2/70 px-3 py-1.5 text-center [scrollbar-width:none]"
+      className="sentence-ribbon pointer-events-auto mx-auto max-w-[min(640px,88%)] overflow-x-auto whitespace-nowrap rounded-md border-2 border-border bg-bg-float px-3 py-1.5 text-center shadow-[var(--shadow-tooltip)] [scrollbar-width:none]"
     >
       {steps.slice(0, n).map((s, i) => {
         const sp = specialTokenLabel(s.text);

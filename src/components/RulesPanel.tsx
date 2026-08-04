@@ -275,7 +275,7 @@ export default function RulesPanel({
           {toast && (
             <div
               role="status"
-              className="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-md border border-obs-line bg-obs-2 px-4 py-2 text-[12px] text-obs-ink shadow-float"
+              className="pointer-events-none fixed top-6 left-1/2 z-50 -translate-x-1/2 rounded-md border border-obs-line bg-obs-2 px-4 py-2 text-[12px] text-obs-ink shadow-float"
             >
               {toast}
             </div>

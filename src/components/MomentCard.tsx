@@ -14,7 +14,7 @@ export default function MomentCard({
   const r = momentReadout(steps, index);
   if (!r) return null;
   return (
-    <section className="rounded-md border border-obs-line bg-obs-2/90 px-4 py-3 select-none">
+    <section className="rounded-md border-2 border-border bg-bg-float px-4 py-3 shadow-[var(--shadow-tooltip)] select-none">
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-[13px] font-medium text-obs-ink">此刻</p>
         <span className="text-[11px] tabular-nums tracking-wide text-obs-ink2/70">
