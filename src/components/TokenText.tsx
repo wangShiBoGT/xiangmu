@@ -126,6 +126,9 @@ export default function TokenText({
   );
   const [thinkOpen, setThinkOpen] = useState(true);
 
+  // 生成中强制展开思考块
+  const shouldShowThink = thinkOpen || (running && phases.think && phases.answerStart >= steps.length);
+
   const renderFission = (s: DisplayStep, i: number) => {
     if (fission !== i) return null;
     const maxProb = s.topk[0]?.prob ?? 1;
@@ -242,7 +245,7 @@ export default function TokenText({
             onClick={() => setThinkOpen((v) => !v)}
           >
             <span
-              className={`phase-caret ${thinkOpen ? "rotate-90" : ""}`}
+              className={`phase-caret ${shouldShowThink ? "rotate-90" : ""}`}
               aria-hidden
             >
               ▸
@@ -253,7 +256,7 @@ export default function TokenText({
               {running && phases.answerStart >= steps.length ? " · 进行中" : ""}
             </span>
           </button>
-          {thinkOpen && (
+          {shouldShowThink && (
             <div className="phase-body">
               {steps
                 .slice(think.start, think.end)
