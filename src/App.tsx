@@ -15,6 +15,8 @@ import {
   IconGlobe,
   IconStop,
   IconArrowUp,
+  IconZap,
+  IconAlertTriangle,
 } from "./components/icons";
 import ChatMessage from "./components/ChatMessage";
 import Sidebar from "./components/Sidebar";
@@ -27,7 +29,6 @@ import DiscoverPage from "./components/DiscoverPage";
 import FindingsPage from "./components/FindingsPage";
 import ArchivePage from "./components/ArchivePage";
 import BenchmarkPage from "./components/BenchmarkPage";
-import PerformancePanel, { type PerformanceStatus } from "./components/PerformancePanel";
 import AINexus, { type NexusStatus } from "./components/AINexus";
 import {
   importReplay,
@@ -720,20 +721,22 @@ function App() {
           message: nexusMessage,
           system: {
             device: device as "webgpu" | "wasm" | null,
-            gpu: report?.gpu || null,
-            memory: report?.memoryGB || null,
-            cores: report?.cores || null,
+            gpu: report?.gpuInfo || null,
+            memory: report?.memoryGB ?? null,
+            cores: report?.cores ?? null,
           },
           model: {
             name: getModel(modelId)?.name,
-            size: getModel(modelId)?.sizeGPU
-              ? `${(getModel(modelId)!.sizeGPU / 1024 / 1024 / 1024).toFixed(1)} GB`
-              : undefined,
+            size: device === "webgpu" && getModel(modelId)?.sizeWebgpu
+              ? `${(getModel(modelId)!.sizeWebgpu / 1024 / 1024 / 1024).toFixed(1)} GB`
+              : device === "wasm" && getModel(modelId)?.sizeWasm
+                ? `${(getModel(modelId)!.sizeWasm / 1024 / 1024 / 1024).toFixed(1)} GB`
+                : undefined,
             quantization: device === "webgpu" ? "q4f16" : "q4",
             progress: nexusProgress,
           },
           performance: {
-            tokensPerSecond: tps,
+            tokensPerSecond: tps ?? undefined,
             avgLatency: tps && tps > 0 ? 1000 / tps : undefined,
           },
           autoExpand: nexusAutoExpand,
@@ -778,16 +781,12 @@ function App() {
               >
                 {device === "webgpu" ? (
                   <>
-                    <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
-                    </svg>
+                    <IconZap className="h-3 w-3" />
                     GPU 加速
                   </>
                 ) : (
                   <>
-                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
+                    <IconAlertTriangle className="h-3 w-3" />
                     CPU 慢速
                   </>
                 )}

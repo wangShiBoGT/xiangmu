@@ -309,3 +309,75 @@ export function IconArchive({ className }: IconProps) {
     </Base>
   );
 }
+
+/** 加载中 / 进行中（旋转圆圈） */
+export function IconLoader({ className }: IconProps) {
+  return (
+    <Base className={className}>
+      <path d="M12 3v3M12 18v3M21 12h-3M6 12H3M18.364 5.636l-2.121 2.121M7.757 16.243l-2.121 2.121M18.364 18.364l-2.121-2.121M7.757 7.757L5.636 5.636" />
+    </Base>
+  );
+}
+
+/** 警告 / 注意（三角形感叹号） */
+export function IconAlertTriangle({ className }: IconProps) {
+  return (
+    <Base className={className}>
+      <path d="M12 9v4M12 17h.01M10.29 3.86L2.08 18a2 2 0 0 0 1.71 3h16.42a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+    </Base>
+  );
+}
+
+/** 闪电 / 速度 / 能量 */
+export function IconZap({ className }: IconProps) {
+  return (
+    <Base className={className}>
+      <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
+    </Base>
+  );
+}
+
+/** CPU / 处理器 / 芯片 */
+export function IconCpu({ className }: IconProps) {
+  return (
+    <Base className={className}>
+      <rect x="6" y="6" width="12" height="12" rx="2" />
+      <rect x="9" y="9" width="6" height="6" />
+      <path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M18 9h3M3 15h3M18 15h3" />
+    </Base>
+  );
+}
+
+/** 活动 / 性能图表 / 监控 */
+export function IconActivity({ className }: IconProps) {
+  return (
+    <Base className={className}>
+      <path d="M3 12h4l3-9 4 18 3-9h4" />
+    </Base>
+  );
+}
+
+/** 思考 / 推理（呼吸动画版）：用于 AI 思考状态 */
+export function IconThinking({ className }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {/* 外圈 - 呼吸扩散 */}
+      <circle cx="12" cy="12" r="9" className="animate-thinking-outer" />
+      {/* 中圈 - 反向呼吸 */}
+      <circle cx="12" cy="12" r="5.5" className="animate-thinking-middle" />
+      {/* 内核心 - 脉动 */}
+      <circle cx="12" cy="12" r="2" className="animate-thinking-inner" fill="currentColor" stroke="none" />
+      {/* 思维连接线 */}
+      <path d="M12 3v2M12 19v2M3 12h2M19 12h2" className="animate-thinking-rays" />
+    </svg>
+  );
+}

@@ -377,44 +377,21 @@ pre {
   }
 }
 .token-unit:hover:not(:disabled) {
-  outline-color: rgb(139 143 248 / 0.55);
+  outline-color: var(--color-measure-400);
 }
 .token-unit:active:not(:disabled) {
-  background-color: rgb(139 143 248 / 0.28) !important;
+  background-color: var(--color-measure-500) !important;
+  opacity: 0.15;
   transition-duration: 0.04s;
 }
 .token-unit:disabled {
   cursor: progress;
 }
-/* 导演系统场面（仅生成中、每 token 一次性入场，由真实熵/top-2 差距分级）：
- *  flow = 轻量高光扫过；birth = 犹豫点凝聚成形；storm = 连续犹豫段的强化入场。
- *  数据不达标的步保持默认淡入——没有装饰性动画，每个动画都有证据。 */
-.token-scene-flow {
-  animation: scene-flow var(--motion-base) var(--ease-instrument);
-}
-@keyframes scene-flow {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-.token-scene-birth {
-  animation: scene-birth var(--motion-base) var(--ease-instrument);
-}
-@keyframes scene-birth {
-  from {
-    opacity: 0;
-  }
-}
+/* Token 入场动画 - 简化为统一淡入 */
+.token-scene-flow,
+.token-scene-birth,
 .token-scene-storm {
-  animation: scene-storm var(--motion-base) var(--ease-instrument);
-}
-@keyframes scene-storm {
-  from {
-    opacity: 0;
-  }
+  animation: token-in var(--motion-fast) var(--ease-instrument);
 }
 
 /* Token 即入口：点击的词原地裂变成候选堆（在文本流内推挤展开，不弹 Modal）。
@@ -426,16 +403,11 @@ pre {
   gap: 5px;
   margin: 0 4px;
   padding: 3px 8px;
-  border: 1px solid rgb(139 143 248 / 0.35);
+  border: 1px solid var(--color-measure-400);
   border-radius: 10px;
-  background: rgb(139 143 248 / 0.06);
+  background: var(--color-measure-100);
   vertical-align: middle;
-  animation: fission-in var(--motion-base) var(--ease-instrument);
-}
-@keyframes fission-in {
-  from {
-    opacity: 0;
-  }
+  animation: token-in var(--motion-base) var(--ease-instrument);
 }
 .token-fission-cand {
   display: inline-flex;
@@ -445,12 +417,12 @@ pre {
   border-radius: 6px;
   font-size: 12px;
   color: var(--color-ink-2);
-  background: rgb(139 143 248 / 0.08);
+  background: var(--color-measure-200);
 }
 .token-fission-chosen {
   color: var(--color-ink);
-  background: rgb(139 143 248 / 0.22);
-  outline: 1px solid rgb(139 143 248 / 0.5);
+  background: var(--color-measure-400);
+  outline: 1px solid var(--color-measure-500);
 }
 .token-fission-act {
   padding: 1px 7px;
@@ -463,7 +435,7 @@ pre {
 }
 .token-fission-act:hover {
   color: var(--color-ink);
-  border-color: rgb(139 143 248 / 0.5);
+  border-color: var(--color-measure-400);
 }
 
 /* Birth Scene：落选候选在各自概率位原位淡入→淡出（不位移/缩放/模糊，动效只回答「哪个被采样」）；
@@ -559,17 +531,17 @@ pre {
   user-select: none;
 }
 
-/* 安静阅读模式下的异常词：琥珀点式下划线静态标记，吸引注意而不打断阅读（无辉光） */
+/* 安静阅读模式下的异常词：琥珀点式下划线静态标记 */
 .token-anomaly {
-  text-decoration: underline dotted rgb(207 156 74 / 0.65);
+  text-decoration: underline dotted var(--color-caution-400);
   text-underline-offset: 3px;
 }
 
 /* 生成阶段分区：推理段折叠区块（左边线 + 暗色 + 小字），回答段正常正文 */
 .phase-think {
-  border-left: 1px solid rgb(139 143 248 / 0.25);
+  border-left: 1px solid var(--color-measure-300);
   border-radius: 4px;
-  background: rgb(139 143 248 / 0.04);
+  background: var(--color-measure-100);
   padding: 2px 10px 6px;
 }
 .phase-head {
@@ -578,7 +550,7 @@ pre {
   gap: 6px;
   font-size: 11.5px;
   letter-spacing: 0.08em;
-  color: rgb(139 143 248 / 0.85);
+  color: var(--color-measure-600);
   padding: 4px 0;
   cursor: pointer;
   user-select: none;
@@ -614,11 +586,11 @@ pre {
 }
 
 .token-selected {
-  outline-color: rgb(139 143 248);
+  outline-color: var(--color-measure-500);
 }
 .token-forced {
   text-decoration: underline;
-  text-decoration-color: rgb(129 140 248);
+  text-decoration-color: var(--color-measure-500);
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
 }
@@ -798,6 +770,73 @@ pre {
   .landing-hero-scroll > div {
     padding-bottom: 2.5rem;
   }
+}
+
+/* 思考呼吸动画 - 高级多层次动效 */
+@keyframes thinking-outer {
+  0%, 100% {
+    r: 9;
+    opacity: 0.3;
+  }
+  50% {
+    r: 10;
+    opacity: 0.15;
+  }
+}
+
+@keyframes thinking-middle {
+  0%, 100% {
+    r: 5.5;
+    opacity: 0.6;
+  }
+  50% {
+    r: 5;
+    opacity: 0.8;
+  }
+}
+
+@keyframes thinking-inner {
+  0%, 100% {
+    r: 2;
+    opacity: 1;
+  }
+  50% {
+    r: 2.5;
+    opacity: 0.9;
+  }
+}
+
+@keyframes thinking-rays {
+  0%, 100% {
+    opacity: 0.4;
+    stroke-dasharray: 2 2;
+  }
+  50% {
+    opacity: 0.8;
+    stroke-dasharray: 1 3;
+  }
+}
+
+.animate-thinking-outer {
+  animation: thinking-outer 3s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.animate-thinking-middle {
+  animation: thinking-middle 2s ease-in-out infinite;
+  animation-delay: 0.2s;
+  transform-origin: center;
+}
+
+.animate-thinking-inner {
+  animation: thinking-inner 1.5s ease-in-out infinite;
+  animation-delay: 0.4s;
+  transform-origin: center;
+}
+
+.animate-thinking-rays {
+  animation: thinking-rays 2.5s ease-in-out infinite;
+  animation-delay: 0.1s;
 }
 
 /* ── 减弱动态全局兜底（宪法 §7）：细粒度规则之外的漏网动画/过渡一律近零时长 ── */

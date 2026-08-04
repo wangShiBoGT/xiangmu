@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  IconChevronDown,
   IconFile,
-  IconReasoning,
   IconCheck,
   IconCopy,
   IconRefresh,
+  IconThinking,
 } from "./icons";
+import ActivityCard from "./ActivityCard";
 import { splitThinking } from "../lib/thinking";
 import { renderMarkdown } from "../lib/markdown";
 import type { StoredMessage } from "../lib/chatStore";
@@ -27,7 +27,6 @@ export default function ChatMessage({
   onRegenerate,
 }: Props) {
   // 推理段胶囊：生成中自动展开（让用户看到 <think> token 流），结束后自动收起
-  const [expanded, setExpanded] = useState<boolean | null>(null);
   const [copied, setCopied] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   // 推理段计时：<think> 段开始时起表，结束时定格（仅本次生成可知，历史消息不显示用时）
@@ -115,7 +114,6 @@ export default function ChatMessage({
 
   // 生成已结束但 </think> 未闭合（如被中断/达到 token 上限）时，推理段视为已完成
   const thinkingDone = done || !isRunning;
-  const isOpen = expanded ?? !thinkingDone;
 
   const copy = async () => {
     try {
@@ -132,9 +130,7 @@ export default function ChatMessage({
       {!showThinking && thinking !== null && !thinkingDone && (
         // 推理段显示已关闭时也要有生成迹象，避免整个思考期间界面空白
         <div className="mb-4 inline-flex items-center gap-2 text-[13px] text-ink-3 select-none">
-          <span className="relative flex h-3 w-3 items-center justify-center">
-            <span className="h-1.5 w-1.5 rounded-full bg-ink-2" />
-          </span>
+          <IconThinking className="h-4 w-4 text-blue-400" />
           <span>
             正在推理…
             {thinkSeconds !== null && thinkSeconds > 0
@@ -145,40 +141,17 @@ export default function ChatMessage({
         </div>
       )}
       {showThinking && thinking !== null && (
-        <div className="mb-4">
-          <button
-            className="group inline-flex items-center gap-2 text-[13px] text-ink-3 hover:text-ink-2 transition-colors select-none"
-            onClick={() => setExpanded(!isOpen)}
-          >
-            {thinkingDone ? (
-              <IconReasoning className="h-3.5 w-3.5" />
-            ) : (
-              <span className="relative flex h-3 w-3 items-center justify-center">
-                <span className="h-1.5 w-1.5 rounded-full bg-ink-2" />
-              </span>
-            )}
-            <span>
-              {thinkingDone
-                ? thinkSeconds !== null
-                  ? `推理段 · 共 ${thinkSeconds} 秒`
-                  : "推理段（<think> 输出）"
-                : thinkSeconds !== null && thinkSeconds > 0
-                  ? `推理段 · 生成中 ${thinkSeconds} 秒`
-                  : "推理段 · 生成中…"}
-            </span>
-            <IconChevronDown
-              className={`h-3 w-3 opacity-0 group-hover:opacity-100 transition-all duration-150 ${isOpen ? "rotate-180 opacity-100" : ""}`}
-            />
-          </button>
-          {isOpen && (
-            <div
-              data-testid="thinking"
-              className="mt-2.5 pl-[22px] text-[13px] leading-[1.85] text-ink-3 whitespace-pre-wrap"
-            >
-              {thinking}
-            </div>
-          )}
-        </div>
+        <ActivityCard
+          type="thinking"
+          title={thinkingDone ? "Thought" : "正在思考"}
+          duration={thinkingDone && thinkSeconds !== null ? thinkSeconds : undefined}
+          isRunning={!thinkingDone}
+          defaultExpanded={!thinkingDone}
+        >
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">
+            {thinking}
+          </div>
+        </ActivityCard>
       )}
       {answer && (
         <div
@@ -188,6 +161,13 @@ export default function ChatMessage({
           }`}
           dangerouslySetInnerHTML={{ __html: renderMarkdown(answer) }}
         />
+      )}
+      {/* AI 正在生成但还没有内容时显示思考状态 */}
+      {isRunning && !answer && thinking === null && (
+        <div className="flex items-center gap-3 text-[14px] text-ink-2">
+          <IconThinking className="h-5 w-5 text-blue-400" />
+          <span>正在生成回答...</span>
+        </div>
       )}
       {!isRunning && message.content && (
         <div className="mt-3 flex gap-1 text-[13px] text-ink-3">
