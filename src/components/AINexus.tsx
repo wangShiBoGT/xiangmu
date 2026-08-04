@@ -77,6 +77,8 @@ export default function AINexus({ info, onDismiss }: AINexusProps) {
           text: "text-measure-400",
           icon: <IconLoader className="h-4 w-4 animate-spin" />,
           label: "加载中",
+          dotColor: "bg-measure-400",
+          dotGlow: "shadow-[0_0_8px_rgba(79,124,228,0.6)]",
         };
       case "slow":
         return {
@@ -85,14 +87,18 @@ export default function AINexus({ info, onDismiss }: AINexusProps) {
           text: "text-caution-400",
           icon: <IconAlertTriangle className="h-4 w-4" />,
           label: "性能受限",
+          dotColor: "bg-caution-400",
+          dotGlow: "",
         };
       case "fast":
         return {
-          bg: "bg-measure-500/10",
-          border: "border-measure-500/30",
-          text: "text-measure-400",
+          bg: "bg-success-500/10",
+          border: "border-success-500/30",
+          text: "text-success-500",
           icon: <IconZap className="h-4 w-4" />,
           label: "运行良好",
+          dotColor: "bg-success-500",
+          dotGlow: "",
         };
       case "error":
         return {
@@ -101,6 +107,8 @@ export default function AINexus({ info, onDismiss }: AINexusProps) {
           text: "text-alert-400",
           icon: <IconAlertTriangle className="h-4 w-4" />,
           label: "运行异常",
+          dotColor: "bg-alert-400",
+          dotGlow: "",
         };
       default:
         return {
@@ -109,6 +117,8 @@ export default function AINexus({ info, onDismiss }: AINexusProps) {
           text: "text-obs-ink",
           icon: <IconCheck className="h-4 w-4" />,
           label: "就绪",
+          dotColor: "bg-obs-ink3",
+          dotGlow: "",
         };
     }
   };
@@ -117,55 +127,41 @@ export default function AINexus({ info, onDismiss }: AINexusProps) {
 
   return (
     <div
-      className={`fixed right-6 top-20 z-50 w-[400px] overflow-hidden rounded-xl border ${statusStyle.border} ${statusStyle.bg} transition-all duration-300`}
+      className={`fixed right-6 top-20 z-50 w-[380px] overflow-hidden rounded-xl border ${statusStyle.border} bg-obs/95 shadow-xl backdrop-blur-md transition-all duration-300 ${
+        collapsed ? "h-[64px]" : "h-auto"
+      }`}
     >
-      {/* 头部 */}
-      <div className="relative overflow-hidden">
+      {/* 头部 - 始终可见 */}
+      <button
+        onClick={handleToggle}
+        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-obs-line/20"
+      >
+        {/* 状态指示器 */}
+        <div
+          className={`h-3 w-3 rounded-full ${statusStyle.dotColor} ${
+            info.status === "loading" ? `animate-pulse ${statusStyle.dotGlow}` : ""
+          }`}
+        />
 
-        <div className="relative flex items-center justify-between p-4">
-          <button
-            onClick={handleToggle}
-            className="flex flex-1 items-center gap-3 text-left transition-opacity hover:opacity-80"
-          >
-            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${statusStyle.bg} ${statusStyle.border} border backdrop-blur-sm`}>
-              {statusStyle.icon}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className={`text-sm font-semibold ${statusStyle.text}`}>
-                  AI Nexus
-                </h3>
-                <span className="rounded-full bg-obs-line/30 px-2 py-0.5 text-[10px] font-medium text-obs-ink3">
-                  {statusStyle.label}
-                </span>
-              </div>
-              {info.message && collapsed && (
-                <p className="mt-1 text-xs text-obs-ink3 truncate">
-                  {info.message}
-                </p>
-              )}
-            </div>
-          </button>
-
-          {info.status !== "loading" && (
-            <button
-              onClick={handleDismiss}
-              className="ml-2 flex h-8 w-8 items-center justify-center rounded-lg text-obs-ink3 hover:bg-obs-line/30 hover:text-obs-ink transition-all"
-              aria-label="关闭"
-            >
-              <IconClose className="h-4 w-4" />
-            </button>
-          )}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[14px] font-semibold text-obs-ink">运行状态</h3>
+          <p className="text-[12px] text-obs-ink3">{statusStyle.label}</p>
         </div>
-      </div>
 
-      {/* 详细信息 */}
+        <IconChevronDown
+          className={`h-4 w-4 text-obs-ink3 transition-transform duration-200 ${
+            collapsed ? "" : "rotate-180"
+          }`}
+        />
+      </button>
+
+      {/* 详细信息 - 可折叠 */}
       {!collapsed && (
-        <div className="border-t border-obs-line/20 bg-obs-paper/50 backdrop-blur-sm">
+        <div className="animate-in slide-in-from-top-2 duration-200 border-t border-obs-line/50">
           {/* 消息 */}
           {info.message && (
-            <div className="border-b border-obs-line/20 px-4 py-3">
-              <p className="text-xs leading-relaxed text-obs-ink2">
+            <div className="border-b border-obs-line/50 px-4 py-3">
+              <p className="text-[12px] leading-relaxed text-obs-ink2">
                 {info.message}
               </p>
             </div>
