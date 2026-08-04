@@ -4,7 +4,9 @@ import {
   specialTokenLabel,
   splitPhases,
   type TokenStep,
+  type TagSegment,
 } from "../lib/trace";
+import { TAG_STYLES } from "../lib/modelTags";
 import type { RuleMatch } from "../lib/rules";
 import type { SceneLevel } from "../lib/director";
 
@@ -129,6 +131,9 @@ export default function TokenText({
   // 生成中强制展开思考块
   const shouldShowThink = thinkOpen || (running && phases.think && phases.answerStart >= steps.length);
 
+  // 标签块展开状态
+  const [tagOpenStates, setTagOpenStates] = useState<Record<number, boolean>>({});
+
   const renderFission = (s: DisplayStep, i: number) => {
     if (fission !== i) return null;
     const maxProb = s.topk[0]?.prob ?? 1;
@@ -226,6 +231,66 @@ export default function TokenText({
   const thinkCount = think ? think.end - think.start : 0;
   const answerSteps = steps.slice(phases.answerStart);
 
+  // 渲染标签块（通用）
+  const renderTagBlock = (tag: TagSegment, index: number) => {
+    const tagStyle = TAG_STYLES[tag.type as keyof typeof TAG_STYLES] || TAG_STYLES.thinking;
+    const tagCount = tag.end - tag.start;
+    const isOpen = tagOpenStates[index] !== undefined ? tagOpenStates[index] : true;
+
+    // 标签显示名称
+    const tagLabels: Record<string, { label: string; icon: string }> = {
+      thinking: { label: "推理段（<think> 输出）", icon: "💭" },
+      reflection: { label: "反思段（<reflection> 输出）", icon: "🔍" },
+      planning: { label: "规划段（<plan> 输出）", icon: "📋" },
+      search: { label: "搜索段（<search> 输出）", icon: "🔎" },
+      code: { label: "代码段（<code> 输出）", icon: "⚙️" },
+      summary: { label: "总结段（<summary> 输出）", icon: "📝" },
+    };
+
+    const tagInfo = tagLabels[tag.type] || { label: `${tag.type} 段`, icon: "📄" };
+    const shouldShow = isOpen || (running && !tag.closed);
+
+    return (
+      <div
+        key={`tag-${index}`}
+        className="my-2 rounded-md"
+        style={{
+          borderLeft: `1px solid ${tagStyle.borderColor}`,
+          backgroundColor: tagStyle.backgroundColor,
+          padding: "2px 10px 6px",
+        }}
+      >
+        <button
+          type="button"
+          className="flex items-center gap-2 py-1 text-[11.5px] tracking-[0.08em] transition-colors hover:opacity-80 select-none"
+          style={{ color: tagStyle.headerColor }}
+          onClick={() => setTagOpenStates(prev => ({ ...prev, [index]: !isOpen }))}
+        >
+          <span
+            className="inline-block text-[10px] transition-transform"
+            style={{ transform: shouldShow ? "rotate(90deg)" : "none" }}
+            aria-hidden
+          >
+            ▸
+          </span>
+          <span style={{ color: tagStyle.iconColor }}>{tagInfo.icon}</span>
+          <span>{tagInfo.label}</span>
+          <span className="tabular-nums opacity-70">
+            {tagCount} tokens
+            {running && !tag.closed ? " · 进行中" : ""}
+          </span>
+        </button>
+        {shouldShow && (
+          <div className="text-[13px] opacity-90" style={{ color: tagStyle.contentColor }}>
+            {steps
+              .slice(tag.start, tag.end)
+              .map((s, j) => renderToken(s, tag.start + j))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       className={`whitespace-pre-wrap break-words font-mono text-[14px] leading-[1.9] text-obs-ink ${
@@ -234,44 +299,67 @@ export default function TokenText({
       data-testid="token-text"
       onMouseMove={trackVelocity}
     >
-      {think && think.start > 0 &&
-        steps.slice(0, think.start).map((s, i) => renderToken(s, i))}
+      {/* 如果有多个标签，使用新的标签系统渲染 */}
+      {phases.tags && phases.tags.length > 0 ? (
+        <>
+          {/* 渲染所有标签块 */}
+          {phases.tags.map((tag, idx) => renderTagBlock(tag, idx))}
 
-      {think && (
-        <div className="phase-think my-2">
-          <button
-            type="button"
-            className="phase-head"
-            onClick={() => setThinkOpen((v) => !v)}
-          >
-            <span
-              className={`phase-caret ${shouldShowThink ? "rotate-90" : ""}`}
-              aria-hidden
-            >
-              ▸
-            </span>
-            推理段（&lt;think&gt; 输出）
-            <span className="tabular-nums text-obs-ink2/70">
-              {thinkCount} tokens
-              {running && phases.answerStart >= steps.length ? " · 进行中" : ""}
-            </span>
-          </button>
-          {shouldShowThink && (
-            <div className="phase-body">
-              {steps
-                .slice(think.start, think.end)
-                .map((s, j) => renderToken(s, think.start + j))}
+          {/* 渲染标签后的正文 */}
+          {answerSteps.length > 0 && (
+            <>
+              {phases.tags.some(t => t.closed) && (
+                <div className="phase-label" aria-hidden>
+                  回答阶段
+                </div>
+              )}
+              {answerSteps.map((s, j) => renderToken(s, phases.answerStart + j))}
+            </>
+          )}
+        </>
+      ) : (
+        /* 向后兼容：使用旧的 think 块渲染 */
+        <>
+          {think && think.start > 0 &&
+            steps.slice(0, think.start).map((s, i) => renderToken(s, i))}
+
+          {think && (
+            <div className="phase-think my-2">
+              <button
+                type="button"
+                className="phase-head"
+                onClick={() => setThinkOpen((v) => !v)}
+              >
+                <span
+                  className={`phase-caret ${shouldShowThink ? "rotate-90" : ""}`}
+                  aria-hidden
+                >
+                  ▸
+                </span>
+                推理段（&lt;think&gt; 输出）
+                <span className="tabular-nums text-obs-ink2/70">
+                  {thinkCount} tokens
+                  {running && phases.answerStart >= steps.length ? " · 进行中" : ""}
+                </span>
+              </button>
+              {shouldShowThink && (
+                <div className="phase-body">
+                  {steps
+                    .slice(think.start, think.end)
+                    .map((s, j) => renderToken(s, think.start + j))}
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      {think && answerSteps.length > 0 && (
-        <div className="phase-label" aria-hidden>
-          回答阶段
-        </div>
+          {think && answerSteps.length > 0 && (
+            <div className="phase-label" aria-hidden>
+              回答阶段
+            </div>
+          )}
+          {answerSteps.map((s, j) => renderToken(s, phases.answerStart + j))}
+        </>
       )}
-      {answerSteps.map((s, j) => renderToken(s, phases.answerStart + j))}
 
       {hovered && hover && (
         <div

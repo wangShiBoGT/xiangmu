@@ -142,15 +142,57 @@ export function entropyLevel(entropy: number): number {
  *  真实生成的一步，但不是给人读的正文；返回人话标签，非控制 token 返回 null */
 export function specialTokenLabel(text: string): string | null {
   const t = text.trim();
+
+  // Thinking 标签
   if (/^<\/?think(ing)?>$/.test(t)) {
     return t.startsWith("</") ? "推理段结束" : "推理段开始";
   }
+
+  // Reflection 标签
+  if (/^<\/?reflection>$/.test(t)) {
+    return t.startsWith("</") ? "反思段结束" : "反思段开始";
+  }
+
+  // Planning 标签
+  if (/^<\/?plan(ning)?>$/.test(t)) {
+    return t.startsWith("</") ? "规划段结束" : "规划段开始";
+  }
+
+  // Search 标签
+  if (/^<\/?search>$/.test(t)) {
+    return t.startsWith("</") ? "搜索段结束" : "搜索段开始";
+  }
+
+  // Code 标签
+  if (/^<\/?code>$/.test(t)) {
+    return t.startsWith("</") ? "代码段结束" : "代码段开始";
+  }
+
+  // Summary 标签
+  if (/^<\/?summary>$/.test(t)) {
+    return t.startsWith("</") ? "总结段结束" : "总结段开始";
+  }
+
+  // 通用结束标记
   const m = /^<[｜|]([a-zA-Z0-9_▁\- ]+)[｜|]>$/.exec(t);
   if (m) return m[1];
+
   if (/^<\|?(end_?of_?(text|sentence)|im_end|eos|eot_id)\|?>$/i.test(t)) {
     return t.replace(/[<>|｜]/g, "");
   }
+
   return null;
+}
+
+export interface TagSegment {
+  /** 标签类型 */
+  type: string;
+  /** 开始位置（含开始标签） */
+  start: number;
+  /** 结束位置（含结束标签） */
+  end: number;
+  /** 是否已闭合 */
+  closed: boolean;
 }
 
 export interface PhaseSegments {
@@ -158,28 +200,101 @@ export interface PhaseSegments {
   think: { start: number; end: number } | null;
   /** 回答阶段起点 */
   answerStart: number;
+  /** 所有标签段（扩展支持多种标签） */
+  tags?: TagSegment[];
 }
 
 /** 按 <think>…</think> 控制 token 划分生成阶段。
- *  R1 类模型可能不发 <think> 开头、直接输出到 </think>：此时推理段从 0 开始。 */
-export function splitPhases(texts: string[]): PhaseSegments {
+ *  R1 类模型可能不发 <think> 开头、直接输出到 </think>：此时推理段从 0 开始。
+ *  支持多种标签类型：thinking, reflection, planning 等 */
+export function splitPhases(texts: string[], modelId?: string): PhaseSegments {
   let open = -1;
   let close = -1;
+  const tags: TagSegment[] = [];
+
+  // 检测所有支持的标签类型
+  const openTags: Array<{ type: string; start: number }> = [];
+
   for (let i = 0; i < texts.length; i++) {
     const t = texts[i].trim();
-    if (open < 0 && /^<think(ing)?>$/.test(t)) open = i;
+
+    // 优先处理 thinking 标签（向后兼容）
+    if (open < 0 && /^<think(ing)?>$/.test(t)) {
+      open = i;
+      openTags.push({ type: "thinking", start: i });
+    }
+
     if (/^<\/think(ing)?>$/.test(t)) {
       close = i;
+      // 记录标签段
+      const openTag = openTags.find(tag => tag.type === "thinking");
+      if (openTag) {
+        tags.push({
+          type: "thinking",
+          start: openTag.start,
+          end: i + 1,
+          closed: true,
+        });
+        openTags.splice(openTags.indexOf(openTag), 1);
+      }
       break;
     }
+
+    // 检测其他标签类型
+    if (/^<reflection>$/.test(t)) {
+      openTags.push({ type: "reflection", start: i });
+    } else if (/^<\/reflection>$/.test(t)) {
+      const openTag = openTags.find(tag => tag.type === "reflection");
+      if (openTag) {
+        tags.push({
+          type: "reflection",
+          start: openTag.start,
+          end: i + 1,
+          closed: true,
+        });
+        openTags.splice(openTags.indexOf(openTag), 1);
+      }
+    } else if (/^<plan(ning)?>$/.test(t)) {
+      openTags.push({ type: "planning", start: i });
+    } else if (/^<\/plan(ning)?>$/.test(t)) {
+      const openTag = openTags.find(tag => tag.type === "planning");
+      if (openTag) {
+        tags.push({
+          type: "planning",
+          start: openTag.start,
+          end: i + 1,
+          closed: true,
+        });
+        openTags.splice(openTags.indexOf(openTag), 1);
+      }
+    }
   }
+
+  // 未闭合的标签
+  for (const openTag of openTags) {
+    tags.push({
+      type: openTag.type,
+      start: openTag.start,
+      end: texts.length,
+      closed: false,
+    });
+  }
+
   if (close >= 0) {
-    return { think: { start: Math.max(open, 0), end: close + 1 }, answerStart: close + 1 };
+    return {
+      think: { start: Math.max(open, 0), end: close + 1 },
+      answerStart: close + 1,
+      tags,
+    };
   }
   if (open >= 0) {
-    return { think: { start: open, end: texts.length }, answerStart: texts.length };
+    return {
+      think: { start: open, end: texts.length },
+      answerStart: texts.length,
+      tags,
+    };
   }
-  return { think: null, answerStart: 0 };
+  return { think: null, answerStart: 0, tags };
 }
 
 /** 出生卡「为什么选它」人话解释：全部由真实概率与参数模板化生成 */
