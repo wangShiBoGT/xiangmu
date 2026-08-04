@@ -27,6 +27,7 @@ import DiscoverPage from "./components/DiscoverPage";
 import FindingsPage from "./components/FindingsPage";
 import ArchivePage from "./components/ArchivePage";
 import BenchmarkPage from "./components/BenchmarkPage";
+import PerformancePanel, { type PerformanceStatus } from "./components/PerformancePanel";
 import {
   importReplay,
   listExperiments,
@@ -119,6 +120,10 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [progressItems, setProgressItems] = useState<ProgressItem[]>([]);
+  const [perfStatus, setPerfStatus] = useState<PerformanceStatus>("idle");
+  const [perfMessage, setPerfMessage] = useState<string | undefined>(undefined);
+  const [perfProgress, setPerfProgress] = useState<number | undefined>(undefined);
+
 
   const [sessions, setSessions] = useState<ChatSession[]>(() => loadSessions());
   // 首次访问（无历史会话）的新用户才展示完整导读
@@ -286,16 +291,26 @@ function App() {
         case "loading":
           setStatus("loading");
           setLoadingMessage(msg.data);
+          setPerfStatus("loading");
+          setPerfMessage(msg.data);
+          setPerfProgress(0);
           break;
         case "initiate":
           setProgressItems((prev) => [...prev, msg]);
+          setPerfStatus("loading");
           break;
         case "progress":
-          setProgressItems((prev) =>
-            prev.map((item) =>
+          setProgressItems((prev) => {
+            const updated = prev.map((item) =>
               item.file === msg.file ? { ...item, ...msg } : item,
-            ),
-          );
+            );
+            // 计算总体进度
+            const totalProgress = updated.length > 0
+              ? updated.reduce((sum, item) => sum + (item.progress ?? 0), 0) / updated.length
+              : msg.progress ?? 0;
+            setPerfProgress(totalProgress);
+            return updated;
+          });
           break;
         case "done":
           setProgressItems((prev) =>
@@ -308,6 +323,17 @@ function App() {
           loadingModelRef.current = null;
           triedModelsRef.current.clear();
           wasmFallbackRef.current = false;
+          // 根据设备类型设置性能状态
+          if (msg.device === "wasm") {
+            setPerfStatus("slow");
+            setPerfMessage("当前使用 CPU 模式运行，生成速度较慢。建议使用支持 WebGPU 的浏览器和设备以获得 GPU 加速。");
+          } else if (msg.device === "webgpu") {
+            setPerfStatus("fast");
+            setPerfMessage("GPU 加速已启用，性能良好。");
+          } else {
+            setPerfStatus("idle");
+          }
+          setPerfProgress(undefined);
           if (enterOnReadyRef.current) {
             enterOnReadyRef.current = false;
             setEntered(true);
@@ -683,6 +709,16 @@ function App() {
           {dropError}
         </div>
       )}
+      <PerformancePanel
+        info={{
+          status: perfStatus,
+          message: perfMessage,
+          progress: perfProgress,
+          device: device as "webgpu" | "wasm" | null,
+          tokensPerSecond: tps,
+        }}
+        onDismiss={() => setPerfStatus("idle")}
+      />
       {!showLanding && view === "create" && (
         <Sidebar
           sessions={sessions}
@@ -711,8 +747,29 @@ function App() {
               Browser AI Microscope
             </h1>
             {device && (
-              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-ink-3 select-none">
-                {device === "webgpu" ? "GPU 加速" : "CPU 模式"}
+              <span
+                className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.08em] select-none transition-colors ${
+                  device === "webgpu"
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                    : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                }`}
+                title={device === "webgpu" ? "GPU 加速模式" : "CPU 模式 - 速度较慢"}
+              >
+                {device === "webgpu" ? (
+                  <>
+                    <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
+                    </svg>
+                    GPU 加速
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    CPU 慢速
+                  </>
+                )}
               </span>
             )}
           </div>
