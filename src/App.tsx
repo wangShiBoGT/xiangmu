@@ -30,6 +30,7 @@ import FindingsPage from "./components/FindingsPage";
 import ArchivePage from "./components/ArchivePage";
 import BenchmarkPage from "./components/BenchmarkPage";
 import AINexus, { type NexusStatus } from "./components/AINexus";
+import SessionStatsPanel, { type SessionStats } from "./components/SessionStatsPanel";
 import {
   importReplay,
   listExperiments,
