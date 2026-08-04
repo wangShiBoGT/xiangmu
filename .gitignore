@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Large model files (should not be committed)
+public/models/
+public/ort/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
