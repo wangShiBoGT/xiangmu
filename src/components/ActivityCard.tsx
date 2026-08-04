@@ -5,7 +5,7 @@
  */
 
 import { useState } from "react";
-import { IconChevronDown, IconThinking, IconCheck, IconLoader, IconFile, IconClock } from "./icons";
+import { IconChevronDown, IconThinking, IconCheck, IconLoader, IconFile } from "./icons";
 
 export type ActivityType = "thinking" | "command" | "file-read" | "file-write" | "result";
 
