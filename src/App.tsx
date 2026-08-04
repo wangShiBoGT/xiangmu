@@ -28,6 +28,7 @@ import FindingsPage from "./components/FindingsPage";
 import ArchivePage from "./components/ArchivePage";
 import BenchmarkPage from "./components/BenchmarkPage";
 import PerformancePanel, { type PerformanceStatus } from "./components/PerformancePanel";
+import AINexus, { type NexusStatus } from "./components/AINexus";
 import {
   importReplay,
   listExperiments,
@@ -120,9 +121,10 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [progressItems, setProgressItems] = useState<ProgressItem[]>([]);
-  const [perfStatus, setPerfStatus] = useState<PerformanceStatus>("idle");
-  const [perfMessage, setPerfMessage] = useState<string | undefined>(undefined);
-  const [perfProgress, setPerfProgress] = useState<number | undefined>(undefined);
+  const [nexusStatus, setNexusStatus] = useState<NexusStatus>("idle");
+  const [nexusMessage, setNexusMessage] = useState<string | undefined>(undefined);
+  const [nexusProgress, setNexusProgress] = useState<number | undefined>(undefined);
+  const [nexusAutoExpand, setNexusAutoExpand] = useState(false);
 
 
   const [sessions, setSessions] = useState<ChatSession[]>(() => loadSessions());
@@ -291,13 +293,14 @@ function App() {
         case "loading":
           setStatus("loading");
           setLoadingMessage(msg.data);
-          setPerfStatus("loading");
-          setPerfMessage(msg.data);
-          setPerfProgress(0);
+          setNexusStatus("loading");
+          setNexusMessage(msg.data);
+          setNexusProgress(0);
+          setNexusAutoExpand(false);
           break;
         case "initiate":
           setProgressItems((prev) => [...prev, msg]);
-          setPerfStatus("loading");
+          setNexusStatus("loading");
           break;
         case "progress":
           setProgressItems((prev) => {
@@ -308,7 +311,7 @@ function App() {
             const totalProgress = updated.length > 0
               ? updated.reduce((sum, item) => sum + (item.progress ?? 0), 0) / updated.length
               : msg.progress ?? 0;
-            setPerfProgress(totalProgress);
+            setNexusProgress(totalProgress);
             return updated;
           });
           break;
@@ -325,15 +328,17 @@ function App() {
           wasmFallbackRef.current = false;
           // 根据设备类型设置性能状态
           if (msg.device === "wasm") {
-            setPerfStatus("slow");
-            setPerfMessage("当前使用 CPU 模式运行，生成速度较慢。建议使用支持 WebGPU 的浏览器和设备以获得 GPU 加速。");
+            setNexusStatus("slow");
+            setNexusMessage("当前使用 CPU 模式运行，生成速度较慢。建议使用支持 WebGPU 的浏览器和设备以获得 GPU 加速。");
+            setNexusAutoExpand(true); // CPU 模式自动展开警告
           } else if (msg.device === "webgpu") {
-            setPerfStatus("fast");
-            setPerfMessage("GPU 加速已启用，性能良好。");
+            setNexusStatus("fast");
+            setNexusMessage("GPU 加速已启用，性能良好。");
+            setNexusAutoExpand(false);
           } else {
-            setPerfStatus("idle");
+            setNexusStatus("idle");
           }
-          setPerfProgress(undefined);
+          setNexusProgress(undefined);
           if (enterOnReadyRef.current) {
             enterOnReadyRef.current = false;
             setEntered(true);
@@ -709,15 +714,31 @@ function App() {
           {dropError}
         </div>
       )}
-      <PerformancePanel
+      <AINexus
         info={{
-          status: perfStatus,
-          message: perfMessage,
-          progress: perfProgress,
-          device: device as "webgpu" | "wasm" | null,
-          tokensPerSecond: tps,
+          status: nexusStatus,
+          message: nexusMessage,
+          system: {
+            device: device as "webgpu" | "wasm" | null,
+            gpu: report?.gpu || null,
+            memory: report?.memoryGB || null,
+            cores: report?.cores || null,
+          },
+          model: {
+            name: getModel(modelId)?.name,
+            size: getModel(modelId)?.sizeGPU
+              ? `${(getModel(modelId)!.sizeGPU / 1024 / 1024 / 1024).toFixed(1)} GB`
+              : undefined,
+            quantization: device === "webgpu" ? "q4f16" : "q4",
+            progress: nexusProgress,
+          },
+          performance: {
+            tokensPerSecond: tps,
+            avgLatency: tps && tps > 0 ? 1000 / tps : undefined,
+          },
+          autoExpand: nexusAutoExpand,
         }}
-        onDismiss={() => setPerfStatus("idle")}
+        onDismiss={() => setNexusStatus("idle")}
       />
       {!showLanding && view === "create" && (
         <Sidebar
