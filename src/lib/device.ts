@@ -44,7 +44,9 @@ export async function probeDevice(): Promise<DeviceReport> {
           null;
       }
     }
-  } catch {
+  } catch (error) {
+    // WebGPU 初始化失败，记录详细原因
+    console.warn("WebGPU 探测失败:", error);
     webgpu = false;
   }
 
@@ -68,4 +70,36 @@ export function recommendModel(report: DeviceReport): ModelInfo {
 /** 某模型在当前设备上是否可用 */
 export function modelUsable(report: DeviceReport, m: ModelInfo): boolean {
   return report.webgpu ? true : m.wasmOk;
+}
+
+/** 估算模型在指定设备上的内存需求（字节）
+ *  ONNX Runtime 运行时开销约为模型权重的 1.8 倍 */
+export function estimateMemoryRequirement(
+  model: ModelInfo,
+  device: "webgpu" | "wasm",
+): number {
+  const baseSize = device === "webgpu" ? model.sizeWebgpu : model.sizeWasm;
+  return Math.ceil(baseSize * 1.8);
+}
+
+/** 检查模型是否可能因内存不足而加载失败
+ *  返回 null 表示无法确定，返回 true 表示可能内存不足 */
+export function checkMemoryRisk(
+  model: ModelInfo,
+  report: DeviceReport,
+  device: "webgpu" | "wasm",
+): boolean | null {
+  // deviceMemory 只在某些浏览器可用，且上限为 8GB
+  if (report.memoryGB === null) return null;
+
+  const required = estimateMemoryRequirement(model, device);
+  const availableBytes = report.memoryGB * 1024 * 1024 * 1024;
+
+  // WASM 有 32 位地址空间限制（约 4GB）
+  if (device === "wasm" && required > 3.5 * 1024 * 1024 * 1024) {
+    return true;
+  }
+
+  // 保守估计：需求 > 可用内存的 60% 就认为有风险
+  return required > availableBytes * 0.6;
 }

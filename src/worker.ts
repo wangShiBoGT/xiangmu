@@ -395,6 +395,8 @@ async function load(modelId: string, forceDevice?: Device) {
     if (forceDevice) TextGenerationPipeline.device = forceDevice;
     const name = getModel(modelId)?.name ?? modelId;
     const builtin = getModel(modelId)?.builtin ?? false;
+
+    // 阶段 1: 准备加载
     self.postMessage({
       status: "loading",
       data: builtin
@@ -402,11 +404,15 @@ async function load(modelId: string, forceDevice?: Device) {
         : `正在准备 ${name}（首次需在线下载，之后缓存免重下；每次打开仍需读入内存并初始化）...`,
     });
 
+    // 阶段 2: 加载模型文件
+    const loadStart = performance.now();
     const { tokenizer, model, device } =
       await TextGenerationPipeline.getInstance(modelId, (x) =>
         self.postMessage(x),
       );
+    const loadTime = performance.now() - loadStart;
 
+    // 阶段 3: 编译与预热
     self.postMessage({
       status: "loading",
       data:
@@ -415,9 +421,22 @@ async function load(modelId: string, forceDevice?: Device) {
           : "未检测到 WebGPU，使用 CPU(WASM) 模式，速度较慢；正在预热模型...",
     });
 
-    const inputs = tokenizer("a");
-    await model.generate({ ...inputs, max_new_tokens: 1 });
-    self.postMessage({ status: "ready", device, modelId });
+    // 使用多样化输入预热，检测数值稳定性
+    const warmupStart = performance.now();
+    const warmupInputs = ["Hello", "你好"];
+    for (const text of warmupInputs) {
+      const inputs = tokenizer(text);
+      await model.generate({ ...inputs, max_new_tokens: 1 });
+    }
+    const warmupTime = performance.now() - warmupStart;
+
+    self.postMessage({
+      status: "ready",
+      device,
+      modelId,
+      loadTime: Math.round(loadTime),
+      warmupTime: Math.round(warmupTime),
+    });
   } catch (e) {
     // 清掉失败的半成品实例，同一个模型也能重试
     TextGenerationPipeline.modelId = null;
