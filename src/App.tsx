@@ -29,6 +29,7 @@ import DiscoverPage from "./components/DiscoverPage";
 import FindingsPage from "./components/FindingsPage";
 import ArchivePage from "./components/ArchivePage";
 import BenchmarkPage from "./components/BenchmarkPage";
+import StatisticsPage from "./components/StatisticsPage";
 import AINexus, { type NexusStatus } from "./components/AINexus";
 import DeviceCompatibilityBanner from "./components/DeviceCompatibilityBanner";
 import {
@@ -159,6 +160,7 @@ function App() {
     | "findings"
     | "archive"
     | "benchmark"
+    | "statistics"
     | "journey"
     | "enhanced-input-demo"
   >("workspace");
@@ -949,6 +951,7 @@ function App() {
             onGoJourney={() => setView("journey")}
             onGoArchive={() => setView("archive")}
             onGoBenchmark={() => setView("benchmark")}
+            onGoStatistics={() => setView("statistics")}
             onGoDiscover={() => setView("discover")}
             onWantModel={
               status !== "ready"
@@ -1019,6 +1022,8 @@ function App() {
             onGoObserve={() => setView("observe")}
           />
         )}
+
+        {!showLanding && view === "statistics" && <StatisticsPage />}
 
         {view === "enhanced-input-demo" && (
           <Suspense fallback={<div className="flex-1 bg-obs" />}>

@@ -322,18 +322,52 @@
 
 ## 数据与分析 📋
 
-### 9. 本地统计面板
-**优先级**：低 | **类型**：功能扩展
+### 9. 本地统计面板 ✅
+**优先级**：低 | **类型**：功能扩展 | **完成时间**：2026-08-05
 
-- 📋 统计总对话数、总 token 数、平均生成速度
-- 📋 按模型/参数聚合性能指标
-- 📋 可视化 entropy/temperature 分布
-- 📋 导出统计报告（CSV/JSON）
+- ✅ 统计总对话数、总 token 数、平均生成速度
+- ✅ 按模型/参数聚合性能指标
+- ✅ 可视化 entropy/temperature 分布
+- ✅ 导出统计报告（CSV/JSON）
+
+**已完成**：
+- 统计数据聚合（statistics.ts）：
+  - computeOverallStats：从 localStorage 会话历史和 IndexedDB 实验存档中提取统计
+  - SessionStats：会话级统计（消息数、用户/助手消息比例）
+  - ModelStats：按模型聚合（运行次数、总/平均 token、平均/最快/最慢速度、平均熵）
+  - ParameterStats：按温度+Top-P 组合聚合（运行次数、平均 token、平均熵）
+  - EntropyDistribution：熵值分 10 个区间 [0, 0.5) ~ [4.5, 5.0) 统计分布
+  - TemperatureDistribution：温度使用频率统计
+- 统计面板 UI（StatisticsPage.tsx）：
+  - 四个标签页：总览/按模型/按参数/分布统计
+  - 总览标签：四个 StatCard 展示关键指标（会话数、存档数、总 token、平均速度）
+  - 按模型标签：表格展示每个模型的运行次数、token 统计、速度范围、平均熵
+  - 按参数标签：表格展示每种温度+Top-P 组合的使用情况和效果
+  - 分布统计标签：水平条形图可视化熵分布和温度分布（观测蓝/琥珀色）
+- 导出功能：
+  - exportStatsToCSV：导出为分节 CSV 格式（# 开头的节标题 + 表格数据）
+  - exportStatsToJSON：导出为完整 JSON 格式（保留原始数据结构）
+  - 下载按钮：生成 Blob URL 并触发浏览器下载，文件名带时间戳
+- 导航集成：
+  - App.tsx：添加 "statistics" 视图类型和路由
+  - WorkspacePage.tsx：添加 onGoStatistics 回调和 "📊 本地统计 →" 链接
 
 **数据来源**：
-- localStorage 中的会话历史
-- 导入的 .aitrace 文件
-- 实时 trace 数据
+- localStorage.getItem("webgpu-llm-chat.sessions.v1")：会话历史（聊天消息）
+- IndexedDB "browser-ai-microscope"."experiments"：实验存档（trace 数据）
+- 实时 trace 数据（每次 Observe 运行自动存档）
+
+**技术要点**：
+- 聚合算法：Map-reduce 模式累积统计，避免重复遍历
+- 百分比计算：总数 > 0 时计算占比，避免除零错误
+- 条形图可视化：CSS width 百分比 + 透明色背景（观测蓝/琥珀色 60% 透明度）
+- 响应式表格：overflow-x-auto 支持横向滚动（移动端友好）
+
+**局限性说明**：
+- 仅统计本地数据：不跨设备、不上传云端
+- IndexedDB 容量限制：MAX_EXPERIMENTS = 200 条存档（超出自动淘汰未星标记录）
+- 会话历史无 token 计数：只能从实验存档统计 token 数据
+- 温度/熵分布仅来自 Observe 模式：Create 模式的对话不记录 trace
 
 ### 10. Benchmark 页面数据更新
 **优先级**：低 | **类型**：内容维护

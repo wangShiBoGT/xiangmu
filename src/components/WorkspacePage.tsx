@@ -39,6 +39,7 @@ export default function WorkspacePage({
   onGoDiscover,
   onWatchDemo,
   onGoJourney,
+  onGoStatistics,
   onWantModel,
 }: {
   report: DeviceReport | null;
@@ -56,6 +57,8 @@ export default function WorkspacePage({
   onWatchDemo: () => void;
   /** 理解层四幕旅程：看懂它怎么选词（演示模型真实数据） */
   onGoJourney: () => void;
+  /** 本地统计面板 */
+  onGoStatistics: () => void;
   /** 尚未加载模型时：回首屏选择模型 */
   onWantModel?: () => void;
 }) {
@@ -408,6 +411,12 @@ export default function WorkspacePage({
               onClick={onGoArchive}
             >
               全部档案（{records?.length ?? 0}）→
+            </button>
+            <button
+              className="mt-3 ml-4 text-[12px] text-obs-ink2 underline decoration-dotted underline-offset-4 hover:text-obs-ink"
+              onClick={onGoStatistics}
+            >
+              📊 本地统计 →
             </button>
             <button
               className="mt-3 ml-4 text-[12px] text-obs-ink2 underline decoration-dotted underline-offset-4 hover:text-obs-ink"
