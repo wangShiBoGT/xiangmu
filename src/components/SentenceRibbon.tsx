@@ -62,7 +62,7 @@ export default function SentenceRibbon({
             data-current={isCur || undefined}
             className={`${
               isCur
-                ? "mx-0.5 inline-block rounded bg-indigo-500/25 px-1 text-[16px] font-medium text-indigo-100"
+                ? "mx-0.5 inline-block rounded bg-measure-500/25 px-1 text-[16px] font-medium text-measure-100"
                 : "text-[13px] text-obs-ink2/85"
             } ${onSelect ? "cursor-pointer hover:text-obs-ink" : ""}`}
             onClick={onSelect ? () => onSelect(i) : undefined}
@@ -71,7 +71,7 @@ export default function SentenceRibbon({
           </span>
         );
       })}
-      <span className="ml-1 inline-block h-[14px] w-[2px] bg-indigo-300/80 align-middle" />
+      <span className="ml-1 inline-block h-[14px] w-[2px] bg-measure-300/80 align-middle" />
     </div>
   );
 }

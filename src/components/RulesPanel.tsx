@@ -106,7 +106,7 @@ export default function RulesPanel({
               <input
                 type="checkbox"
                 aria-label={`启用 ${r.id}`}
-                className="h-3.5 w-3.5 shrink-0 accent-indigo-400"
+                className="h-3.5 w-3.5 shrink-0 accent-measure-400"
                 checked={r.enabled}
                 onChange={() => setRule(r.id, { enabled: !r.enabled })}
               />
@@ -241,7 +241,7 @@ export default function RulesPanel({
                         {previewPack === p.id ? "收起" : "预览"}
                       </button>
                       <button
-                        className="rounded-md border border-obs-line px-2.5 py-1 text-[12px] text-obs-ink2 transition-colors hover:border-indigo-400/60 hover:text-obs-ink"
+                        className="rounded-md border border-obs-line px-2.5 py-1 text-[12px] text-obs-ink2 transition-colors hover:border-measure-400/60 hover:text-obs-ink"
                         onClick={() => importCatalogPack(p.id)}
                       >
                         导入此包

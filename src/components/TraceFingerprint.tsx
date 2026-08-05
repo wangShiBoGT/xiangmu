@@ -68,7 +68,7 @@ export default function TraceFingerprint({
           y={H - 12 - (s.entropy / maxH) * (H - 26)}
           width={1.2}
           height={(s.entropy / maxH) * (H - 26)}
-          fill="#818cf8"
+          fill="#10A0FF"
           opacity={0.16 + (s.entropy / maxH) * 0.3}
         />
       ))}
@@ -81,7 +81,7 @@ export default function TraceFingerprint({
             y={H - 6}
             width={1}
             height={Math.min(5, 1 + s.dt / 80)}
-            fill="#64748b"
+            fill="#6d6d6d"
             opacity={0.7}
           />
         ) : null,
@@ -91,7 +91,7 @@ export default function TraceFingerprint({
         <path
           key={`f${i}`}
           d={`M${x(f) - 3.5},2 L${x(f) + 3.5},2 L${x(f)},8 Z`}
-          fill="#fbbf24"
+          fill="#ffa726"
           opacity={0.9}
         />
       ))}
@@ -101,7 +101,7 @@ export default function TraceFingerprint({
           x2={x(markStep)}
           y1={0}
           y2={H}
-          stroke="#fbbf24"
+          stroke="#ffa726"
           strokeWidth={1}
           strokeDasharray="3 3"
           opacity={0.85}
@@ -111,7 +111,7 @@ export default function TraceFingerprint({
         <path
           d={probPath(compareSteps, maxLen)}
           fill="none"
-          stroke="#34d399"
+          stroke="#00e676"
           strokeWidth={1.4}
           opacity={0.9}
         />
@@ -119,7 +119,7 @@ export default function TraceFingerprint({
       <path
         d={probPath(steps, maxLen)}
         fill="none"
-        stroke="#818cf8"
+        stroke="#10A0FF"
         strokeWidth={1.4}
         opacity={0.95}
       />

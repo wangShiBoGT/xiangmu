@@ -29,7 +29,7 @@ function Bar({
       <span className="relative block h-[12px] overflow-hidden rounded-sm bg-white/[0.07]">
         <span
           className={`absolute inset-y-0 left-0 ${
-            accent ? "bg-[#6D74E8]" : "bg-white/25"
+            accent ? "bg-[#10b981]" : "bg-white/25"
           } ${animate ? "slice-bar-grow" : ""}`}
           style={{ width: `${Math.min(100, prob * 100)}%` }}
         />
@@ -60,7 +60,7 @@ export default function HesitationSlice({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="observe-dark w-full max-w-[520px] rounded-md border border-white/10 bg-[#101118] p-4">
+    <div className="observe-dark w-full max-w-[520px] rounded-md border border-white/10 p-4">
       <p className="mb-3 flex items-baseline justify-between text-[11px] uppercase tracking-[0.18em] text-obs-ink2/70 select-none">
         犹豫点 · 真实记录
         <span className="font-mono normal-case tracking-normal tabular-nums">
@@ -89,7 +89,7 @@ export default function HesitationSlice({
       </button>
       <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-2.5">
         <p className="text-[11px] text-obs-ink2/80 select-none">
-          前两名概率差 {pct(step.gap)} · 点击展开原始记录
+          险胜：第一名仅领先 {pct(step.gap)} · 点击展开原始记录
         </p>
         {onViewRaw && (
           <button

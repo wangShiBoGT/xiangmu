@@ -24,11 +24,11 @@ function ConfidenceBar({ value }: { value: number }) {
 }
 
 const SEG_COLORS = [
-  "bg-indigo-400/60",
-  "bg-teal-400/60",
+  "bg-measure-400/60",
+  "bg-measure-400/60",
   "bg-amber-400/60",
   "bg-rose-400/60",
-  "bg-sky-400/60",
+  "bg-measure-400/60",
 ];
 
 export default function AgentTimeline({
@@ -112,14 +112,14 @@ export default function AgentTimeline({
               className="cursor-pointer"
               fill={
                 e.type === "tool_call"
-                  ? "#38bdf8"
+                  ? "#10A0FF"
                   : e.type === "tool_result"
                     ? e.ok
-                      ? "#34d399"
-                      : "#f87171"
+                      ? "#00e676"
+                      : "#ef5350"
                     : e.type === "decision_point"
-                      ? "#fbbf24"
-                      : "#818cf8"
+                      ? "#ffa726"
+                      : "#10A0FF"
               }
               opacity={0.85}
               onClick={() => onJump(e.atStep)}
@@ -140,11 +140,11 @@ export default function AgentTimeline({
         </svg>
         <p className="mt-1 text-[11px] tabular-nums text-obs-ink2/50 select-none">
           旅程带 · 横轴 = token 序列 1–{steps.length} ·
-          <span className="ml-1.5 text-sky-300/80">■ 调用</span>
+          <span className="ml-1.5 text-measure-300/80">■ 调用</span>
           <span className="ml-1.5 text-emerald-300/80">■ 成功</span>
           <span className="ml-1.5 text-red-300/80">■ 失败</span>
           <span className="ml-1.5 text-amber-300/80">■ 决策</span>
-          <span className="ml-1.5 text-indigo-300/80">■ 交接</span> · 点击定位
+          <span className="ml-1.5 text-measure-300/80">■ 交接</span> · 点击定位
         </p>
       </div>
       <ul className="mt-2.5 space-y-2">
@@ -153,7 +153,7 @@ export default function AgentTimeline({
             // 交接边界：从这一步起 token 由另一个模型产出
             <li
               key={i}
-              className="flex items-center gap-2 rounded-md border border-dashed border-indigo-400/40 bg-indigo-500/5 px-3 py-2"
+              className="flex items-center gap-2 rounded-md border border-dashed border-measure-400/40 bg-measure-500/5 px-3 py-2"
             >
               <p className="flex-1 text-[12px] text-obs-ink">
                 模型交接：
@@ -163,7 +163,7 @@ export default function AgentTimeline({
                   </span>
                 )}
                 {e.from ? "→" : "起始 →"}
-                <span className="mx-1 rounded border border-indigo-400/50 bg-indigo-500/15 px-1.5 py-0.5 font-mono text-[11px] text-indigo-200">
+                <span className="mx-1 rounded border border-measure-400/50 bg-measure-500/15 px-1.5 py-0.5 font-mono text-[11px] text-measure-200">
                   {e.to}
                 </span>
                 {e.note && (

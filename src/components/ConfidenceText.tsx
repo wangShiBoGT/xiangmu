@@ -40,7 +40,7 @@ export default function ConfidenceText({
           <button
             key={idx}
             type="button"
-            className={`${cls} ${sel ? "rounded bg-obs-2 ring-1 ring-indigo-400/60" : "rounded hover:bg-obs-2/80"} cursor-pointer`}
+            className={`${cls} ${sel ? "rounded bg-obs-2 ring-1 ring-measure-400/60" : "rounded hover:bg-obs-2/80"} cursor-pointer`}
             onClick={() => onTokenClick(idx)}
           >
             {text}

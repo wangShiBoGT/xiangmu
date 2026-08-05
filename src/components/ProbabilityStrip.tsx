@@ -5,7 +5,7 @@
 export type StripTone = "measure" | "caution" | "alert" | "neutral";
 
 const FILL: Record<StripTone, string> = {
-  measure: "bg-indigo-400",
+  measure: "bg-measure-400",
   caution: "bg-amber-400/80",
   alert: "bg-red-400/80",
   neutral: "bg-obs-ink2/30",

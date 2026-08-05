@@ -62,7 +62,7 @@ export default function RuntimeJourney({
   return (
     <div className="observe-dark fixed inset-0 z-40 flex items-center justify-center bg-obs/85">
       <div className="w-[min(620px,92vw)] px-6">
-        <p className="text-center text-[11px] font-medium uppercase tracking-[0.3em] text-teal-300/80 select-none">
+        <p className="text-center text-[11px] font-medium uppercase tracking-[0.3em] text-measure-300/80 select-none">
           Runtime Journey · A Trace Told in Time
         </p>
         <h2 className="mt-2 text-center text-[24px] font-medium leading-snug text-obs-ink select-none">
@@ -84,7 +84,7 @@ export default function RuntimeJourney({
                   i < stage
                     ? "bg-obs-ink2/50"
                     : i === stage
-                      ? "bg-teal-300"
+                      ? "bg-measure-300"
                       : "border border-obs-line bg-transparent"
                 }`}
               />

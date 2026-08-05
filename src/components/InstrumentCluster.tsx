@@ -18,10 +18,10 @@ export type ClusterMode = "dormant" | "waiting" | "sampling" | "settled";
 
 // 颜色语言只有三类：暖白=当前操作对象，靛紫=路径/分支，青绿=已记录信号；黄仅警示
 const C_SEL = new THREE.Color("#F2EDE0");
-const C_MAIN = new THREE.Color("#818CF8");
-const C_RECORDED = new THREE.Color("#2DD4BF");
-const C_DIM = new THREE.Color("#475069");
-const C_WARN = new THREE.Color("#FBBF24");
+const C_MAIN = new THREE.Color("#10A0FF");
+const C_RECORDED = new THREE.Color("#00e676");
+const C_DIM = new THREE.Color("#6d6d6d");
+const C_WARN = new THREE.Color("#ffa726");
 const DX = 0.9;
 const Y_SCALE = 3.2;
 const PULSE_Z = 3.0;
@@ -771,7 +771,7 @@ export default function InstrumentCluster({
           ref={(el) => {
             fieldLabelRefs.current[j] = el;
           }}
-          className="pointer-events-none absolute left-0 top-0 z-10 whitespace-nowrap font-mono text-[12px] text-teal-100 will-change-transform [text-shadow:0_1px_4px_rgb(10_11_16_/_0.9)]"
+          className="pointer-events-none absolute left-0 top-0 z-10 whitespace-nowrap font-mono text-[12px] text-measure-100 will-change-transform [text-shadow:0_1px_4px_rgb(10_11_16_/_0.9)]"
           style={{ opacity: 0 }}
         />
       ))}

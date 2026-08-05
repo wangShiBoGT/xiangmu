@@ -122,7 +122,7 @@ export default function HistoryDrawer({
             已选 {compareIds.length}/2 用于对比
           </span>
           <button
-            className="text-[12px] text-indigo-300 disabled:text-obs-ink2/50 hover:text-indigo-200 transition-colors"
+            className="text-[12px] text-measure-300 disabled:text-obs-ink2/50 hover:text-measure-200 transition-colors"
             disabled={compareIds.length !== 2}
             onClick={onCompare}
           >
@@ -149,7 +149,7 @@ export default function HistoryDrawer({
                 <input
                   type="checkbox"
                   aria-label="选入对比"
-                  className="mt-1 h-3.5 w-3.5 shrink-0 accent-indigo-400"
+                  className="mt-1 h-3.5 w-3.5 shrink-0 accent-measure-400"
                   checked={checked}
                   onChange={() => onToggleCompare(r.id)}
                 />

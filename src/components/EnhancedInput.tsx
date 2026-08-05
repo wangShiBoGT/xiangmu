@@ -89,7 +89,7 @@ export default function EnhancedInput({
           {/* 输入框 */}
           <textarea
             ref={textareaRef}
-            className="w-full resize-none rounded-xl border border-obs-line bg-obs-2 px-4 py-3 pr-12 text-[15px] text-obs-ink placeholder:text-obs-ink3 transition-all focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:opacity-50"
+            className="w-full resize-none rounded-xl border border-obs-line bg-obs-2 px-4 py-3 pr-12 text-[15px] text-obs-ink placeholder:text-obs-ink3 transition-all focus:border-[#10A0FF] focus:outline-none focus:ring-2 focus:ring-[#10A0FF]/25 disabled:opacity-50"
             placeholder={placeholder}
             value={value}
             rows={rows}
@@ -100,9 +100,9 @@ export default function EnhancedInput({
 
           {/* 发送按钮 */}
           <button
-            className={`absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-lg shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:ring-offset-2 focus:ring-offset-obs ${
+            className={`absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-lg shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#10A0FF]/50 focus:ring-offset-2 focus:ring-offset-obs ${
               canSend
-                ? "bg-brand-500 text-white hover:bg-brand-600 hover:shadow-lg active:scale-95"
+                ? "bg-[#10A0FF] text-[#ffffff] hover:bg-[#0d8ae6] hover:shadow-lg hover:shadow-[#10A0FF]/25 active:scale-95"
                 : "bg-obs-line text-obs-ink3 cursor-not-allowed opacity-50"
             }`}
             disabled={!canSend}
@@ -130,7 +130,7 @@ export default function EnhancedInput({
           {/* 右侧：生成状态 */}
           {isGenerating && tokensPerSecond !== undefined && (
             <div className="flex items-center gap-2 text-obs-ink3">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-brand-400" />
+              <div className="h-2 w-2 animate-pulse rounded-full bg-[#10A0FF]" />
               <span>正在生成... {tokensPerSecond.toFixed(1)} tok/s</span>
             </div>
           )}

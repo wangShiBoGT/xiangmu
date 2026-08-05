@@ -24,8 +24,8 @@ const KIND_COLOR: Record<Finding["kind"], string> = {
   divergence: "text-amber-300 border-amber-400/40",
   reproducible: "text-emerald-300 border-emerald-400/40",
   distribution: "text-rose-300 border-rose-400/40",
-  rule: "text-sky-300 border-sky-400/40",
-  performance: "text-violet-300 border-violet-400/40",
+  rule: "text-measure-300 border-measure-400/40",
+  performance: "text-measure-300 border-measure-400/40",
 };
 
 /** 置顶优先级：分叉 > 分布异常 > 规则 > 性能 > 完全一致 */
@@ -196,7 +196,7 @@ export default function FindingsPage({
                   </p>
                   <button
                     type="button"
-                    className="mt-2 text-[12px] text-indigo-300 hover:text-indigo-200 transition-colors"
+                    className="mt-2 text-[12px] text-measure-300 hover:text-measure-200 transition-colors"
                     onClick={() => jump(head)}
                   >
                     {head.recIds.length === 2

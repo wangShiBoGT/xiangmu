@@ -11,8 +11,8 @@ import type { TokenStep } from "../lib/trace";
 import ProbabilityStrip from "./ProbabilityStrip";
 
 const DOT: Record<string, string> = {
-  coinflip: "bg-indigo-300",
-  temp_override: "bg-sky-300",
+  coinflip: "bg-measure-300",
+  temp_override: "bg-measure-300",
   scattered: "bg-amber-300",
   slow: "bg-rose-300",
 };

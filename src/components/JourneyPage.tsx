@@ -83,7 +83,7 @@ export default function JourneyPage({ onClose }: { onClose: () => void }) {
                   type="button"
                   className={`px-3.5 py-1.5 text-[12px] transition-colors ${
                     lang === l
-                      ? "bg-indigo-500/80 text-white"
+                      ? "bg-measure-500/80 text-white"
                       : "text-obs-ink2 hover:text-obs-ink"
                   }`}
                   onClick={() => setLang(l)}
@@ -123,7 +123,7 @@ export default function JourneyPage({ onClose }: { onClose: () => void }) {
             min={0}
             max={data.steps.length - 1}
             value={k}
-            className="flex-1 accent-indigo-400"
+            className="flex-1 accent-measure-400"
             onChange={(e) => {
               setPlaying(false);
               setK(Number(e.target.value));
@@ -153,7 +153,7 @@ export default function JourneyPage({ onClose }: { onClose: () => void }) {
                   }`}
                   style={{
                     backgroundColor: `rgba(251, 191, 36, ${(0.05 + w * 0.5).toFixed(3)})`,
-                    color: w > 0.5 ? "#fef3c7" : undefined,
+                    color: w > 0.5 ? "#ffa726" : undefined,
                   }}
                   title={`注意力 ${(step.attention[i] * 100).toFixed(1)}%`}
                 >
@@ -167,7 +167,7 @@ export default function JourneyPage({ onClose }: { onClose: () => void }) {
 
         {/* 第二幕 · 它想到了一堆词 */}
         <section className="mt-4 rounded-md border border-obs-line bg-obs-2 p-5">
-          <h3 className="text-[12px] font-medium text-sky-300/90">
+          <h3 className="text-[12px] font-medium text-measure-300/90">
             第二幕 · 它想到了一堆词
           </h3>
           <p className="mt-1 text-[12px] text-obs-ink2">
@@ -183,7 +183,7 @@ export default function JourneyPage({ onClose }: { onClose: () => void }) {
                   </span>
                   <div
                     className={`w-full rounded-t-md transition-all ${
-                      isChosen ? "bg-indigo-400" : "bg-sky-400/25"
+                      isChosen ? "bg-measure-400" : "bg-measure-400/25"
                     }`}
                     style={{ height: `${Math.max((c.prob / maxProb) * 100, 3)}%` }}
                   />
@@ -202,7 +202,7 @@ export default function JourneyPage({ onClose }: { onClose: () => void }) {
 
         {/* 第三幕 · 它选了一个 */}
         <section className="mt-4 rounded-md border border-obs-line bg-obs-2 p-5">
-          <h3 className="text-[12px] font-medium text-indigo-300/90">
+          <h3 className="text-[12px] font-medium text-measure-300/90">
             第三幕 · 它选了一个
           </h3>
           <p className="mt-1 text-[12px] text-obs-ink2">
@@ -217,7 +217,7 @@ export default function JourneyPage({ onClose }: { onClose: () => void }) {
               </span>
             ))}
             <span
-              className={`rounded bg-indigo-500/20 ring-1 ring-indigo-400/60 ${
+              className={`rounded bg-measure-500/20 ring-1 ring-measure-400/60 ${
                 CONFIDENCE_CLASS[confidenceBucket(step.chosen.prob)]
               }`}
             >
@@ -242,7 +242,7 @@ export default function JourneyPage({ onClose }: { onClose: () => void }) {
                 key={i}
                 type="button"
                 className={`rounded hover:bg-obs ${CONFIDENCE_CLASS[confidenceBucket(s.chosen.prob)]} ${
-                  i === k ? "bg-obs ring-1 ring-indigo-400/60" : ""
+                  i === k ? "bg-obs ring-1 ring-measure-400/60" : ""
                 }`}
                 title={`第 ${i + 1} 个词 · 把握度 ${(s.chosen.prob * 100).toFixed(1)}%（点击回到这一步）`}
                 onClick={() => {

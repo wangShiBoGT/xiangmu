@@ -162,7 +162,7 @@ export default function ResearchTimeline({
                         <button
                           type="button"
                           title="把最近两次实验的真实 trace 叠加到同一时间轴对比"
-                          className="rounded-md border border-indigo-400/40 px-2.5 py-1 text-[11px] text-indigo-300 transition-colors hover:border-indigo-400/70 hover:text-indigo-200"
+                          className="rounded-md border border-measure-400/40 px-2.5 py-1 text-[11px] text-measure-300 transition-colors hover:border-measure-400/70 hover:text-measure-200"
                           onClick={() => onCompare(latestTwo[0], latestTwo[1])}
                         >
                           对比最近两次 →

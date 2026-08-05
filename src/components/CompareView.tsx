@@ -12,7 +12,7 @@ import Provenance from "./Provenance";
 import DualTraceChannel from "./DualTraceChannel";
 import SamplingInspector from "./SamplingInspector";
 
-const COLORS = ["#818cf8", "#34d399"];
+const COLORS = ["#10A0FF", "#00e676"];
 
 /** 逐步耗时的累计和（ms）：把两次运行放到同一生成时间轴上 */
 function cumTime(steps: TokenStep[]): number[] {
@@ -44,7 +44,7 @@ function EntropyOverlay({
           x2={(markAt / (maxLen - 1)) * w}
           y1={0}
           y2={h}
-          stroke="#fbbf24"
+          stroke="#ffa726"
           strokeWidth="1"
           strokeDasharray="3 3"
           opacity="0.8"
@@ -103,7 +103,7 @@ function TokenColumn({
             key={i}
             className={`cursor-pointer ${
               i === selected
-                ? "rounded-sm ring-1 ring-indigo-300"
+                ? "rounded-sm ring-1 ring-measure-300"
                 : i === divergeAt
                   ? "rounded-sm ring-1 ring-amber-400/70"
                   : ""

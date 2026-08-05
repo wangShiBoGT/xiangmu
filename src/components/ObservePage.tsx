@@ -255,7 +255,7 @@ function CompleteSummary({
                     <button
                       type="button"
                       title="用该步真实第二候选续跑一条分支，直达双结局对比"
-                      className="shrink-0 rounded-md border border-obs-line px-2 py-0.5 text-[11px] text-obs-ink2 transition-colors hover:border-indigo-400/60 hover:text-obs-ink"
+                      className="shrink-0 rounded-md border border-obs-line px-2 py-0.5 text-[11px] text-obs-ink2 transition-colors hover:border-measure-400/60 hover:text-obs-ink"
                       onClick={() => onDualRun(s.index)}
                     >
                       双跑
@@ -285,7 +285,7 @@ function CompleteSummary({
       )}
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
-          className="rounded-md bg-indigo-500 px-3.5 py-1.5 text-[13px] font-medium text-white transition-opacity hover:opacity-85"
+          className="rounded-md bg-measure-500 px-3.5 py-1.5 text-[13px] font-medium text-white transition-opacity hover:opacity-85"
           onClick={onReplay}
         >
           回放生成
@@ -554,11 +554,11 @@ function DualEndingCard({
             <p className="break-words font-mono text-[12px] leading-relaxed text-obs-ink2">
               {view.shared.prefixText.length > 80 ? "…" : ""}
               {view.shared.prefixText.slice(-80)}
-              <span className="mx-0.5 rounded bg-indigo-500/25 px-1 text-indigo-200">
+              <span className="mx-0.5 rounded bg-measure-500/25 px-1 text-measure-200">
                 {view.origText.trim() || view.origText}
               </span>
               /
-              <span className="mx-0.5 rounded bg-indigo-500/25 px-1 text-indigo-200">
+              <span className="mx-0.5 rounded bg-measure-500/25 px-1 text-measure-200">
                 {view.forcedText.trim() || view.forcedText}
               </span>
             </p>
@@ -1920,7 +1920,7 @@ export default function ObservePage({
             aria-pressed={deepCapture}
             title="每步额外记录 top-256 采样前 logits 快照，供采样显微镜做温度反事实重算；trace 体积随之放大约两个数量级，默认关闭"
             className={`flex items-center gap-1.5 text-[11px] tracking-wide transition-colors ${
-              deepCapture ? "text-indigo-300" : "text-obs-ink2/70 hover:text-obs-ink"
+              deepCapture ? "text-measure-300" : "text-obs-ink2/70 hover:text-obs-ink"
             }`}
             onClick={toggleDeepCapture}
           >
@@ -2021,7 +2021,7 @@ export default function ObservePage({
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${
                         demoPhase === "playing" || demoPhase === "paused"
-                          ? "bg-indigo-400"
+                          ? "bg-measure-400"
                           : "bg-obs-ink2/40"
                       }`}
                     />
@@ -2135,7 +2135,7 @@ export default function ObservePage({
                         {demoPhase === "playing" ? (
                           <button
                             aria-label="暂停"
-                            className="rounded-md px-2 py-0.5 text-[12px] text-obs-ink transition-colors hover:text-indigo-300"
+                            className="rounded-md px-2 py-0.5 text-[12px] text-obs-ink transition-colors hover:text-measure-300"
                             onClick={pauseDemo}
                           >
                             ❚❚
@@ -2143,7 +2143,7 @@ export default function ObservePage({
                         ) : (
                           <button
                             aria-label="继续播放"
-                            className="rounded-md px-2 py-0.5 text-[12px] text-obs-ink transition-colors hover:text-indigo-300 disabled:opacity-30"
+                            className="rounded-md px-2 py-0.5 text-[12px] text-obs-ink transition-colors hover:text-measure-300 disabled:opacity-30"
                             disabled={demoIdx >= demoSteps.length - 1}
                             onClick={resumeDemo}
                           >
@@ -2168,7 +2168,7 @@ export default function ObservePage({
                     {(demoPhase === "idle" || demoPhase === "loading") && (
                       <div className="flex flex-wrap items-center justify-center gap-2">
                         <button
-                          className="rounded-md bg-indigo-500 px-4 py-1.5 text-[13px] font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+                          className="rounded-md bg-measure-500 px-4 py-1.5 text-[13px] font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-50"
                           disabled={demoPhase === "loading"}
                           onClick={() => void startDemo()}
                         >
@@ -2219,7 +2219,7 @@ export default function ObservePage({
                               可拖动镜头、点选任一根柱子细看
                             </span>
                             <button
-                              className="demo-resume-pulse rounded-md bg-indigo-500 px-4 py-1.5 text-[13px] font-medium text-white transition-opacity hover:opacity-85"
+                              className="demo-resume-pulse rounded-md bg-measure-500 px-4 py-1.5 text-[13px] font-medium text-white transition-opacity hover:opacity-85"
                               onClick={resumeDemo}
                             >
                               ▶ 继续
@@ -2240,11 +2240,11 @@ export default function ObservePage({
                               .map((s) => s.text)
                               .join("")
                               .trimStart()}
-                            <span className="mx-0.5 rounded bg-indigo-500/25 px-1.5 text-indigo-200">＿＿</span>
+                            <span className="mx-0.5 rounded bg-measure-500/25 px-1.5 text-measure-200">＿＿</span>
                           </p>
                           <div className="mt-2.5 flex items-center justify-center gap-2.5">
                             <button
-                              className="rounded-md border border-obs-line px-4 py-1.5 font-mono text-[13px] text-obs-ink transition-colors hover:border-indigo-400 hover:bg-white/5"
+                              className="rounded-md border border-obs-line px-4 py-1.5 font-mono text-[13px] text-obs-ink transition-colors hover:border-measure-400 hover:bg-white/5"
                               onClick={() => answerPredict(predict.a.id)}
                             >
                               「{predict.a.text.trim() || predict.a.text}」
@@ -2253,7 +2253,7 @@ export default function ObservePage({
                               还是
                             </span>
                             <button
-                              className="rounded-md border border-obs-line px-4 py-1.5 font-mono text-[13px] text-obs-ink transition-colors hover:border-indigo-400 hover:bg-white/5"
+                              className="rounded-md border border-obs-line px-4 py-1.5 font-mono text-[13px] text-obs-ink transition-colors hover:border-measure-400 hover:bg-white/5"
                               onClick={() => answerPredict(predict.b.id)}
                             >
                               「{predict.b.text.trim() || predict.b.text}」
@@ -2308,7 +2308,7 @@ export default function ObservePage({
                               正文里每个字都可点，看看它差点选的字
                             </span>
                             <button
-                              className="demo-resume-pulse rounded-md bg-indigo-500 px-4 py-1.5 text-[13px] font-medium text-white transition-opacity hover:opacity-85"
+                              className="demo-resume-pulse rounded-md bg-measure-500 px-4 py-1.5 text-[13px] font-medium text-white transition-opacity hover:opacity-85"
                               onClick={resumeDemo}
                             >
                               ▶ 继续看它写完
@@ -2360,7 +2360,7 @@ export default function ObservePage({
                       )}
                       <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
                         <button
-                          className="rounded-md bg-indigo-500 px-3.5 py-1.5 text-[12px] font-medium text-white transition-opacity hover:opacity-85"
+                          className="rounded-md bg-measure-500 px-3.5 py-1.5 text-[12px] font-medium text-white transition-opacity hover:opacity-85"
                           onClick={() =>
                             setShowMoments((v) => {
                               if (!v) logVisit("done_moments_open");
@@ -2444,7 +2444,7 @@ export default function ObservePage({
                     <span
                       className={`h-1.5 w-1.5 shrink-0 rounded-full ${
                         displaySteps.length > 0
-                          ? "bg-indigo-400"
+                          ? "bg-measure-400"
                           : "bg-obs-ink2/50"
                       }`}
                     />
@@ -2550,7 +2550,7 @@ export default function ObservePage({
                     <div className="pointer-events-none absolute left-6 top-0 flex max-w-[45cqw] items-center gap-1.5 truncate text-[11px] tabular-nums tracking-wide text-obs-ink2/85 select-none">
                       <span
                         className={`h-1.5 w-1.5 rounded-full ${
-                          displaySteps.length > 0 ? "bg-indigo-400" : "bg-obs-ink2/40"
+                          displaySteps.length > 0 ? "bg-measure-400" : "bg-obs-ink2/40"
                         }`}
                       />
                       {`Run · ${modelName} · ${device === "webgpu" ? "WebGPU" : "WASM"} · T${params.temperature}${seed !== null ? ` · seed ${seed}` : ""}`}
@@ -2719,7 +2719,7 @@ export default function ObservePage({
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${
                         displaySteps.length > 0
-                          ? "bg-indigo-400"
+                          ? "bg-measure-400"
                           : "bg-obs-ink2/50"
                       }`}
                     />
@@ -2949,7 +2949,7 @@ export default function ObservePage({
                   title="展开/收起专业面板：Debug 条 / Workflow / 思路地图 / 没走的路 / Agent 时间线 / 曲线"
                   className={`ml-auto whitespace-nowrap border-b-2 px-0.5 pb-1 text-[12px] transition-colors ${
                     proView
-                      ? "border-indigo-400 text-obs-ink"
+                      ? "border-measure-400 text-obs-ink"
                       : "border-transparent text-obs-ink2 hover:text-obs-ink"
                   }`}
                   onClick={toggleProView}
@@ -2961,7 +2961,7 @@ export default function ObservePage({
                   title="每个词的背景深浅 = 该步候选分布的熵（描述统计）"
                   className={`whitespace-nowrap border-b-2 px-0.5 pb-1 text-[12px] transition-colors ${
                     heat
-                      ? "border-indigo-400 text-obs-ink"
+                      ? "border-measure-400 text-obs-ink"
                       : "border-transparent text-obs-ink2 hover:text-obs-ink"
                   }`}
                   onClick={toggleHeat}
@@ -3054,7 +3054,7 @@ export default function ObservePage({
 
           {/* 记录台（composer）：一张完整的圆角卡片——上半输入，下半工具行。
            *  工具行左侧收纳实验条件（模型/后端/温度 + 联网检索/Agent 规划），右侧唯一主动作。 */}
-          <div className="composer relative rounded-md border border-obs-line bg-obs-2 transition-colors focus-within:border-indigo-300/40">
+          <div className="composer relative rounded-md border border-obs-line bg-obs-2 transition-colors focus-within:border-measure-300/40">
             {cfgOpen && (
               <div className="absolute bottom-full left-0 z-30 mb-2 grid w-[min(480px,92vw)] grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-md border border-obs-line bg-obs-2 px-3.5 py-2.5 text-[12px] shadow-float">
                 <span className="text-obs-ink2">模型</span>
@@ -3113,7 +3113,7 @@ export default function ObservePage({
                   aria-pressed={webOn}
                   className={`flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[12px] transition-colors disabled:opacity-50 ${
                     webOn
-                      ? "text-indigo-300"
+                      ? "text-measure-300"
                       : "text-obs-ink2 hover:bg-obs-line/40 hover:text-obs-ink"
                   }`}
                   disabled={phase === "running" || busy}
@@ -3128,7 +3128,7 @@ export default function ObservePage({
                   aria-pressed={agentOn}
                   className={`flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[12px] transition-colors disabled:opacity-50 ${
                     agentOn
-                      ? "text-indigo-300"
+                      ? "text-measure-300"
                       : "text-obs-ink2 hover:bg-obs-line/40 hover:text-obs-ink"
                   }`}
                   disabled={phase === "running" || busy}
@@ -3245,7 +3245,7 @@ export default function ObservePage({
       {oceanOpen && (
         <Suspense
           fallback={
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#0A0B12]">
+            <div className="absolute inset-0 z-30 flex items-center justify-center bg-[#0a0a0a]">
               <span className="text-[13px] text-obs-ink2">正在加载三维引擎…</span>
             </div>
           }

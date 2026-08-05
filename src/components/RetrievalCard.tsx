@@ -9,7 +9,7 @@ export default function RetrievalCard({ record }: { record: RetrievalRecord }) {
   const picked = new Set(selected);
   return (
     <section className="mt-4 rounded-md border border-obs-line bg-obs-2/85 px-4 py-3.5">
-      <p className="text-[11px] font-medium tracking-[0.2em] text-sky-300/90 select-none">
+      <p className="text-[11px] font-medium tracking-[0.2em] text-measure-300/90 select-none">
         检索决策 · 它引用了什么，放弃了什么
       </p>
       <p className="mt-1 text-[12px] leading-relaxed text-obs-ink2 select-none">
@@ -48,7 +48,7 @@ export default function RetrievalCard({ record }: { record: RetrievalRecord }) {
               className="rounded-md border border-dashed border-obs-line/60 bg-obs/30 px-3 py-2 opacity-70"
             >
               <p className="flex items-baseline gap-2 text-[13px] text-obs-ink2">
-                <span className="rounded border border-dashed border-indigo-300/50 px-1.5 text-[11px] text-indigo-200/80">
+                <span className="rounded border border-dashed border-measure-300/50 px-1.5 text-[11px] text-measure-200/80">
                   未采用
                 </span>
                 <span className="truncate">{r.title}</span>

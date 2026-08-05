@@ -80,7 +80,7 @@ export default function ArchiveCards({
               <button
                 key={r.id}
                 type="button"
-                className="flex flex-col rounded-md border border-obs-line bg-obs-2 p-4 text-left transition-colors hover:border-indigo-400/50"
+                className="flex flex-col rounded-md border border-obs-line bg-obs-2 p-4 text-left transition-colors hover:border-measure-400/50"
                 onClick={() => onOpenCard(r)}
               >
                 <p className="flex items-baseline gap-1.5">

@@ -75,7 +75,7 @@ export default function ActivityDemo() {
         duration={0}
       >
         <div className="rounded-md bg-obs-paper p-3 font-mono text-[12px] text-obs-ink2">
-          <div className="text-purple-400">&#123;</div>
+          <div className="text-measure-400">&#123;</div>
           <div className="pl-4">
             <span className="text-blue-300">"name"</span>
             <span className="text-obs-ink3">: </span>
@@ -87,7 +87,7 @@ export default function ActivityDemo() {
             <span className="text-obs-ink3">: </span>
             <span className="text-green-300">"0.0.0"</span>
           </div>
-          <div className="text-purple-400">&#125;</div>
+          <div className="text-measure-400">&#125;</div>
         </div>
       </ActivityCard>
 

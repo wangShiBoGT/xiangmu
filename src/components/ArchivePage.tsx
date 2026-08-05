@@ -135,7 +135,7 @@ function RunInspector({
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
-          className="rounded-md bg-indigo-500/90 px-3 py-1.5 text-[12px] font-medium text-white transition-opacity hover:opacity-85"
+          className="rounded-md bg-measure-500/90 px-3 py-1.5 text-[12px] font-medium text-white transition-opacity hover:opacity-85"
           onClick={onOpen}
         >
           进入实验台
@@ -446,7 +446,7 @@ export default function ArchivePage({
                                 type="button"
                                 className={`block w-full rounded-md border px-4 py-2.5 text-left transition-colors ${
                                   isSel
-                                    ? "border-indigo-400/60 bg-obs-2"
+                                    ? "border-measure-400/60 bg-obs-2"
                                     : "border-obs-line bg-obs-2/60 hover:border-obs-ink2/40"
                                 }`}
                                 onClick={() => setSelected(isSel ? null : r.id)}

@@ -11,7 +11,7 @@ import type { TokenStep } from "../lib/trace";
 
 const Y_SCALE = 2.6;
 const Z_SCALE = 1.6;
-const COLORS = ["#818cf8", "#34d399"];
+const COLORS = ["#10A0FF", "#00e676"];
 
 function buildLine(steps: TokenStep[], dx: number, color: string): THREE.Line {
   const pts = steps.map(
@@ -88,7 +88,7 @@ export default function DualTraceChannel({
     if (divergeAt >= 0) {
       const pillar = new THREE.Mesh(
         new THREE.BoxGeometry(0.06, Y_SCALE + 0.4, 0.06),
-        new THREE.MeshBasicMaterial({ color: "#fbbf24", transparent: true, opacity: 0.85 }),
+        new THREE.MeshBasicMaterial({ color: "#ffa726", transparent: true, opacity: 0.85 }),
       );
       pillar.position.set(divergeAt * dx, (Y_SCALE + 0.4) / 2 - 0.1, -0.8);
       scene.add(pillar);

@@ -124,7 +124,7 @@ export default function ObservationSummary({
                 m.kind === "hesitation"
                   ? "border-amber-400/40 text-amber-200/90"
                   : m.kind === "entropy_peak"
-                    ? "border-indigo-400/40 text-indigo-200/90"
+                    ? "border-measure-400/40 text-measure-200/90"
                     : "border-obs-line text-obs-ink2"
               }`}
               onClick={() => onJump(m.index)}
@@ -174,7 +174,7 @@ export default function ObservationSummary({
                 height={10}
                 rx={1}
                 className="cursor-pointer"
-                fill={m.severity === "warn" ? "#fbbf24" : "#64748b"}
+                fill={m.severity === "warn" ? "#ffa726" : "#6d6d6d"}
                 opacity={0.75}
                 onClick={() => onJump(m.from)}
               >

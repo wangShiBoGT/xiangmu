@@ -174,6 +174,23 @@ function App() {
     setReplayOnly(true);
     setView("observe");
   }, [demoSlice]);
+
+  // Hash 路由支持
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1); // 移除 #
+      if (hash === '/enhanced-input-demo') {
+        setView('enhanced-input-demo');
+      }
+    };
+
+    // 初始加载时检查 hash
+    handleHashChange();
+
+    // 监听 hash 变化
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
   // E2 全局拖放：首页任意区域扔入 .aitrace 即进入回放（无需模型）
   const [dropError, setDropError] = useState<string | null>(null);
   const onGlobalDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
@@ -776,7 +793,7 @@ function App() {
               <span
                 className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.08em] select-none transition-colors ${
                   device === "webgpu"
-                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                    ? "border-success-600/30 bg-success-600/10 text-success-500"
                     : "border-amber-500/30 bg-amber-500/10 text-amber-400"
                 }`}
                 title={device === "webgpu" ? "GPU 加速模式" : "CPU 模式 - 速度较慢"}
@@ -811,14 +828,14 @@ function App() {
                   key={v}
                   className={`whitespace-nowrap border-b-2 px-0.5 pb-1 pt-1 text-[13px] font-medium transition-colors ${
                     view === v
-                      ? "border-indigo-400 text-ink"
+                      ? "border-measure-400 text-ink"
                       : "border-transparent text-ink-3 hover:text-ink"
                   }`}
                   onClick={() => setView(v)}
                 >
                   {label}
                   {v === "findings" && findingsUnread > 0 && (
-                    <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-md bg-indigo-500 px-1 text-[11px] font-semibold text-white">
+                    <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-md bg-measure-500 px-1 text-[11px] font-semibold text-white">
                       {findingsUnread}
                     </span>
                   )}
@@ -1002,7 +1019,7 @@ function App() {
           />
         )}
 
-        {!showLanding && view === "enhanced-input-demo" && (
+        {view === "enhanced-input-demo" && (
           <Suspense fallback={<div className="flex-1 bg-obs" />}>
             <EnhancedInputDemo />
           </Suspense>

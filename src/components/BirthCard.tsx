@@ -179,7 +179,7 @@ export default function BirthCard({
                 取消
               </button>
               <button
-                className="rounded-md bg-indigo-500 px-3 py-1 text-[13px] text-white hover:opacity-85"
+                className="rounded-md bg-measure-500 px-3 py-1 text-[13px] text-white hover:opacity-85"
                 data-testid="fork-confirm"
                 onClick={() => {
                   onFork(confirm.id, confirm.text);

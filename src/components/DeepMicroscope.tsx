@@ -44,7 +44,7 @@ export default function DeepMicroscope({
           step={0.05}
           value={t}
           aria-label="反事实温度"
-          className="flex-1 accent-indigo-400"
+          className="flex-1 accent-measure-400"
           onChange={(e) => setT(Number(e.target.value))}
         />
         <span className="w-9 text-right font-mono tabular-nums text-obs-ink">

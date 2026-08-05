@@ -201,7 +201,7 @@ export default function LivePanel({
               <div key={c.id} className="flex items-center gap-2">
                 <span
                   className={`w-4 shrink-0 text-right font-mono text-[11px] tabular-nums ${
-                    chosen ? "text-indigo-300" : "text-obs-ink2/50"
+                    chosen ? "text-measure-300" : "text-obs-ink2/50"
                   }`}
                 >
                   {rank + 1}
@@ -250,7 +250,7 @@ export default function LivePanel({
         <div className="mt-2">
           <AreaChart
             values={tpsSeries}
-            color="#818cf8"
+            color="#10A0FF"
             formatMax={(v) => `${v.toFixed(0)} tok/s`}
           />
         </div>
@@ -270,7 +270,7 @@ export default function LivePanel({
         <div className="mt-2">
           <AreaChart
             values={entropySeries}
-            color="#a78bfa"
+            color="#ffa726"
             formatMax={(v) => v.toFixed(1)}
           />
         </div>

@@ -78,7 +78,7 @@ export default function BirthScene({
           <span
             key={`p-${c.id}`}
             className={`birth-scene-converge absolute left-1/2 top-1/2 rounded-full ${
-              storm ? "bg-amber-300" : "bg-indigo-300"
+              storm ? "bg-amber-300" : "bg-measure-300"
             }`}
             style={
               {
@@ -95,7 +95,7 @@ export default function BirthScene({
           <span
             key={c.id}
             className={`birth-scene-cand absolute left-1/2 top-1/2 font-mono ${
-              storm ? "text-amber-300/90" : "text-indigo-300/90"
+              storm ? "text-amber-300/90" : "text-measure-300/90"
             }`}
             style={
               {
