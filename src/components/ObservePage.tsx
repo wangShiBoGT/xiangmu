@@ -2012,6 +2012,10 @@ export default function ObservePage({
                           prompt={demo ? demo.record.prompt : null}
                           runLabel={demo ? demo.label : null}
                           note={demoNote}
+                          onStepSeek={(idx) => {
+                            setDemoIdx(idx);
+                            setDemoPhase("paused");
+                          }}
                         />
                       }
                     />
