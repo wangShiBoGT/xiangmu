@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "dev",
-      "runtimeExecutable": "cmd",
-      "runtimeArgs": ["/c", "C:\\Users\\73469\\Desktop\\webgpu-llm-chat\\dev-server.bat"],
-      "port": 5173
+      "runtimeExecutable": "C:\\nvm4w\\nodejs\\npm.cmd",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }
