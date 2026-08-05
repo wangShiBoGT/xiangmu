@@ -139,7 +139,7 @@ export default function ChatMessage({
             {name}
           </span>
         ))}
-        <div className="max-w-[70%] rounded-2xl bg-brand-500 px-4 py-3 text-[15px] leading-[1.75] text-white shadow-md whitespace-pre-wrap">
+        <div className="max-w-[70%] rounded-2xl bg-accent px-4 py-3 text-[15px] leading-[1.75] text-white shadow-md whitespace-pre-wrap">
           {message.displayContent ?? message.content}
         </div>
       </div>
