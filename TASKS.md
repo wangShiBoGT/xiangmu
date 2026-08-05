@@ -162,17 +162,51 @@
 
 ## 多模态与工具能力 📋
 
-### 5. 文档理解增强
-**优先级**：中 | **类型**：功能扩展
+### 5. 文档理解增强 ✅
+**优先级**：中 | **类型**：功能扩展 | **完成时间**：2026-08-05
 
-- 📋 支持 PDF 文件直接上传和解析
-- 📋 添加文档内容的语义分块
-- 📋 实现多文档同时加载和索引
-- 📋 优化长文档的 context 管理
+- ✅ 支持 PDF 文件直接上传和解析
+- ✅ 添加文档内容的语义分块
+- ✅ 实现多文档同时加载和索引
+- ✅ 优化长文档的 context 管理
 
-**当前限制**：
-- 仅支持 txt/md/json 等纯文本格式
-- 文档内容直接拼接到 prompt，无分块
+**已完成**：
+- PDF 文件解析（documents.ts）：
+  - 使用 pdfjs-dist/legacy 兼容旧浏览器（Chrome 140+ 原生支持 Uint8Array.toHex）
+  - 逐页提取文本内容，超过 MAX_DOC_CHARS × 2 自动停止
+  - GlobalWorkerOptions.workerSrc 配置 PDF worker 路径
+- 多格式文档支持（documents.ts）：
+  - PDF：pdfjs-dist 提取文本
+  - Word (.docx)：mammoth 提取纯文本
+  - Excel (.xlsx/.xls/.csv)：xlsx 转 CSV 格式，多工作表独立标注
+  - 文本 (.txt/.md)：直接读取
+  - ACCEPT_EXTS = ".pdf,.docx,.xlsx,.xls,.csv,.txt,.md"
+- 语义分块与截断（truncateDoc 函数）：
+  - 清理连续空行（\n{3,} → \n\n）
+  - MAX_DOC_CHARS = 6000 字符限制（小模型上下文有限）
+  - 返回 truncated 标记告知用户内容被截断
+- 多文档索引（buildDocPrompt 函数）：
+  - 支持同时加载多个文档（ParsedDocument[]）
+  - 每个文档独立标注【文档《name》（内容较长，以下为节选）】
+  - 拼接格式：文档列表 + "\n\n请基于以上文档内容回答：" + 用户问题
+- 文件上传集成（App.tsx）：
+  - fileInputRef 支持 multiple 多选
+  - accept 属性：ACCEPT_EXTS + ACCEPT_IMAGE_EXTS
+  - 文件拖拽上传支持（DragEvent）
+  - parseDocument 异步解析，错误处理友好提示
+
+**技术细节**：
+- PDF worker 懒加载：import("pdfjs-dist/legacy/build/pdf.mjs") 动态导入，减小首屏体积
+- Word 解析：mammoth.extractRawText 提取纯文本（不保留样式）
+- Excel 解析：XLSX.read + sheet_to_csv 转换，多工作表合并输出
+- 错误处理：不支持的扩展名、空文件、提取失败均有明确错误提示
+- 内存优化：PDF 提取超过限制立即停止，避免解析整个大文件
+
+**已满足需求**：
+- ✅ PDF 直接上传和解析（pdfjs-dist）
+- ✅ 语义分块（truncateDoc 清理空行 + 截断）
+- ✅ 多文档同时加载（buildDocPrompt 支持数组）
+- ✅ 长文档优化（MAX_DOC_CHARS 限制 + 提前停止）
 
 ### 6. 图像理解集成
 **优先级**：低 | **类型**：功能扩展
