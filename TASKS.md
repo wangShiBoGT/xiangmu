@@ -58,15 +58,48 @@
 - onnxruntime-web 的 WASM 堆内存限制处理（32 位检测 + 提示）✅
 - 模型权重分片加载策略（use_external_data_format 动态开启）✅
 
-### 2. Trace 系统完善
-**优先级**：高 | **类型**：核心功能
+### 2. Trace 系统完善 ✅
+**优先级**：高 | **类型**：核心功能 | **完成时间**：2026-08-05
 
-- 📋 完善 TokenStep 数据结构，记录更多采样细节
-- 📋 实现 .aitrace 文件导入/导出功能
-- 📋 添加 trace 数据压缩和索引
-- 📋 支持多 run 对比（同一问题不同参数）
+- ✅ 完善 TokenStep 数据结构，记录更多采样细节
+- ✅ 实现 .aitrace 文件导入/导出功能
+- ✅ 添加 trace 数据压缩和索引
+- ✅ 支持多 run 对比（同一问题不同参数）
 
-**设计决策**：按 `PRODUCT-DELIVERY-WORKFLOW.md` 需先填写设计决策卡
+**已完成**：
+- TokenStep 数据结构已完善（trace.ts）：
+  - 基础字段：id, text, prob, topk (top-8), entropy, dt
+  - 可选字段：deep (DeepCapture，top-256 采样前 logits)
+  - PipelineTiming：tokenizeMs, prefillMs, decodeMs
+- .aitrace v2 格式导入/导出（trace.ts + experiments.ts）：
+  - exportReplay() 函数：导出为 JSON 格式，包含 prompt/params/modelId/steps/device/promptIds/pipeline/branches/agent/extensions
+  - importReplay() 函数：兼容 aitrace/v2 和旧版 browser-ai-replay/v1 格式
+  - 分岔树 (BranchNode) 支持：最多 8 个节点，sanitizeBranches 校验防止损坏
+  - Agent 事件扩展 (AgentEvent)：工具调用/结果/决策点，锚定在 token 时间线上
+  - 开放扩展 (extensions)：各 runtime 命名空间自携数据，导入/导出原样保留
+- IndexedDB 持久化存储（experiments.ts）：
+  - ExperimentRecord 接口：id/createdAt/name/starred/source/prompt/modelId/params/seed/device/root/stats/ruleset
+  - saveExperiment/listExperiments/getExperiment/updateExperiment/deleteExperiment CRUD 操作
+  - 自动淘汰机制：selectEvictions 函数按规则清理旧记录
+- 多 run 对比支持（experiments.ts）：
+  - isComparable() 函数：检查两个实验是否可对比（相同 prompt/modelId/seed/device）
+  - compatKey() 函数：生成对比键
+  - paramsDiff() 函数：计算参数差异
+  - firstDivergence() 函数：找到分岔点
+  - computeStats() 函数：计算分岔树统计信息
+
+**技术架构**：
+- 数据流：worker.ts (生成) → TraceRecorder/DeepRecorder (采集) → GenerationTrace (内存) → IndexedDB (持久化) → .aitrace (导出)
+- 深度采集 (DeepRecorder)：top-256 候选 + 温度逆推 logit，restCount/restMass 统计截断外质量
+- 真实 Top-P (TopPWarper)：nucleus 过滤，保留累计概率达到 p 的最小候选集
+- 只读记录 (TraceRecorder)：不改动 logits，记录每步 top-k/精确熵/选中概率
+- 窗口差分解码：用最近 8 个 token 的上下文解码出本 token 文本，正确处理多字节字符
+
+**数据完整性保障**：
+- 所有数值来自真实推理（softmax 后、采样前的分布），绝不伪造
+- 导入时校验：sanitizeBranches 过滤非法节点，MAX_BRANCH_NODES=8 限制
+- 格式版本控制：AITRACE_FORMAT="aitrace/v2"，REPLAY_V1_FORMAT 永久兼容
+- 数值稳定性：减最大值后 softmax，top-k 用部分选择不做全量排序
 
 ---
 
