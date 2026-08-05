@@ -7,6 +7,7 @@ import {
   IconThinking,
 } from "./icons";
 import ActivityCard from "./ActivityCard";
+import ThinkingTimeline from "./ThinkingTimeline";
 import { splitThinking } from "../lib/thinking";
 import { renderMarkdown } from "../lib/markdown";
 import type { StoredMessage } from "../lib/chatStore";
@@ -17,6 +18,39 @@ interface Props {
   isLast: boolean;
   isRunning: boolean;
   onRegenerate: () => void;
+}
+
+/** 思考内容语义高亮：关键推理步骤、假设、结论 */
+function highlightThinking(text: string): React.ReactNode {
+  const lines = text.split("\n");
+  return lines.map((line, i) => {
+    const trimmed = line.trim();
+    // 推理步骤标记
+    if (/^(第[一二三四五六七八九十\d]+步|Step \d+|首先|然后|接着|最后|因此|所以)/i.test(trimmed)) {
+      return (
+        <div key={i} className="my-1 text-brand-400">
+          {line}
+        </div>
+      );
+    }
+    // 假设与条件
+    if (/^(假设|假定|如果|若|设|Given|Assume)/i.test(trimmed)) {
+      return (
+        <div key={i} className="my-1 text-amber-400/90">
+          {line}
+        </div>
+      );
+    }
+    // 结论与推断
+    if (/^(结论|得出|推断|综上|总结|Therefore|Conclusion)/i.test(trimmed)) {
+      return (
+        <div key={i} className="my-1 font-medium text-success-500">
+          {line}
+        </div>
+      );
+    }
+    return <div key={i}>{line}</div>;
+  });
 }
 
 export default function ChatMessage({
@@ -148,8 +182,26 @@ export default function ChatMessage({
           isRunning={!thinkingDone}
           defaultExpanded={!thinkingDone}
         >
-          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">
-            {thinking}
+          <div className="relative">
+            {/* 思考内容语义高亮 */}
+            <div className="whitespace-pre-wrap text-[13px] leading-relaxed">
+              {highlightThinking(thinking)}
+            </div>
+            {/* 思考时间轴 */}
+            {thinkingDone && thinkSeconds !== null && thinkSeconds > 0 && (
+              <ThinkingTimeline
+                content={thinking}
+                totalDuration={thinkSeconds}
+                isRunning={false}
+              />
+            )}
+            {/* 流式渲染中显示思考进度 */}
+            {!thinkingDone && thinkSeconds !== null && thinkSeconds > 5 && (
+              <div className="mt-3 flex items-center gap-2 text-[11px] text-obs-ink3">
+                <div className="h-px flex-1 bg-gradient-to-r from-brand-500/40 to-transparent" />
+                <span>{thinkSeconds} 秒</span>
+              </div>
+            )}
           </div>
         </ActivityCard>
       )}

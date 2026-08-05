@@ -4,8 +4,9 @@
  * 展示思考过程、命令执行、文件操作等结构化活动
  */
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { IconChevronDown, IconThinking, IconCheck, IconLoader, IconFile } from "./icons";
+import { prefersReducedMotion } from "../lib/reducedMotion";
 
 export type ActivityType = "thinking" | "command" | "file-read" | "file-write" | "result";
 
@@ -34,6 +35,37 @@ export default function ActivityCard({
   metadata,
 }: ActivityCardProps) {
   const [expanded, setExpanded] = useState(defaultExpanded || isRunning);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState<number | null>(null);
+
+  // 持久化折叠状态到 localStorage（按 title 作为 key）
+  const storageKey = `activity-card-${type}-${title}`;
+  useEffect(() => {
+    if (!isRunning) {
+      const saved = localStorage.getItem(storageKey);
+      if (saved !== null) {
+        setExpanded(saved === "true");
+      }
+    }
+  }, [storageKey, isRunning]);
+
+  useEffect(() => {
+    if (!isRunning) {
+      localStorage.setItem(storageKey, String(expanded));
+    }
+  }, [expanded, isRunning, storageKey]);
+
+  // 自动展开：生成中强制展开，结束后保持用户设置
+  useEffect(() => {
+    if (isRunning) setExpanded(true);
+  }, [isRunning]);
+
+  // 测量内容高度用于动画
+  useEffect(() => {
+    if (contentRef.current) {
+      setContentHeight(contentRef.current.scrollHeight);
+    }
+  }, [children, expanded]);
 
   // 根据活动类型获取样式和图标
   const getTypeStyle = () => {
@@ -141,13 +173,23 @@ export default function ActivityCard({
       </button>
 
       {/* 内容区域 */}
-      {expanded && (
-        <div className="animate-in slide-in-from-top-2 duration-200 border-t border-obs-line/50 px-4 py-3">
+      <div
+        className="overflow-hidden transition-all duration-300"
+        style={{
+          maxHeight: expanded ? (contentHeight ? `${contentHeight}px` : "2000px") : "0px",
+        }}
+      >
+        <div
+          ref={contentRef}
+          className={`border-t border-obs-line/50 px-4 py-3 ${
+            expanded && !prefersReducedMotion() ? "animate-in slide-in-from-top-2 duration-200" : ""
+          }`}
+        >
           <div className="text-[14px] leading-relaxed text-obs-ink2">
             {children}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
