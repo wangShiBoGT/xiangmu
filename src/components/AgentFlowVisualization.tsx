@@ -272,6 +272,49 @@ export default function AgentFlowVisualization({
         onClick={handleClick}
       />
 
+      {/* 图表说明 */}
+      <div className="pointer-events-none absolute left-4 top-4 max-w-xs space-y-3">
+        <div className="rounded-md border border-obs-line bg-obs-2/95 px-3 py-2.5 text-[12px] backdrop-blur-sm">
+          <p className="font-medium text-obs-ink">🤖 Agent 协作流程</p>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-obs-ink2">
+            展示多 Agent 协作中的工具调用、决策点和模型交接。每个节点代表一个事件，连线表示执行顺序。
+          </p>
+        </div>
+
+        {/* 图例 */}
+        <div className="rounded-md border border-obs-line bg-obs-2/95 px-3 py-2 text-[11px] backdrop-blur-sm">
+          <p className="mb-2 font-medium text-obs-ink">📋 节点类型</p>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-[#00e676]"></span>
+              <span className="text-obs-ink2">工具调用</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-[#2196f3]"></span>
+              <span className="text-obs-ink2">工具结果</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-[#ffa726]"></span>
+              <span className="text-obs-ink2">决策点</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-[#ab47bc]"></span>
+              <span className="text-obs-ink2">模型交接</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 交互提示 */}
+        <div className="rounded-md border border-accent/30 bg-accent/10 px-3 py-2 text-[11px] backdrop-blur-sm">
+          <p className="font-medium text-accent">💡 交互操作</p>
+          <ul className="mt-1.5 space-y-1 text-accent/90">
+            <li>• 拖动旋转视角</li>
+            <li>• 滚轮缩放距离</li>
+            <li>• 点击节点查看详情</li>
+          </ul>
+        </div>
+      </div>
+
       {/* 悬浮信息面板 */}
       {selectedNode && (
         <div className="absolute right-4 top-4 w-80 rounded-md border border-line bg-surface p-4 text-[12px]">

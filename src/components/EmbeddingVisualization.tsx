@@ -236,13 +236,63 @@ export default function EmbeddingVisualization({
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
+
+      {/* 图表说明 */}
+      <div className="pointer-events-none absolute right-4 top-4 max-w-xs space-y-3">
+        <div className="rounded-md border border-obs-line bg-obs-2/95 px-3 py-2.5 text-[12px] backdrop-blur-sm">
+          <p className="font-medium text-obs-ink">📊 向量空间可视化</p>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-obs-ink2">
+            每个点代表一段文本的语义向量，通过 {points.length > 0 ? 'UMAP/t-SNE' : ''} 降维算法将高维向量（384维）映射到 3D 空间。
+          </p>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-obs-ink2">
+            <span className="font-medium text-obs-ink">距离越近</span> = 语义越相似
+          </p>
+        </div>
+
+        {/* 交互提示 */}
+        <div className="rounded-md border border-accent/30 bg-accent/10 px-3 py-2 text-[11px] backdrop-blur-sm">
+          <p className="font-medium text-accent">💡 交互操作</p>
+          <ul className="mt-1.5 space-y-1 text-accent/90">
+            <li>• 拖动旋转视角</li>
+            <li>• 滚轮缩放距离</li>
+            <li>• 点击查看文本</li>
+          </ul>
+        </div>
+
+        {/* 坐标轴说明 */}
+        <div className="rounded-md border border-obs-line bg-obs-2/95 px-3 py-2 text-[11px] backdrop-blur-sm">
+          <p className="font-medium text-obs-ink">🎯 坐标轴含义</p>
+          <div className="mt-1.5 space-y-1">
+            <p className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-red-500"></span>
+              <span className="text-red-400">X 轴</span>
+              <span className="text-obs-ink2">— 语义维度 1</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-green-500"></span>
+              <span className="text-green-400">Y 轴</span>
+              <span className="text-obs-ink2">— 语义维度 2</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+              <span className="text-blue-400">Z 轴</span>
+              <span className="text-obs-ink2">— 语义维度 3</span>
+            </p>
+            <p className="mt-2 text-[10px] text-obs-ink2/60">
+              降维后的坐标轴无具体含义，仅用于展示相对位置关系
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 鼠标悬停/选中的文本提示 */}
       {(hoveredIndex !== null || highlightIndex !== null) && (
-        <div className="pointer-events-none absolute left-4 top-4 rounded-md border border-obs-line bg-obs-2/95 px-3 py-2 text-[12px] text-obs-ink backdrop-blur-sm">
-          <p className="font-medium">
+        <div className="pointer-events-none absolute left-4 top-4 max-w-md rounded-md border border-accent/40 bg-accent/20 px-3 py-2 text-[12px] backdrop-blur-sm">
+          <p className="font-medium text-accent">
             {points[hoveredIndex ?? highlightIndex ?? 0]?.label}
           </p>
-          <p className="text-[11px] text-obs-ink2">
-            索引: {hoveredIndex ?? highlightIndex}
+          <p className="mt-1 text-[11px] text-accent/80">
+            索引: #{hoveredIndex ?? highlightIndex}
           </p>
         </div>
       )}
