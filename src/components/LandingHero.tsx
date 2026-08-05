@@ -1,14 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  DEFAULT_BAND_CONFIG,
-  EnvelopeBank,
-  bandEdges,
-  bandEnergies,
-  defaultTimeConstants,
-  spectralCentroid,
-  spectralFlux,
-  stereoBalance,
-} from "../lib/audioBands";
 import { DEMO_STATS } from "../lib/demoStats.generated";
 import { MODELS, formatSize, isModelCached } from "../lib/models";
 import { prefersReducedMotion } from "../lib/reducedMotion";
@@ -23,14 +13,8 @@ import {
   IconArchive,
 } from "./icons";
 
-/** 入口 Landing：一行主标题 + 三维矩阵格子背景 + 底部实测信息卡。
- *  背景矩阵默认是一帧静态环境波（纯装饰，不冒充数据，不占渲染循环）；
- *  仅当用户主动播放音乐/开麦后才启动绘制循环，由真实频谱驱动——多频段独立包络 + 瞬态涟漪 + 质心调色 + 声相偏移；
- *  减弱动态偏好下始终保持静态帧。 */
-
-const GRID = 44;
-const CFG = DEFAULT_BAND_CONFIG;
-const EDGES = bandEdges(CFG);
+/** 入口 Landing：一行主标题 + 显微镜视野背景 + 底部实测信息卡。
+ *  背景为静态显微镜网格视野，营造科学仪器观测氛围。 */
 
 interface AudioRig {
   ctx: AudioContext;
@@ -38,11 +22,6 @@ interface AudioRig {
   analyserL: AnalyserNode;
   analyserR: AnalyserNode;
   stop: () => void;
-}
-
-interface Ripple {
-  age: number;
-  strength: number;
 }
 
 /** 每格固定伪随机（颗粒纹理用），可复现 */
@@ -58,8 +37,8 @@ function buildRig(
   stopSource: () => void,
 ): AudioRig {
   const analyser = ctx.createAnalyser();
-  analyser.fftSize = CFG.fftSize;
-  analyser.smoothingTimeConstant = 0; // 平滑交给 EnvelopeBank 分频段做
+  analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0;
   const splitter = ctx.createChannelSplitter(2);
   const analyserL = ctx.createAnalyser();
   const analyserR = ctx.createAnalyser();
@@ -81,12 +60,6 @@ function buildRig(
   };
 }
 
-function rms(buf: Float32Array): number {
-  let s = 0;
-  for (let i = 0; i < buf.length; i++) s += buf[i] * buf[i];
-  return Math.sqrt(s / buf.length);
-}
-
 function MatrixCanvas({ rig }: { rig: AudioRig | null }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rigRef = useRef<AudioRig | null>(null);
@@ -98,17 +71,6 @@ function MatrixCanvas({ rig }: { rig: AudioRig | null }) {
     const ctx2d = canvas.getContext("2d");
     if (!ctx2d) return;
 
-    const tc = defaultTimeConstants(CFG.bands);
-    const bank = new EnvelopeBank(tc.attackSec, tc.releaseSec);
-    let prevBands: number[] = new Array(CFG.bands).fill(0);
-    const ripples: Ripple[] = [];
-    let centroidSm = 0.35;
-    let balanceSm = 0;
-    let fluxAvg = 0;
-    const spectrum = new Float32Array(CFG.fftSize / 2);
-    const timeL = new Float32Array(1024);
-    const timeR = new Float32Array(1024);
-
     let raf = 0;
     let last = performance.now();
     let running = true;
@@ -117,163 +79,144 @@ function MatrixCanvas({ rig }: { rig: AudioRig | null }) {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = canvas.clientWidth * dpr;
       canvas.height = canvas.clientHeight * dpr;
-      if (!raf) requestAnimationFrame(draw); // 静态模式下尺寸变化重绘一帧
+      if (!raf) requestAnimationFrame(draw);
     };
 
+    // 显微镜视野：细胞式网格 + 扫描线 + 数据流动效果
     const draw = (now: number) => {
       if (!running) return;
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
-      const r = rigRef.current;
       const t = now / 1000;
-
-      let env: number[];
-      if (r) {
-        const cfg = { ...CFG, sampleRate: r.ctx.sampleRate };
-        r.analyser.getFloatFrequencyData(spectrum);
-        const raw = bandEnergies(spectrum, cfg, EDGES);
-        env = [...bank.step(raw, dt)];
-        const flux = spectralFlux(prevBands, raw);
-        prevBands = raw;
-        fluxAvg += (flux - fluxAvg) * Math.min(1, dt * 4);
-        if (flux > fluxAvg * 1.8 && flux > 0.4) {
-          ripples.push({ age: 0, strength: Math.min(1, flux / 6) });
-          if (ripples.length > 6) ripples.shift();
-        }
-        centroidSm += (spectralCentroid(raw) - centroidSm) * Math.min(1, dt * 3);
-        r.analyserL.getFloatTimeDomainData(timeL);
-        r.analyserR.getFloatTimeDomainData(timeR);
-        balanceSm +=
-          (stereoBalance(rms(timeL), rms(timeR)) - balanceSm) *
-          Math.min(1, dt * 4);
-      } else {
-        // 环境波：缓慢的多八度正弦叠加（装饰性，不代表任何数据）
-        env = new Array(CFG.bands);
-        for (let i = 0; i < CFG.bands; i++) {
-          const p = i / CFG.bands;
-          env[i] =
-            0.34 +
-            0.2 * Math.sin(t * 0.5 + p * 5.2) +
-            0.14 * Math.sin(t * 0.23 + p * 11 + 1.7) +
-            0.1 * Math.sin(t * 0.8 + p * 23 + 4.2);
-          env[i] = Math.max(0.05, env[i]);
-        }
-        centroidSm += (0.35 - centroidSm) * dt;
-        balanceSm *= 1 - dt;
-      }
-      for (let i = ripples.length - 1; i >= 0; i--) {
-        ripples[i].age += dt;
-        if (ripples[i].age > 1.6) ripples.splice(i, 1);
-      }
 
       const W = canvas.width;
       const H = canvas.height;
       ctx2d.clearRect(0, 0, W, H);
 
-      // 天空渐层：顶部深黑 → 地平线附近透出淡靓蓝，避免上半屏死黑
-      const sky = ctx2d.createLinearGradient(0, 0, 0, H);
-      sky.addColorStop(0, "rgba(10,11,14,0)");
-      sky.addColorStop(0.45, "rgba(30,32,64,0.35)");
-      sky.addColorStop(0.75, "rgba(46,48,102,0.5)");
-      sky.addColorStop(1, "rgba(20,21,40,0.6)");
-      ctx2d.fillStyle = sky;
+      // 纯黑背景
+      ctx2d.fillStyle = '#0a0a0a';
       ctx2d.fillRect(0, 0, W, H);
 
-      // 等距投影参数：菱形地面铺满并溢出视口，不留黑边
-      const tileW = Math.max(W / (GRID * 0.8), (H * 2.4) / GRID);
-      const tileH = tileW * 0.5;
-      const originX = W / 2;
-      const originY = H * 0.52;
-      const maxCol = H * 0.3;
+      // 网格系统：矩形网格 + 对角线，营造数据分析界面感
+      const gridSize = Math.max(50, Math.min(W, H) / 16);
+      const cols = Math.ceil(W / gridSize) + 1;
+      const rows = Math.ceil(H / gridSize) + 1;
 
-      // 高频组均值：颗粒闪烁强度
-      const hiStart = Math.floor(CFG.bands * 0.65);
-      let hiAvg = 0;
-      for (let i = hiStart; i < CFG.bands; i++) hiAvg += env[i];
-      hiAvg /= CFG.bands - hiStart;
+      // 主网格线
+      ctx2d.strokeStyle = 'rgba(16, 185, 129, 0.15)';
+      ctx2d.lineWidth = 1;
 
-      const cx = GRID / 2 + balanceSm * GRID * 0.18;
-      const cy = GRID / 2;
-      const rMax = GRID * 0.62;
+      for (let i = 0; i < cols; i++) {
+        const x = i * gridSize;
+        ctx2d.beginPath();
+        ctx2d.moveTo(x, 0);
+        ctx2d.lineTo(x, H);
+        ctx2d.stroke();
+      }
 
-      for (let gy = 0; gy < GRID; gy++) {
-        for (let gx = 0; gx < GRID; gx++) {
-          const dx = gx - cx;
-          const dy = gy - cy;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          // 外圈保留一层薄地板，让整个菱形地面延伸出画面而不是黑洞
-          const falloff = Math.max(0.05, 1 - dist / rMax);
-          // 低频在山体中心、高频在外圈：织体沿半径展开
-          const bandIdx = Math.min(
-            CFG.bands - 1,
-            Math.floor((dist / rMax) * CFG.bands),
-          );
-          const hash = cellHash(gx, gy);
-          // 体素纹理：每格固定微差，避免光滑圆锥
-          let h = env[bandIdx] * falloff * (0.82 + 0.36 * hash);
-          // 高频颗粒：外圈格子按 hash 稀疏闪烁，快速呼吸
-          if (bandIdx >= hiStart && hash > 0.55) {
-            h += hiAvg * (hash - 0.55) * 2.2 * (0.6 + 0.4 * Math.sin(t * 9 + hash * 40));
+      for (let i = 0; i < rows; i++) {
+        const y = i * gridSize;
+        ctx2d.beginPath();
+        ctx2d.moveTo(0, y);
+        ctx2d.lineTo(W, y);
+        ctx2d.stroke();
+      }
+
+      // 对角线网格（增强科技感）
+      ctx2d.strokeStyle = 'rgba(16, 185, 129, 0.08)';
+      ctx2d.lineWidth = 0.5;
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          const x = i * gridSize;
+          const y = j * gridSize;
+          const hash = cellHash(i, j);
+
+          // 随机显示对角线
+          if (hash > 0.7) {
+            ctx2d.beginPath();
+            ctx2d.moveTo(x, y);
+            ctx2d.lineTo(x + gridSize, y + gridSize);
+            ctx2d.stroke();
           }
-          // 瞬态涟漪：从中心扩散的环
-          for (const rp of ripples) {
-            const ring = rp.age * rMax * 1.4;
-            const w = 2.6;
-            const d = Math.abs(dist - ring);
-            if (d < w) h += rp.strength * (1 - d / w) * (1 - rp.age / 1.6) * 0.8;
-          }
-          h = Math.min(1.25, h);
-
-          const px = originX + (dx * tileW) / 2 - (dy * tileW) / 2;
-          const py = originY + (dx * tileH) / 2 + (dy * tileH) / 2;
-          const colH = h * maxCol;
-
-          // 颜色：高度→亮度；质心→由靛紫向暖粉偏移
-          const heat = Math.min(1, h);
-          const hue = 258 - heat * 30 - centroidSm * 55;
-          const lum = 16 + heat * 46;
-          const sat = 55 + heat * 25;
-          const top = `hsl(${hue} ${sat}% ${lum}%)`;
-          const side = `hsl(${hue} ${sat * 0.85}% ${lum * 0.55}%)`;
-          const side2 = `hsl(${hue} ${sat * 0.85}% ${lum * 0.38}%)`;
-
-          const hw = tileW / 2;
-          const hh = tileH / 2;
-          // 左面
-          ctx2d.fillStyle = side;
-          ctx2d.beginPath();
-          ctx2d.moveTo(px - hw, py - colH);
-          ctx2d.lineTo(px, py + hh - colH);
-          ctx2d.lineTo(px, py + hh);
-          ctx2d.lineTo(px - hw, py);
-          ctx2d.closePath();
-          ctx2d.fill();
-          // 右面
-          ctx2d.fillStyle = side2;
-          ctx2d.beginPath();
-          ctx2d.moveTo(px + hw, py - colH);
-          ctx2d.lineTo(px, py + hh - colH);
-          ctx2d.lineTo(px, py + hh);
-          ctx2d.lineTo(px + hw, py);
-          ctx2d.closePath();
-          ctx2d.fill();
-          // 顶面
-          ctx2d.fillStyle = top;
-          ctx2d.beginPath();
-          ctx2d.moveTo(px, py - hh - colH);
-          ctx2d.lineTo(px + hw, py - colH);
-          ctx2d.lineTo(px, py + hh - colH);
-          ctx2d.lineTo(px - hw, py - colH);
-          ctx2d.closePath();
-          ctx2d.fill();
         }
       }
-      // 仅在真实频谱驱动（用户主动开启）且未减弱动态时继续循环；否则停在静态帧
-      raf =
-        rigRef.current && !prefersReducedMotion()
-          ? requestAnimationFrame(draw)
-          : 0;
+
+      // 数据流光点：随机格子中有流动的光点
+      ctx2d.fillStyle = 'rgba(16, 185, 129, 0.4)';
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          const hash = cellHash(i, j);
+          if (hash > 0.95) {
+            const x = i * gridSize + gridSize / 2;
+            const y = j * gridSize + gridSize / 2;
+            const pulse = 0.4 + 0.6 * Math.sin(t * 3 + hash * 50);
+            const size = 3 + pulse * 4;
+
+            ctx2d.beginPath();
+            ctx2d.arc(x, y, size, 0, Math.PI * 2);
+            ctx2d.fill();
+
+            // 光晕
+            const grad = ctx2d.createRadialGradient(x, y, 0, x, y, size * 3);
+            grad.addColorStop(0, `rgba(16, 185, 129, ${pulse * 0.3})`);
+            grad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+            ctx2d.fillStyle = grad;
+            ctx2d.beginPath();
+            ctx2d.arc(x, y, size * 3, 0, Math.PI * 2);
+            ctx2d.fill();
+            ctx2d.fillStyle = 'rgba(16, 185, 129, 0.4)';
+          }
+        }
+      }
+
+      // 扫描线：从上到下缓慢扫描
+      const scanY = ((t * 0.06) % 1) * H;
+      const scanGrad = ctx2d.createLinearGradient(0, scanY - 80, 0, scanY + 80);
+      scanGrad.addColorStop(0, 'rgba(16, 185, 129, 0)');
+      scanGrad.addColorStop(0.5, 'rgba(16, 185, 129, 0.12)');
+      scanGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+      ctx2d.fillStyle = scanGrad;
+      ctx2d.fillRect(0, scanY - 80, W, 160);
+
+      // 重点区域高亮：中心区域微弱光晕
+      const centerGrad = ctx2d.createRadialGradient(
+        W / 2, H / 2, 0,
+        W / 2, H / 2, Math.min(W, H) * 0.4
+      );
+      centerGrad.addColorStop(0, 'rgba(16, 185, 129, 0.05)');
+      centerGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+      ctx2d.fillStyle = centerGrad;
+      ctx2d.fillRect(0, 0, W, H);
+
+      // 角落数据标注（四个角）
+      ctx2d.fillStyle = 'rgba(236, 236, 236, 0.25)';
+      ctx2d.font = '10px monospace';
+
+      // 左上
+      ctx2d.fillText('GRID [0,0]', 16, 20);
+      ctx2d.fillText(`T+${Math.floor(t)}s`, 16, 35);
+
+      // 右上
+      ctx2d.textAlign = 'right';
+      ctx2d.fillText(`SCAN ${Math.floor((scanY / H) * 100)}%`, W - 16, 20);
+
+      // 左下 - 坐标系
+      ctx2d.textAlign = 'left';
+      ctx2d.fillText('◢', 16, H - 30);
+      ctx2d.strokeStyle = 'rgba(236, 236, 236, 0.2)';
+      ctx2d.lineWidth = 1;
+      ctx2d.beginPath();
+      ctx2d.moveTo(20, H - 32);
+      ctx2d.lineTo(50, H - 32);
+      ctx2d.moveTo(20, H - 32);
+      ctx2d.lineTo(20, H - 62);
+      ctx2d.stroke();
+
+      ctx2d.textAlign = 'center';
+
+      raf = !prefersReducedMotion() ? requestAnimationFrame(draw) : 0;
     };
+
     resize();
     window.addEventListener("resize", resize);
     raf = requestAnimationFrame(draw);
@@ -404,11 +347,11 @@ export default function LandingHero({
   };
 
   return (
-    <div className="relative flex flex-1 flex-col overflow-hidden bg-[#0A0B0E] text-[#E8EAF2]">
+    <div className="relative flex flex-1 flex-col overflow-hidden bg-[#0a0a0a] text-[#E8EAF2]">
       <MatrixCanvas rig={rig} />
       {/* 文字可读性：标题区上方渐层压暗 */}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0A0B0E]/95 via-[#0A0B0E]/60 to-[#0A0B0E]/75"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/95 via-[#0a0a0a]/60 to-[#0a0a0a]/75"
         aria-hidden="true"
       />
 
@@ -427,7 +370,7 @@ export default function LandingHero({
           矮视口可滚动，主按钮永远可达（P4：不允许存在点不到的入口） */}
       <div className="landing-hero-scroll relative z-20 flex flex-1 flex-col overflow-y-auto px-6">
        <div className="m-auto flex w-full flex-col items-center py-10 pb-96">
-        <h2 className="max-w-[680px] text-center text-[clamp(24px,4vw,40px)] font-semibold tracking-[-0.02em] leading-[1.35]">
+        <h2 className="max-w-[680px] whitespace-nowrap text-center text-[clamp(24px,4vw,40px)] font-semibold tracking-[-0.02em] leading-[1.35]">
           为什么同一句问题，AI 每次回答都不一样？
         </h2>
         <p className="mt-3 max-w-[680px] text-center text-[16px] leading-relaxed text-[#C0C4D2]">
@@ -463,7 +406,7 @@ export default function LandingHero({
           <>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
               <button
-                className="flex items-center gap-2 rounded-md bg-[#6D74E8] px-8 py-3 text-[14px] font-medium text-white transition-all hover:bg-[#7B82F0]"
+                className="flex items-center gap-2 rounded-md bg-[#10b981] px-8 py-3 text-[14px] font-medium text-white transition-all hover:bg-[#059669]"
                 onClick={() => {
                   if (ready) {
                     onEnter();
@@ -517,7 +460,7 @@ export default function LandingHero({
                         <span className="flex items-center gap-2">
                           <span className="text-[14px] font-medium text-[#E8EAF2]">{m.name}</span>
                           {m.id === recommendedId && (
-                            <span className="rounded-md bg-[#818CF8]/20 px-2 py-0.5 text-[11px] text-[#A5ACFA]">推荐</span>
+                            <span className="rounded-md bg-[#10b981]/20 px-2 py-0.5 text-[11px] text-[#10b981]">推荐</span>
                           )}
                         </span>
                         <span className="mt-0.5 block truncate text-[12px] text-[#8A8FA3]">
@@ -595,7 +538,7 @@ export default function LandingHero({
               key={card.label}
               className="flex items-center gap-3.5 rounded-md border border-white/10 bg-white/[0.04] px-5 py-4"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#818CF8]/15 text-[#A5ACFA]">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#10A0FF]/15 text-[#10A0FF]">
                 <card.Icon className="h-5 w-5" />
               </span>
               <span className="min-w-0">
