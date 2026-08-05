@@ -72,7 +72,6 @@ function MatrixCanvas({ rig }: { rig: AudioRig | null }) {
     if (!ctx2d) return;
 
     let raf = 0;
-    let last = performance.now();
     let running = true;
 
     const resize = () => {
@@ -85,8 +84,6 @@ function MatrixCanvas({ rig }: { rig: AudioRig | null }) {
     // 显微镜视野：细胞式网格 + 扫描线 + 数据流动效果
     const draw = (now: number) => {
       if (!running) return;
-      const dt = Math.min(0.1, (now - last) / 1000);
-      last = now;
       const t = now / 1000;
 
       const W = canvas.width;

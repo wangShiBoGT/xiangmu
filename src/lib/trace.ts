@@ -207,7 +207,7 @@ export interface PhaseSegments {
 /** 按 <think>…</think> 控制 token 划分生成阶段。
  *  R1 类模型可能不发 <think> 开头、直接输出到 </think>：此时推理段从 0 开始。
  *  支持多种标签类型：thinking, reflection, planning 等 */
-export function splitPhases(texts: string[], modelId?: string): PhaseSegments {
+export function splitPhases(texts: string[]): PhaseSegments {
   let open = -1;
   let close = -1;
   const tags: TagSegment[] = [];

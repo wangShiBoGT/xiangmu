@@ -624,8 +624,8 @@ export default function OceanView({
               top: Math.max(hover.sy - 10, 8),
             }}
           >
-            <p className=”text-[13px] text-measure-300”>
-              token: “{hover.node.text}”{hover.node.chosen ? “ ✓已选” : “”}
+            <p className="text-[13px] text-measure-300">
+              token: &quot;{hover.node.text}&quot;{hover.node.chosen ? " ✓已选" : ""}
             </p>
             <p>P = {hover.node.prob.toFixed(4)}</p>
             <p>rank: {hover.node.rank + 1} / {steps[hover.node.step]?.topk.length ?? 8}</p>
