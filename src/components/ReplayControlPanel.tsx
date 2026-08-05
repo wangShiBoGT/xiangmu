@@ -185,7 +185,7 @@ export default function ReplayControlPanel({ controller, onStepChange }: Props) 
 
         {/* 速度选择 */}
         <select
-          className="rounded-md border border-line bg-obs-2 px-3 py-2 text-[12px] text-ink focus:border-accent focus:outline-none"
+          className="rounded-[6px] border border-line bg-obs-2 px-3 py-2 text-[12px] text-ink transition-colors focus:border-accent focus:outline-none hover:border-line/80"
           value={state.speed}
           onChange={(e) => controller.setSpeed(Number(e.target.value))}
         >

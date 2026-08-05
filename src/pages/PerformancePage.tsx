@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { PerformanceAnalyzer, exportPerformanceReport, exportPerformanceCSV, type PerformanceReport } from '../lib/performanceAnalyzer';
 import { Term } from '../components/Term';
+import { toast, ToastContainer, type ToastMessage } from '../components/Toast';
 
 interface TestConfig {
   batchSize: number;
@@ -21,7 +22,15 @@ export default function PerformancePage() {
   const [progress, setProgress] = useState(0);
   const [report, setReport] = useState<PerformanceReport | null>(null);
   const [device, setDevice] = useState<'webgpu' | 'wasm'>('webgpu');
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const analyzerRef = useRef<PerformanceAnalyzer | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = toast.subscribe(setToasts);
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     // 检测当前设备类型（简化版）
@@ -61,9 +70,10 @@ export default function PerformancePage() {
 
       setReport(generatedReport);
       setViewMode('results');
+      toast.success('测试完成', `完成 ${config.iterations} 次推理，平均 ${generatedReport.metrics.avgInferenceTime.toFixed(1)}ms`);
     } catch (err) {
       console.error('性能测试失败:', err);
-      alert('测试失败，请重试');
+      toast.error('测试失败', '性能测试过程出错，请重试');
     } finally {
       setRunning(false);
     }
@@ -80,6 +90,7 @@ export default function PerformancePage() {
     a.download = `performance-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success('导出成功', '性能报告已导出为 JSON 文件');
   };
 
   const handleExportCSV = () => {
@@ -93,10 +104,13 @@ export default function PerformancePage() {
     a.download = `performance-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success('导出成功', '性能报告已导出为 CSV 文件');
   };
 
   return (
     <div className="flex h-full flex-col">
+      <ToastContainer toasts={toasts} onClose={(id) => toast.close(id)} />
+
       <header className="border-b border-line bg-surface-1 px-6 py-4">
         <h1 className="text-[18px] font-semibold text-ink">模型性能分析</h1>
         <p className="mt-1 text-[12px] text-ink-2">

@@ -3,6 +3,7 @@ import { VectorStore } from '../lib/vectorStore';
 import { RAGRetriever, type HybridSearchResult } from '../lib/rag';
 import { loadEmbeddingModel, isEmbeddingModelLoaded } from '../lib/embedding';
 import { Term } from '../components/Term';
+import { toast, ToastContainer, type ToastMessage } from '../components/Toast';
 
 interface KnowledgeDoc {
   id: string;
@@ -28,9 +29,17 @@ export default function RAGPage() {
   const [searchMode, setSearchMode] = useState<'hybrid' | 'vector' | 'bm25'>('hybrid');
   const [chunkSize, setChunkSize] = useState(500);
   const [overlap, setOverlap] = useState(50);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const vectorStoreRef = useRef<VectorStore | null>(null);
   const retrieverRef = useRef<RAGRetriever | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = toast.subscribe(setToasts);
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   // 初始化向量数据库
   useEffect(() => {
@@ -75,9 +84,10 @@ export default function RAGPage() {
         setLoadProgress(Math.round(progress));
       });
       setModelLoaded(true);
+      toast.success('模型加载成功', '384 维 Embedding 模型已就绪');
     } catch (err) {
       console.error('模型加载失败:', err);
-      alert('模型加载失败，请检查网络连接');
+      toast.error('模型加载失败', '请检查网络连接并重试');
     } finally {
       setProcessing(false);
     }
@@ -85,12 +95,12 @@ export default function RAGPage() {
 
   const handleIndexDocument = async () => {
     if (!isEmbeddingModelLoaded()) {
-      alert('请先加载模型');
+      toast.warning('请先加载模型', '需要先加载 Embedding 模型才能索引文档');
       return;
     }
 
     if (!docTitle.trim() || !docContent.trim()) {
-      alert('请输入文档标题和内容');
+      toast.warning('请完善信息', '文档标题和内容都不能为空');
       return;
     }
 
@@ -120,10 +130,10 @@ export default function RAGPage() {
       setDocuments((prev) => [newDoc, ...prev]);
       setDocTitle('');
       setDocContent('');
-      alert(`文档已索引：${chunksCount} 个片段`);
+      toast.success('索引完成', `文档已分块并索引：${chunksCount} 个片段`);
     } catch (err) {
       console.error('索引失败:', err);
-      alert('索引失败，请重试');
+      toast.error('索引失败', '处理文档时出错，请重试');
     } finally {
       setProcessing(false);
     }
@@ -131,12 +141,12 @@ export default function RAGPage() {
 
   const handleSearch = async () => {
     if (!isEmbeddingModelLoaded()) {
-      alert('请先加载模型');
+      toast.warning('请先加载模型', '需要先加载 Embedding 模型才能搜索');
       return;
     }
 
     if (!query.trim()) {
-      alert('请输入搜索内容');
+      toast.warning('请输入搜索内容', '搜索查询不能为空');
       return;
     }
 
@@ -179,16 +189,22 @@ export default function RAGPage() {
       }
 
       setSearchResults(results);
+
+      if (results.length === 0) {
+        toast.info('未找到结果', '尝试调整搜索查询或检索模式');
+      } else {
+        toast.success('搜索完成', `找到 ${results.length} 个相关片段`);
+      }
     } catch (err) {
       console.error('搜索失败:', err);
-      alert('搜索失败，请重试');
+      toast.error('搜索失败', '检索过程出错，请重试');
     } finally {
       setProcessing(false);
     }
   };
 
   const handleClearAll = async () => {
-    if (!confirm('确定要清空所有索引文档吗？')) return;
+    if (!confirm('确定要清空所有索引文档吗？此操作不可撤销。')) return;
 
     const retriever = retrieverRef.current;
     if (!retriever) return;
@@ -197,15 +213,17 @@ export default function RAGPage() {
       await retriever.clear();
       setDocuments([]);
       setSearchResults([]);
-      alert('已清空所有文档');
+      toast.success('清空完成', '所有文档已从索引中移除');
     } catch (err) {
       console.error('清空失败:', err);
-      alert('清空失败');
+      toast.error('清空失败', '操作过程中出错');
     }
   };
 
   return (
     <div className="flex h-full flex-col">
+      <ToastContainer toasts={toasts} onClose={(id) => toast.close(id)} />
+
       <header className="border-b border-line bg-surface-1 px-6 py-4">
         <h1 className="text-[18px] font-semibold text-ink">
           <Term id="rag">RAG</Term> 检索增强生成
@@ -318,7 +336,7 @@ export default function RAGPage() {
             <label className="block text-[12px] text-ink-2">
               <span className="mb-1 block">搜索模式</span>
               <select
-                className="w-full rounded-md border border-line bg-surface-1 px-3 py-2 text-[12px] text-ink focus:border-accent focus:outline-none"
+                className="w-full rounded-[6px] border border-line bg-surface-1 px-3 py-2 text-[12px] text-ink transition-colors focus:border-accent focus:outline-none hover:border-line/80"
                 value={searchMode}
                 onChange={(e) => setSearchMode(e.target.value as any)}
               >

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   loadEmbeddingModel,
   textToEmbedding,
@@ -9,6 +9,7 @@ import {
 import { reduceDimensions, type DimensionReductionOptions } from '../lib/dimensionReduction';
 import EmbeddingVisualization, { type VisPoint } from '../components/EmbeddingVisualization';
 import { Term } from '../components/Term';
+import { toast, ToastContainer, type ToastMessage } from '../components/Toast';
 
 interface TextItem {
   id: string;
@@ -32,6 +33,14 @@ export default function EmbeddingPage() {
   const [algorithm, setAlgorithm] = useState<'tsne' | 'umap'>('umap');
   const [dimensions, setDimensions] = useState<2 | 3>(3);
   const textareaRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = toast.subscribe(setToasts);
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const handleAddText = () => {
     setTexts([...texts, { id: crypto.randomUUID(), text: '', embedding: null }]);
@@ -52,9 +61,10 @@ export default function EmbeddingPage() {
         setLoadProgress(Math.round(progress));
       });
       setModelLoaded(true);
+      toast.success('模型加载成功', '384 维 Embedding 模型已就绪');
     } catch (err) {
       console.error('模型加载失败:', err);
-      alert('模型加载失败，请检查网络连接');
+      toast.error('模型加载失败', '请检查网络连接并重试');
     } finally {
       setProcessing(false);
     }
@@ -62,13 +72,13 @@ export default function EmbeddingPage() {
 
   const handleGenerateEmbeddings = async () => {
     if (!isEmbeddingModelLoaded()) {
-      alert('请先加载模型');
+      toast.warning('请先加载模型', '需要先加载 Embedding 模型才能生成向量');
       return;
     }
 
     const validTexts = texts.filter((t) => t.text.trim().length > 0);
     if (validTexts.length === 0) {
-      alert('请至少输入一段文本');
+      toast.warning('请输入文本', '至少需要输入一段文本才能生成向量');
       return;
     }
 
@@ -89,10 +99,13 @@ export default function EmbeddingPage() {
       }
 
       setTexts(results);
-      alert(`成功生成 ${results.length} 个向量（${results[0].embedding!.length} 维）`);
+      toast.success(
+        '向量生成完成',
+        `已生成 ${results.length} 个向量（${results[0].embedding!.length} 维）`
+      );
     } catch (err) {
       console.error('向量化失败:', err);
-      alert('向量化失败，请重试');
+      toast.error('向量化失败', '生成向量时出错，请重试');
     } finally {
       setProcessing(false);
     }
@@ -101,7 +114,7 @@ export default function EmbeddingPage() {
   const handleVisualize = async () => {
     const embeddedTexts = texts.filter((t) => t.embedding !== null);
     if (embeddedTexts.length < 2) {
-      alert('至少需要 2 个已向量化的文本');
+      toast.warning('文本数量不足', '至少需要 2 个已向量化的文本才能进行可视化');
       return;
     }
 
@@ -135,9 +148,13 @@ export default function EmbeddingPage() {
 
       setVisualPoints(points);
       setViewMode('visualize');
+      toast.success(
+        '可视化完成',
+        `使用 ${algorithm.toUpperCase()} 算法降维到 ${dimensions}D 空间`
+      );
     } catch (err) {
       console.error('可视化失败:', err);
-      alert('可视化失败，请重试');
+      toast.error('可视化失败', '降维过程出错，请重试');
     } finally {
       setProcessing(false);
     }
@@ -146,7 +163,7 @@ export default function EmbeddingPage() {
   const handleShowSimilarity = () => {
     const embeddedTexts = texts.filter((t) => t.embedding !== null);
     if (embeddedTexts.length < 2) {
-      alert('至少需要 2 个已向量化的文本');
+      toast.warning('文本数量不足', '至少需要 2 个已向量化的文本才能计算相似度');
       return;
     }
     setViewMode('similarity');
@@ -161,6 +178,11 @@ export default function EmbeddingPage() {
         durationMs: t.durationMs,
       }));
 
+    if (data.length === 0) {
+      toast.warning('无数据可导出', '请先生成向量后再导出');
+      return;
+    }
+
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -168,6 +190,8 @@ export default function EmbeddingPage() {
     a.download = `embeddings-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
+
+    toast.success('导出成功', `已导出 ${data.length} 个向量到 JSON 文件`);
   };
 
   const renderSimilarityMatrix = () => {
@@ -262,6 +286,8 @@ export default function EmbeddingPage() {
 
   return (
     <div className="flex h-full flex-col">
+      <ToastContainer toasts={toasts} onClose={(id) => toast.close(id)} />
+
       <header className="border-b border-line bg-surface-1 px-6 py-4">
         <h1 className="text-[18px] font-semibold text-ink">
           <Term id="embedding">Embedding</Term> 向量可视化
@@ -354,7 +380,7 @@ export default function EmbeddingPage() {
             <label className="block text-[12px] text-ink-2">
               <span className="mb-1 block">降维算法</span>
               <select
-                className="w-full rounded-md border border-line bg-surface-1 px-3 py-2 text-[12px] text-ink focus:border-accent focus:outline-none"
+                className="w-full rounded-[6px] border border-line bg-surface-1 px-3 py-2 text-[12px] text-ink transition-colors focus:border-accent focus:outline-none hover:border-line/80"
                 value={algorithm}
                 onChange={(e) => setAlgorithm(e.target.value as 'tsne' | 'umap')}
               >
@@ -366,7 +392,7 @@ export default function EmbeddingPage() {
             <label className="block text-[12px] text-ink-2">
               <span className="mb-1 block">目标维度</span>
               <select
-                className="w-full rounded-md border border-line bg-surface-1 px-3 py-2 text-[12px] text-ink focus:border-accent focus:outline-none"
+                className="w-full rounded-[6px] border border-line bg-surface-1 px-3 py-2 text-[12px] text-ink transition-colors focus:border-accent focus:outline-none hover:border-line/80"
                 value={dimensions}
                 onChange={(e) => setDimensions(Number(e.target.value) as 2 | 3)}
               >
