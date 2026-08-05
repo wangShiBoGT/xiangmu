@@ -507,13 +507,13 @@
 
 ---
 
-### 14. 监控与错误追踪
-**优先级**：低 | **类型**：可观测性
+### 14. 监控与错误追踪 ✅
+**优先级**：低 | **类型**：可观测性 | **完成时间**：2026-08-05
 
 - ✅ 添加性能监控（Core Web Vitals）
 - ✅ 实现客户端错误上报（可选，需用户授权）
 - ✅ 记录 WebGPU 初始化失败的详细信息
-- 📋 添加开发模式的性能 profiling 工具
+- ✅ 添加开发模式的性能 profiling 工具
 
 **已完成（2026-08-05）**：
 - **Core Web Vitals 性能监控**：
@@ -620,8 +620,61 @@
 - 主 bundle 无变化（errorTracking 按需加载）
 - 新增 chunk：errorTracking-BsUmJSBe.js (0.13KB, gzipped: 0.14KB)
 
-**待实现**：
-- 添加开发模式性能 profiling 工具：React DevTools Profiler 集成或自定义面板
+**开发模式性能 Profiler**（已完成）：
+- 新增 `src/lib/profiler.ts` 模块（406 行代码）
+- 四大性能分析功能：
+  - React 组件渲染追踪：记录每次 mount/update 的 actualDuration/baseDuration
+  - 长任务检测：PerformanceObserver 监控超过 50ms 的任务
+  - 内存快照：performance.memory 采集 JS 堆使用情况（Chrome）
+  - 自定义性能标记：mark/measure API 封装，支持任意代码段计时
+- 性能报告生成：
+  - 组件渲染分析：总次数、慢渲染（>16ms）、按组件聚合统计（平均/最大耗时）
+  - 长任务分析：总数、平均耗时、任务列表（带 attribution）
+  - 内存分析：快照数量、当前使用、峰值内存（MB）
+  - 性能标记：自定义计时点列表
+- 开发体验优化：
+  - 全局访问：暴露到 `window.__profiler__` 对象
+  - 控制台友好：printReport() 使用 console.group/table 格式化展示
+  - JSON 导出：exportProfilerJSON() 导出完整原始数据和报告
+  - 自动告警：慢渲染（>16ms）和长任务实时输出 console.warn
+  - 便捷 API：enable/disable/report/export/clear/mark/measure/snapshot
+
+**Profiler 安全边界**：
+- 仅开发模式：import.meta.env.DEV 检查，生产环境完全禁用
+- 默认不启用：initProfiler() 只加载模块，需手动调用 enableProfiler()
+- 内存限制：最多保留 200 条性能记录，超出自动淘汰最旧记录
+- 兼容性处理：所有 API 调用包裹在 try-catch 中，不支持时静默跳过
+
+**Profiler 使用示例**：
+```javascript
+// 控制台中操作
+window.__profiler__.enable()           // 启用监控
+window.__profiler__.mark('start')      // 标记开始点
+// ... 待测代码 ...
+window.__profiler__.measure('task', 'start') // 测量耗时
+window.__profiler__.snapshot()         // 拍摄内存快照
+window.__profiler__.report()           // 打印格式化报告
+window.__profiler__.export()           // 导出 JSON 数据
+window.__profiler__.clear()            // 清除所有数据
+```
+
+**Profiler 技术细节**：
+- PerformanceObserver：监听 longtask/measure 事件类型，buffered: false
+- performance.memory：Chrome 专有 API，返回 usedJSHeapSize/totalJSHeapSize/jsHeapSizeLimit
+- performance.mark/measure：标准 User Timing API，支持自定义计时
+- 阈值判断：16ms (60fps) 用于慢渲染，50ms 用于长任务
+
+**构建影响**：
+- 主 bundle 从 669.04KB 增至 671.32KB (+2.28KB)
+- 开发模式独占，生产构建中代码被 tree-shaking 移除
+
+**Task #14 完成总结**：
+- ✅ Core Web Vitals 性能监控（LCP/FID/CLS/FCP/TTFB/INP）
+- ✅ 客户端错误追踪系统（全局错误捕获 + WebGPU 专项集成）
+- ✅ WebGPU 初始化失败详细记录（三类失败原因 + 动态追踪）
+- ✅ 开发模式性能 Profiler（组件渲染/长任务/内存/自定义标记）
+- 隐私保护：所有数据本地存储，明确授权机制，无身份信息
+- 性能影响：Core Web Vitals +2.92KB，errorTracking +0.13KB，profiler +2.28KB
 
 **隐私原则**：所有数据收集必须明确告知用户并获得授权
 
