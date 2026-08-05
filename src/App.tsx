@@ -823,7 +823,7 @@ function App() {
               : "bg-surface md:my-2 md:mr-2 md:rounded-md md:shadow-card"
         }`}
       >
-        {!showLanding && (
+        {!showLanding && view !== "workspace" && (
         <header className="relative flex flex-wrap items-center justify-between gap-y-2 px-4 py-3 md:px-6">
           <div className="flex items-center gap-3">
             <h1 className="flex items-center gap-2 text-[14px] font-semibold text-ink tracking-tight select-none">
