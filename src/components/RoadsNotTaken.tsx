@@ -58,10 +58,10 @@ export default function RoadsNotTaken({
             </button>
             <p className="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 pl-4 font-mono text-[13px]">
               <span aria-hidden className="text-obs-ink2/50">⌐</span>
-              <span className="rounded-md border border-dashed border-indigo-300/50 px-1.5 text-indigo-200/80">
+              <span className="rounded-md border border-dashed border-measure-300/50 px-1.5 text-measure-200/80">
                 {t(f.b)}
               </span>
-              <span className="text-[11px] tabular-nums text-indigo-300/70">
+              <span className="text-[11px] tabular-nums text-measure-300/70">
                 {(f.bp * 100).toFixed(1)}% · 差 {(f.gap * 100).toFixed(2)}% 落选
               </span>
               {onTryFork && (

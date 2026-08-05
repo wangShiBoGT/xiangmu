@@ -76,7 +76,7 @@ export default function RunStoryPage({
         {/* 对话 */}
         <div className="mt-6 space-y-4">
           <div className="flex justify-end">
-            <div className="max-w-[85%] rounded-md rounded-tr-sm bg-indigo-500/15 px-4 py-3 text-[14px] leading-[1.9] text-obs-ink">
+            <div className="max-w-[85%] rounded-md rounded-tr-sm bg-measure-500/15 px-4 py-3 text-[14px] leading-[1.9] text-obs-ink">
               {rec.prompt}
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function RunStoryPage({
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <button
             type="button"
-            className="rounded-md border border-indigo-400/50 bg-indigo-500/10 p-4 text-left transition-colors hover:bg-indigo-500/20"
+            className="rounded-md border border-measure-400/50 bg-measure-500/10 p-4 text-left transition-colors hover:bg-measure-500/20"
             onClick={() => onOpen(null)}
           >
             <p className="text-[14px] font-medium text-obs-ink">▶ 回放这次运行</p>

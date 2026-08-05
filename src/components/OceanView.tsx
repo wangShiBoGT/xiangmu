@@ -37,10 +37,10 @@ interface HoverInfo {
 }
 
 const LEGEND = [
-  { color: "#818CF8", label: "已选路径" },
-  { color: "#38BDF8", label: "高概率候选" },
-  { color: "#475069", label: "低概率候选" },
-  { color: "#F472B6", label: "高熵时刻" },
+  { color: "#10A0FF", label: "已选路径" },
+  { color: "#00e676", label: "高概率候选" },
+  { color: "#6d6d6d", label: "低概率候选" },
+  { color: "#ffa726", label: "高熵时刻" },
 ];
 
 /** 节点数硬上限：2048 步 × top-9 ≈ 1.8 万实例，远低于 instancing 能力上限，
@@ -478,7 +478,7 @@ export default function OceanView({
       {/* 顶栏：标题 + 图例 + 关闭 */}
       <div className="flex items-start justify-between px-6 pt-5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-indigo-300/80 select-none">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-measure-300/80 select-none">
             Token Probability Landscape
           </p>
           <h2 className="mt-1 text-[24px] font-semibold tracking-tight">
@@ -498,8 +498,8 @@ export default function OceanView({
             ))}
           </div>
           {running && (
-            <span className="flex items-center gap-1.5 rounded-md border border-indigo-400/40 bg-obs-2/80 px-3.5 py-2 text-[11px] text-indigo-200">
-              <span className="h-1.5 w-1.5 rounded-full bg-indigo-300" />
+            <span className="flex items-center gap-1.5 rounded-md border border-measure-400/40 bg-obs-2/80 px-3.5 py-2 text-[11px] text-measure-200">
+              <span className="h-1.5 w-1.5 rounded-full bg-measure-300" />
               正在生成
             </span>
           )}
@@ -528,7 +528,7 @@ export default function OceanView({
               <p className="mt-3 text-[11px] uppercase tracking-[0.2em] text-obs-ink2/70 select-none">
                 当前分支 · 共 {branchCount} 条
               </p>
-              <p className="mt-1 text-[12px] leading-relaxed text-indigo-200/90">
+              <p className="mt-1 text-[12px] leading-relaxed text-measure-200/90">
                 {branchLabel || "原始生成"}
               </p>
             </>
@@ -549,7 +549,7 @@ export default function OceanView({
                         ? "bg-red-400"
                         : w.status === "finished"
                           ? "bg-emerald-400"
-                          : "bg-indigo-300"
+                          : "bg-measure-300"
                     }`}
                   />
                   <span className="text-[12px] text-obs-ink">
@@ -624,8 +624,8 @@ export default function OceanView({
               top: Math.max(hover.sy - 10, 8),
             }}
           >
-            <p className="text-[13px] text-indigo-300">
-              token: “{hover.node.text}”{hover.node.chosen ? " ✓已选" : ""}
+            <p className=”text-[13px] text-measure-300”>
+              token: “{hover.node.text}”{hover.node.chosen ? “ ✓已选” : “”}
             </p>
             <p>P = {hover.node.prob.toFixed(4)}</p>
             <p>rank: {hover.node.rank + 1} / {steps[hover.node.step]?.topk.length ?? 8}</p>
@@ -667,7 +667,7 @@ export default function OceanView({
             max={steps.length}
             value={Math.min(visible, steps.length)}
             disabled={running}
-            className="h-1 flex-1 accent-indigo-400"
+            className="h-1 flex-1 accent-measure-400"
             onChange={(e) => {
               followRef.current = false;
               setPlaying(false);
@@ -678,7 +678,7 @@ export default function OceanView({
             aria-pressed={slow}
             className={`rounded-md border px-2.5 py-1 text-[11px] transition-colors disabled:opacity-40 ${
               slow
-                ? "border-indigo-400/50 text-indigo-200"
+                ? "border-measure-400/50 text-measure-200"
                 : "border-obs-line text-obs-ink2 hover:text-obs-ink"
             }`}
             disabled={running}

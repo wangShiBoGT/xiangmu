@@ -9,7 +9,7 @@ describe("DS3 · PrimaryAction 交互纪律", () => {
       <PrimaryAction>开始记录</PrimaryAction>,
     );
     const btn = container.querySelector("button");
-    expect(btn?.className).toContain("bg-indigo-500");
+    expect(btn?.className).toContain("bg-measure-500");
     expect(primaryActionCount()).toBe(1);
     unmount();
     expect(primaryActionCount()).toBe(0);

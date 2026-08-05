@@ -109,7 +109,7 @@ export default function SamplingChamber({
                   key={`${flash}-${c.id}`}
                   className={`chamber-cand absolute rounded-md border px-2.5 py-1 text-[12px] whitespace-pre tabular-nums ${
                     chosen
-                      ? "border-indigo-400/70 bg-indigo-500/15 text-obs-ink"
+                      ? "border-measure-400/70 bg-measure-500/15 text-obs-ink"
                       : "border-obs-line bg-obs-2/70 text-obs-ink2"
                   } ${t.special ? "italic opacity-80" : ""}`}
                   style={candStyle(c.prob, i, cands.length)}
@@ -139,20 +139,20 @@ export default function SamplingChamber({
           <div
             className={`absolute left-1/2 top-1/2 h-px w-[min(520px,88%)] -translate-x-1/2 -translate-y-1/2 transition-all duration-600 ${
               active
-                ? "bg-indigo-400/80"
+                ? "bg-measure-400/80"
                 : "bg-obs-line"
             }`}
           />
           {active && (
             <span
               key={`pulse-${flash}`}
-              className="chamber-bar-pulse absolute left-1/2 top-1/2 h-[3px] w-[min(240px,50%)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-300/90"
+              className="chamber-bar-pulse absolute left-1/2 top-1/2 h-[3px] w-[min(240px,50%)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-measure-300/90"
             />
           )}
           {step && mode === "sampling" && (
             <span
               key={flash}
-              className="chamber-drop absolute left-1/2 top-0 -translate-x-1/2 rounded-md bg-indigo-500/90 px-2 py-0.5 text-[13px] font-medium whitespace-pre text-white"
+              className="chamber-drop absolute left-1/2 top-0 -translate-x-1/2 rounded-md bg-measure-500/90 px-2 py-0.5 text-[13px] font-medium whitespace-pre text-white"
             >
               {tokenLabel(step.text).label}
             </span>

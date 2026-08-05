@@ -70,7 +70,7 @@ export default function SamplingInspector({
 
       {/* selected：当前 token 大字居首，与 3D 视觉焦点同步 */}
       <p className="mt-2.5 text-[13px] leading-relaxed text-obs-ink">
-        <span className="rounded-md bg-indigo-500/20 px-2 py-0.5 font-mono text-[16px] leading-snug text-indigo-100">
+        <span className="rounded-md bg-measure-500/20 px-2 py-0.5 font-mono text-[16px] leading-snug text-measure-100">
           {step.text.trim() || "␣"}
         </span>
         <span className="ml-2 tabular-nums text-obs-ink2">
@@ -89,7 +89,7 @@ export default function SamplingInspector({
           softmax → T {params.temperature} → top-p {params.topP}
           {seed !== null && seed !== undefined ? ` → RNG(seed ${seed})` : " → RNG"}
           {" → "}
-          <span className="text-indigo-300">selected</span>
+          <span className="text-measure-300">selected</span>
         </p>
       )}
 
@@ -101,7 +101,7 @@ export default function SamplingInspector({
             <div key={c.id} className="flex items-center gap-2">
               <span
                 className={`w-3.5 shrink-0 text-right font-mono text-[11px] tabular-nums ${
-                  chosen ? "text-indigo-300" : "text-obs-ink2/50"
+                  chosen ? "text-measure-300" : "text-obs-ink2/50"
                 }`}
               >
                 {i + 1}

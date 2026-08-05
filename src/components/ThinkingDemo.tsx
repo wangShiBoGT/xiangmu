@@ -8,7 +8,7 @@ export default function ThinkingDemo() {
   return (
     <div className="fixed bottom-6 right-6 z-50 rounded-lg border border-obs-line bg-obs-2 p-6 shadow-float backdrop-blur-md">
       <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-measure-500/10">
           <IconThinking className="h-8 w-8 text-blue-400" />
         </div>
         <div>
@@ -23,11 +23,11 @@ export default function ThinkingDemo() {
           <span className="text-xs text-obs-ink2">分析问题中...</span>
         </div>
         <div className="flex items-center gap-3">
-          <IconThinking className="h-5 w-5 text-blue-400" />
+          <IconThinking className="h-5 w-5 text-measure-400" />
           <span className="text-xs text-obs-ink2">生成方案中...</span>
         </div>
         <div className="flex items-center gap-3">
-          <IconThinking className="h-5 w-5 text-purple-400" />
+          <IconThinking className="h-5 w-5 text-amber-400" />
           <span className="text-xs text-obs-ink2">优化结果中...</span>
         </div>
       </div>

@@ -19,7 +19,7 @@ export function PrimaryAction({
   }, []);
   return (
     <button
-      className={`rounded-md bg-indigo-500 font-medium text-white transition-opacity hover:opacity-85 disabled:bg-obs-wash disabled:text-obs-ink2 ${className}`}
+      className={`rounded-md bg-measure-500 font-medium text-white transition-opacity hover:opacity-85 disabled:bg-obs-wash disabled:text-obs-ink2 ${className}`}
       {...rest}
     >
       {children}

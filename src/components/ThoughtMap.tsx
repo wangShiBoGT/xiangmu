@@ -8,7 +8,7 @@ import { buildThoughtMap } from "../lib/thoughtMap";
 import type { TokenStep } from "../lib/trace";
 
 const PHASE_COLOR: Record<string, string> = {
-  think: "bg-indigo-400/70",
+  think: "bg-measure-400/70",
   answer: "bg-emerald-400/70",
 };
 

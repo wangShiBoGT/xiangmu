@@ -66,7 +66,7 @@ function PlanLiveText({ text }: { text: string }) {
       {(parts.answer || !thinking) && (
         <p className="text-[12px] leading-relaxed whitespace-pre-wrap text-obs-ink/90">
           {parts.answer || text}
-          <span className="ml-0.5 inline-block h-3 w-[2px] bg-indigo-300 align-middle" />
+          <span className="ml-0.5 inline-block h-3 w-[2px] bg-measure-300 align-middle" />
         </p>
       )}
       {thinking && !parts.answer && (
@@ -80,8 +80,8 @@ function PlanLiveText({ text }: { text: string }) {
 
 const STATUS_DOT: Record<TeamWorker["status"], string> = {
   waiting: "bg-obs-ink2/40",
-  preparing: "bg-sky-300",
-  running: "bg-indigo-300",
+  preparing: "bg-measure-300",
+  running: "bg-measure-300",
   output: "bg-emerald-300",
   handing_off: "bg-amber-300",
   finished: "bg-emerald-400",
@@ -104,7 +104,7 @@ function MissionRow({ mission }: { mission: MissionStage[] }) {
               m.status === "done"
                 ? "bg-emerald-500/15 text-emerald-200"
                 : m.status === "active"
-                  ? "bg-indigo-500/20 text-indigo-200"
+                  ? "bg-measure-500/20 text-measure-200"
                   : m.status === "failed"
                     ? "bg-red-500/15 text-red-200"
                     : "bg-obs-ink2/10 text-obs-ink2/60"
@@ -131,7 +131,7 @@ export function TeamPanel({ team }: { team: TeamState }) {
           key={w.id}
           className={`flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] ${
             team.currentOwner === w.id
-              ? "border-indigo-400/50 bg-indigo-500/10 text-obs-ink"
+              ? "border-measure-400/50 bg-measure-500/10 text-obs-ink"
               : "border-obs-line bg-obs-2/60 text-obs-ink2/70"
           }`}
         >
@@ -168,7 +168,7 @@ function ArtifactCard({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className={`w-full rounded-md border px-3 py-2 text-left transition-colors hover:border-indigo-400/40 ${
+        className={`w-full rounded-md border px-3 py-2 text-left transition-colors hover:border-measure-400/40 ${
           artifact.ok
             ? "border-obs-line bg-obs/60"
             : "border-red-400/30 bg-red-500/5"
@@ -178,7 +178,7 @@ function ArtifactCard({
         <p className="flex items-baseline justify-between gap-2">
           <span
             className={`text-[11px] font-medium tracking-[0.14em] ${
-              artifact.ok ? "text-sky-300/90" : "text-red-300/90"
+              artifact.ok ? "text-measure-300/90" : "text-red-300/90"
             }`}
           >
             {ARTIFACT_LABEL[artifact.type]}
@@ -232,7 +232,7 @@ function WorkerRow({
       <div
         className={`flex items-center gap-2 rounded-md border px-3 py-2 ${
           current
-            ? "border-indigo-400/50 bg-indigo-500/10"
+            ? "border-measure-400/50 bg-measure-500/10"
             : worker.status === "failed"
               ? "border-red-400/30 bg-obs-2/70"
               : "border-obs-line bg-obs-2/70"
@@ -263,7 +263,7 @@ function WorkerRow({
               : worker.status === "finished"
                 ? "bg-emerald-500/10 text-emerald-200/80"
                 : current
-                  ? "bg-indigo-500/20 text-indigo-200"
+                  ? "bg-measure-500/20 text-measure-200"
                   : "bg-obs-ink2/10 text-obs-ink2/60"
           }`}
         >

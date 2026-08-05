@@ -83,11 +83,11 @@ export default function WorkflowStrip({
   // log 刻度：33ms 与 25.7s 同轴可读；min-width 保证最短段可点
   const grow = (ms: number) => Math.max(1, Math.log10(1 + ms));
   const shade: Record<string, string> = {
-    tokenize: "bg-indigo-400/15",
-    prefill: "bg-indigo-400/25",
-    think: "bg-indigo-400/35",
-    answer: "bg-indigo-400/50",
-    decode: "bg-indigo-400/50",
+    tokenize: "bg-measure-400/15",
+    prefill: "bg-measure-400/25",
+    think: "bg-measure-400/35",
+    answer: "bg-measure-400/50",
+    decode: "bg-measure-400/50",
   };
 
   return (
@@ -110,9 +110,9 @@ export default function WorkflowStrip({
               onClick={() => clickable && onSelectStage(s)}
               title={`${s.label} · ${fmtMs(s.durationMs ?? 0)} · 证据：${EVIDENCE_LABEL[s.evidence]}`}
               style={{ flexGrow: grow(s.durationMs ?? 0), flexBasis: 0 }}
-              className={`min-w-[40px] transition-colors ${shade[s.key] ?? "bg-indigo-400/30"} ${
-                activeKey === s.key ? "outline outline-1 -outline-offset-1 outline-indigo-400/70" : ""
-              } ${clickable ? "hover:bg-indigo-400/60" : "cursor-default"} flex items-center justify-center`}
+              className={`min-w-[40px] transition-colors ${shade[s.key] ?? "bg-measure-400/30"} ${
+                activeKey === s.key ? "outline outline-1 -outline-offset-1 outline-measure-400/70" : ""
+              } ${clickable ? "hover:bg-measure-400/60" : "cursor-default"} flex items-center justify-center`}
             >
               <span className="truncate px-1 font-mono text-[11px] tabular-nums text-obs-ink/90">
                 {fmtMs(s.durationMs ?? 0)}
@@ -148,7 +148,7 @@ export default function WorkflowStrip({
                   activeKey === s.key ? "text-obs-ink" : ""
                 }`}
               >
-                <span className="mr-1 text-indigo-300/80">▲</span>
+                <span className="mr-1 text-measure-300/80">▲</span>
                 {s.label}
                 {s.detail && (
                   <span className="ml-1 font-mono tabular-nums text-obs-ink2/70">
