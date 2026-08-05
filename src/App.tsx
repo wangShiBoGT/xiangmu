@@ -65,6 +65,7 @@ import {
 } from "./lib/device";
 import { MODELS, getModel, loadCustomModels } from "./lib/models";
 import { initWebVitals } from "./lib/webVitals";
+import { initProfiler } from "./lib/profiler";
 import LandingHero from "./components/LandingHero";
 const JourneyPage = lazy(() => import("./components/JourneyPage"));
 const EnhancedInputDemo = lazy(() => import("./components/EnhancedInputDemo"));
@@ -268,6 +269,8 @@ function App() {
     });
     // 初始化 Core Web Vitals 性能监控
     initWebVitals();
+    // 初始化开发模式性能 Profiler
+    initProfiler();
   }, []);
 
   useEffect(() => {
