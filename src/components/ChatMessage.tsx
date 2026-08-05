@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   IconFile,
   IconCheck,
@@ -11,6 +11,9 @@ import ThinkingTimeline from "./ThinkingTimeline";
 import { splitThinking } from "../lib/thinking";
 import { renderMarkdown } from "../lib/markdown";
 import type { StoredMessage } from "../lib/chatStore";
+
+// 长思考链阈值：超过此行数启用虚拟滚动优化
+const LONG_THINKING_THRESHOLD = 100;
 
 interface Props {
   message: StoredMessage;
@@ -51,6 +54,56 @@ function highlightThinking(text: string): React.ReactNode {
     }
     return <div key={i}>{line}</div>;
   });
+}
+
+/** 虚拟滚动优化：仅渲染可见区域 + 缓冲区的行 */
+function VirtualThinkingContent({ text }: { text: string }) {
+  const lines = useMemo(() => text.split("\n"), [text]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: Math.min(50, lines.length) });
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || lines.length <= LONG_THINKING_THRESHOLD) return;
+
+    const handleScroll = () => {
+      const scrollTop = container.scrollTop;
+      const containerHeight = container.clientHeight;
+      const lineHeight = 24; // 假设每行约 24px
+      const buffer = 10; // 缓冲区行数
+
+      const start = Math.max(0, Math.floor(scrollTop / lineHeight) - buffer);
+      const end = Math.min(lines.length, Math.ceil((scrollTop + containerHeight) / lineHeight) + buffer);
+
+      setVisibleRange({ start, end });
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [lines.length]);
+
+  if (lines.length <= LONG_THINKING_THRESHOLD) {
+    // 短思考链：直接全量渲染
+    return <div className="whitespace-pre-wrap text-[13px] leading-relaxed">{highlightThinking(text)}</div>;
+  }
+
+  // 长思考链：虚拟滚动
+  const visibleLines = lines.slice(visibleRange.start, visibleRange.end);
+  const paddingTop = visibleRange.start * 24;
+  const paddingBottom = (lines.length - visibleRange.end) * 24;
+
+  return (
+    <div ref={containerRef} className="max-h-[400px] overflow-y-auto whitespace-pre-wrap text-[13px] leading-relaxed">
+      <div style={{ paddingTop: `${paddingTop}px`, paddingBottom: `${paddingBottom}px` }}>
+        {highlightThinking(visibleLines.join("\n"))}
+      </div>
+      {lines.length > LONG_THINKING_THRESHOLD && (
+        <div className="mt-2 text-[11px] text-obs-ink3">
+          共 {lines.length} 行思考内容（虚拟滚动已启用）
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function ChatMessage({
@@ -183,10 +236,8 @@ export default function ChatMessage({
           defaultExpanded={!thinkingDone}
         >
           <div className="relative">
-            {/* 思考内容语义高亮 */}
-            <div className="whitespace-pre-wrap text-[13px] leading-relaxed">
-              {highlightThinking(thinking)}
-            </div>
+            {/* 思考内容语义高亮 + 虚拟滚动优化 */}
+            <VirtualThinkingContent text={thinking} />
             {/* 思考时间轴 */}
             {thinkingDone && thinkSeconds !== null && thinkSeconds > 0 && (
               <ThinkingTimeline
