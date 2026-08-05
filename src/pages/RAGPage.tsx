@@ -372,9 +372,16 @@ export default function RAGPage() {
               className="w-full rounded-md bg-measure-500 px-4 py-2.5 text-[13px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               onClick={handleSearch}
               disabled={!modelLoaded || processing || documents.length === 0}
+              title={documents.length === 0 ? '请先索引文档后再搜索' : ''}
             >
               {processing ? '搜索中...' : '搜索'}
             </button>
+
+            {documents.length === 0 && (
+              <p className="rounded-md border border-[#ffa726]/30 bg-[#ffa726]/10 px-3 py-2 text-[11px] text-[#ffa726]">
+                💡 请先在上方索引文档后，才能进行搜索
+              </p>
+            )}
           </section>
 
           {/* 管理 */}
@@ -395,11 +402,47 @@ export default function RAGPage() {
         <main className="flex-1 overflow-y-auto bg-obs-1 p-6">
           {viewMode === 'index' && (
             <div className="space-y-4">
-              <h3 className="text-[14px] font-medium text-obs-ink">已索引文档</h3>
               {documents.length === 0 ? (
-                <p className="text-[12px] text-obs-ink2">尚无文档，请先索引</p>
+                <div className="flex h-full items-center justify-center">
+                  <div className="max-w-md space-y-4 text-center">
+                    <div className="text-[14px] text-obs-ink2">
+                      <p className="mb-2 text-[16px] font-medium text-obs-ink">
+                        欢迎使用 RAG 检索增强生成
+                      </p>
+                      <p>请按照以下步骤操作：</p>
+                      <ol className="mt-3 space-y-2 text-left text-[13px]">
+                        <li className="flex items-start gap-2">
+                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent/20 text-[11px] font-medium text-accent">
+                            1
+                          </span>
+                          <span>点击左侧"加载模型"按钮，等待模型下载完成</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent/20 text-[11px] font-medium text-accent">
+                            2
+                          </span>
+                          <span>在文档输入框中输入长文本（可以是文章、知识库内容等）</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent/20 text-[11px] font-medium text-accent">
+                            3
+                          </span>
+                          <span>设置块大小和重叠参数，点击"索引文档"进行分块和向量化</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent/20 text-[11px] font-medium text-accent">
+                            4
+                          </span>
+                          <span>在搜索框输入问题或关键词，选择搜索模式，点击"搜索"查看结果</span>
+                        </li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <div className="space-y-2">
+                <>
+                  <h3 className="text-[14px] font-medium text-obs-ink">已索引文档</h3>
+                  <div className="space-y-2">
                   {documents.map((doc) => (
                     <div
                       key={doc.id}
@@ -417,6 +460,7 @@ export default function RAGPage() {
                     </div>
                   ))}
                 </div>
+                </>
               )}
             </div>
           )}

@@ -406,6 +406,7 @@ export default function EmbeddingPage() {
               className="w-full rounded-md bg-measure-500 px-4 py-2.5 text-[13px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               onClick={handleVisualize}
               disabled={processing || texts.filter((t) => t.embedding).length < 2}
+              title={texts.filter((t) => t.embedding).length < 2 ? '至少需要 2 个向量才能可视化' : ''}
             >
               {processing ? '降维中...' : '3D 可视化'}
             </button>
@@ -415,9 +416,16 @@ export default function EmbeddingPage() {
               className="w-full rounded-md border border-measure-400/40 bg-measure-500/10 px-4 py-2 text-[13px] font-medium text-measure-300 transition-colors hover:bg-measure-500/20 disabled:opacity-50"
               onClick={handleShowSimilarity}
               disabled={texts.filter((t) => t.embedding).length < 2}
+              title={texts.filter((t) => t.embedding).length < 2 ? '至少需要 2 个向量才能计算相似度' : ''}
             >
               相似度矩阵
             </button>
+
+            {texts.filter((t) => t.embedding).length === 1 && (
+              <p className="rounded-md border border-[#ffa726]/30 bg-[#ffa726]/10 px-3 py-2 text-[11px] text-[#ffa726]">
+                💡 再添加至少 1 个文本并生成向量后，即可进行可视化和相似度对比
+              </p>
+            )}
           </section>
 
           {/* 导出 */}
@@ -438,13 +446,54 @@ export default function EmbeddingPage() {
         <main className="flex-1 bg-obs-1">
           {viewMode === 'input' && (
             <div className="flex h-full items-center justify-center">
-              <div className="text-center">
-                <p className="text-[14px] text-obs-ink2">
-                  加载模型 → 输入文本 → 生成向量 → 可视化
-                </p>
-                <p className="mt-2 text-[12px] text-obs-ink2/60">
-                  向量可视化将在此区域显示
-                </p>
+              <div className="max-w-md space-y-4 text-center">
+                <div className="text-[14px] text-obs-ink2">
+                  {texts.filter((t) => t.embedding).length === 0 ? (
+                    <>
+                      <p className="mb-2 text-[16px] font-medium text-obs-ink">
+                        欢迎使用 Embedding 向量可视化
+                      </p>
+                      <p>请按照以下步骤操作：</p>
+                      <ol className="mt-3 space-y-2 text-left text-[13px]">
+                        <li className="flex items-start gap-2">
+                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent/20 text-[11px] font-medium text-accent">
+                            1
+                          </span>
+                          <span>点击左侧"加载模型"按钮，等待模型下载完成</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent/20 text-[11px] font-medium text-accent">
+                            2
+                          </span>
+                          <span>在文本框中输入多段文本（至少 2 段），点击"+ 添加"可添加更多</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent/20 text-[11px] font-medium text-accent">
+                            3
+                          </span>
+                          <span>点击"生成向量"按钮，等待向量化完成</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent/20 text-[11px] font-medium text-accent">
+                            4
+                          </span>
+                          <span>选择降维算法和目标维度，点击"3D 可视化"或"相似度矩阵"查看结果</span>
+                        </li>
+                      </ol>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-[16px] font-medium text-emerald-400">✓ 向量已生成</p>
+                      <p className="mt-2">
+                        已生成 {texts.filter((t) => t.embedding).length} 个向量
+                      </p>
+                      <p className="mt-4 text-obs-ink2">
+                        请在左侧选择降维算法和目标维度，<br />
+                        然后点击"3D 可视化"或"相似度矩阵"查看结果
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           )}
