@@ -510,10 +510,75 @@
 ### 14. 监控与错误追踪
 **优先级**：低 | **类型**：可观测性
 
-- 📋 添加性能监控（Core Web Vitals）
+- ✅ 添加性能监控（Core Web Vitals）
 - 📋 实现客户端错误上报（可选，需用户授权）
 - 📋 记录 WebGPU 初始化失败的详细信息
 - 📋 添加开发模式的性能 profiling 工具
+
+**已完成（2026-08-05）**：
+- **Core Web Vitals 性能监控**：
+  - 新增 `src/lib/webVitals.ts` 模块（334 行代码）
+  - 使用 PerformanceObserver API 监控 6 项关键性能指标：
+    - LCP (Largest Contentful Paint)：最大内容绘制时间
+    - FID (First Input Delay)：首次输入延迟
+    - CLS (Cumulative Layout Shift)：累积布局偏移
+    - FCP (First Contentful Paint)：首次内容绘制
+    - TTFB (Time to First Byte)：首字节时间
+    - INP (Interaction to Next Paint)：交互到下次绘制（Chrome 96+）
+  
+- **性能评级系统**：
+  - 根据 web.dev/vitals 官方阈值自动评级：good / needs-improvement / poor
+  - 例如 LCP：≤2500ms (good), ≤4000ms (needs-improvement), >4000ms (poor)
+  - 每个指标都有明确的阈值定义，便于识别性能瓶颈
+  
+- **设备信息采集**：
+  - 视口尺寸（viewport width/height）
+  - 设备内存（deviceMemory，单位 GB）
+  - CPU 核心数（hardwareConcurrency）
+  - 网络连接类型和速度（effectiveType, downlink, rtt）
+  - User Agent 字符串
+  
+- **数据存储与导出**：
+  - 本地 localStorage 存储，key: `webgpu-llm-chat.web-vitals.v1`
+  - 最多保留 50 条性能快照，超出自动淘汰最旧记录
+  - 提供 `exportWebVitalsJSON()` 导出完整数据
+  - 提供 `computeWebVitalsStats()` 计算统计信息（平均值、P50/P75/P90）
+  - 提供 `clearWebVitalsSnapshots()` 清除历史数据
+  
+- **集成方式**：
+  - App.tsx 启动时自动调用 `initWebVitals()`
+  - 静默失败策略：不支持的浏览器和 API 不影响正常使用
+  - 延迟批量保存：3 秒内收集的所有指标合并为一个快照
+  
+**技术要点**：
+- 使用 PerformanceObserver 监听各类性能事件（非阻塞异步 API）
+- 支持 `buffered: true` 获取历史条目（页面加载期间的指标）
+- 兼容性处理：所有 API 调用都包裹在 try-catch 中，失败静默
+- TypeScript 类型安全：navigationType 使用 string 避免浏览器枚举值差异
+- INP 监控使用类型断言绕过 TypeScript 的非标准属性检查
+
+**性能影响**：
+- 监控开销极小：PerformanceObserver 是浏览器原生优化的 API
+- 延迟批量写入：避免频繁操作 localStorage 影响主线程
+- 构建产物增加：约 3KB (gzip 后约 1KB)
+- 主 bundle 从 665.84KB 增至 668.76KB（+2.92KB）
+
+**隐私保护**：
+- 所有数据仅保存在用户本地浏览器，不上传任何服务器
+- 不包含任何用户身份信息（无 IP、无指纹）
+- 不自动启用追踪或分析
+- 符合 TASKS.md 隐私原则："所有数据收集必须明确告知用户并获得授权"
+
+**局限性说明**：
+- INP 指标仅在 Chrome 96+ 支持，旧浏览器会静默跳过
+- Safari 对部分 PerformanceObserver 类型支持有限
+- CLS 监控不区分用户交互引起的布局偏移（hadRecentInput 检测）
+- 未实现性能数据的可视化展示（可在后续 Task #14 剩余项中添加）
+
+**待实现**：
+- 客户端错误上报（需用户授权）：全局 error/unhandledrejection 监听器
+- WebGPU 初始化失败详细日志：扩展 device.ts 的 probeDevice 函数
+- 开发模式性能 profiling 工具：React DevTools Profiler 集成或自定义面板
 
 **隐私原则**：所有数据收集必须明确告知用户并获得授权
 
