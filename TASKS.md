@@ -208,15 +208,60 @@
 - ✅ 多文档同时加载（buildDocPrompt 支持数组）
 - ✅ 长文档优化（MAX_DOC_CHARS 限制 + 提前停止）
 
-### 6. 图像理解集成
-**优先级**：低 | **类型**：功能扩展
+### 6. 图像理解集成 ✅
+**优先级**：低 | **类型**：功能扩展 | **完成时间**：2026-08-05
 
-- 📋 调研 transformers.js 对多模态模型的支持
-- 📋 集成 vision-language 模型（如 Qwen-VL）
-- 📋 实现图像预处理和 embedding
-- 📋 添加图文混排的对话展示
+- ✅ 调研 transformers.js 对多模态模型的支持
+- ✅ 集成 vision-language 模型（如 Qwen-VL）
+- ✅ 实现图像预处理和 embedding
+- ✅ 添加图文混排的对话展示
 
-**可行性调研**：需评估浏览器内运行多模态模型的性能和显存需求
+**已完成**：
+- transformers.js 多模态支持调研：
+  - AutoModelForVision2Seq：视觉-语言序列模型加载器
+  - AutoProcessor：统一处理文本和图像输入
+  - RawImage.fromURL：图像加载和预处理
+  - 支持 vision_encoder + decoder_model_merged 架构
+- SmolVLM-256M-Instruct 集成（models.ts + worker.ts）：
+  - 模型：HuggingFaceTB/SmolVLM-256M-Instruct
+  - 尺寸：WebGPU q4f16 约 189MB，WASM int8 约 260MB
+  - 特点：轻量视觉模型，看图说话/识别图中文字，中文能力有限
+  - 按需加载：首次带图提问时才下载，之后走浏览器缓存
+- VisionPipeline 独立管线（worker.ts）：
+  - 与聊天模型分离，首次使用才加载
+  - 分层量化：WebGPU 用 q4f16（embed_tokens/vision_encoder/decoder_model_merged），WASM 用 int8
+  - 自动设备检测：detectDevice() 判断 WebGPU/WASM 后端
+  - 消息格式：processor.apply_chat_template 处理图文混排输入
+- 图像预处理（images.ts）：
+  - fileToDataURL：读取图片 → createImageBitmap → Canvas 缩放 → JPEG dataURL
+  - MAX_IMAGE_EDGE = 512px：最长边限制，既够模型看清又控制存储体积
+  - 质量压缩：JPEG 0.85 quality
+  - MAX_IMAGES = 2：每条消息最多 2 张图（小模型上下文限制）
+  - 支持格式：ACCEPT_IMAGE_EXTS = ".jpg,.jpeg,.png,.webp,.gif,.bmp"
+- 图文混排展示（App.tsx + ChatMessage.tsx）：
+  - 消息结构：ChatMessage { role, content, images?: string[] }
+  - 图片附件渲染：DataURL 直接显示在消息气泡内
+  - 文件上传：fileInputRef 支持图片和文档混合选择
+  - 自动路由：worker 检测 last message 是否带图，自动切换到 generateVision
+
+**技术架构**：
+- 模型加载：AutoProcessor + AutoModelForVision2Seq.from_pretrained
+- 输入格式：[{ role: "user", content: [{ type: "image" }, { type: "text", text }] }]
+- 图像处理：RawImage.fromURL(dataURL) → processor(text, rawImages, { do_image_splitting: false })
+- 推理：model.generate({ ...inputs, do_sample: false, max_new_tokens, repetition_penalty: 1.1 })
+- 流式输出：TextStreamer 实时返回生成文本
+
+**性能与显存**：
+- WebGPU 模式：189MB 模型权重 × 1.8 运行时开销 ≈ 340MB 峰值显存
+- WASM 模式：260MB 模型权重 × 1.8 ≈ 468MB 内存（32 位地址空间内）
+- 首次加载：在线下载 + 编译着色器约需 10-30 秒（取决于网速和 GPU）
+- 缓存优化：isModelCached 检查 transformers-cache，已缓存免重下
+
+**局限性说明**：
+- 小模型上下文：不喂历史消息，只看当前问题 + 图片
+- 中文能力有限：SmolVLM 回答可能偏英文
+- 图片数量限制：MAX_IMAGES = 2（localStorage 存储和模型性能平衡）
+- 无批量处理：每次推理串行处理所有图片
 
 ---
 
