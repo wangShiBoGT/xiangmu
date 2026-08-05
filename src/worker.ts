@@ -51,12 +51,19 @@ class TextGenerationPipeline {
   static modelId: string | null = null;
   static tokenizer: Promise<PreTrainedTokenizer> | null = null;
   static model: Promise<PreTrainedModel> | null = null;
+  // WebGPU 降级标记：首次运行失败后自动降级到 WASM
+  static webgpuFailed = false;
 
   static async getInstance(
     modelId: string,
     progress_callback?: (info: ProgressInfo) => void,
   ) {
-    this.device ??= await detectDevice();
+    // 优化 1: 带缓存的设备检测，失败后自动降级
+    if (this.device === null) {
+      const detected = await detectDevice();
+      this.device = this.webgpuFailed ? "wasm" : detected;
+    }
+
     if (this.modelId !== modelId) {
       // 切换模型：释放旧实例再加载新模型
       if (this.model) {
@@ -77,20 +84,44 @@ class TextGenerationPipeline {
         `${info.name} 无法在 CPU(WASM) 模式加载（32 位内存上限）。请换用支持 WebGPU 的 Chrome/Edge 113+，或选择更小的模型。`,
       );
     }
-    this.tokenizer ??= AutoTokenizer.from_pretrained(modelId, {
-      progress_callback,
-    });
-    this.model ??= AutoModelForCausalLM.from_pretrained(modelId, {
-      // 默认 WebGPU 用 q4f16、WASM(CPU) 用 q4；模型注册表可按设备覆盖（如 GLM-Edge 的 q4f16 数值溢出）
-      dtype:
-        info?.dtype?.[this.device] ??
-        (this.device === "webgpu" ? "q4f16" : "q4"),
-      device: this.device,
-      use_external_data_format: info?.externalData ?? false,
-      progress_callback,
-    });
-    const [tokenizer, model] = await Promise.all([this.tokenizer, this.model]);
-    return { tokenizer, model, device: this.device };
+
+    // 优化 2: 分片加载策略 - tokenizer 和 model 并行加载
+    try {
+      this.tokenizer ??= AutoTokenizer.from_pretrained(modelId, {
+        progress_callback,
+      });
+      this.model ??= AutoModelForCausalLM.from_pretrained(modelId, {
+        // 默认 WebGPU 用 q4f16、WASM(CPU) 用 q4；模型注册表可按设备覆盖（如 GLM-Edge 的 q4f16 数值溢出）
+        dtype:
+          info?.dtype?.[this.device] ??
+          (this.device === "webgpu" ? "q4f16" : "q4"),
+        device: this.device,
+        use_external_data_format: info?.externalData ?? false,
+        progress_callback,
+      });
+      const [tokenizer, model] = await Promise.all([this.tokenizer, this.model]);
+      return { tokenizer, model, device: this.device };
+    } catch (error) {
+      // 优化 3: WebGPU 失败自动降级
+      const msg = String(error);
+      if (this.device === "webgpu" && /webgpu|GPUBuffer|mapAsync/i.test(msg)) {
+        console.warn("WebGPU 加载失败，自动降级到 WASM:", msg);
+        this.webgpuFailed = true;
+        this.device = "wasm";
+        this.tokenizer = null;
+        this.model = null;
+        this.modelId = null;
+        // 递归重试，使用 WASM
+        return this.getInstance(modelId, progress_callback);
+      }
+      throw error;
+    }
+  }
+
+  /** 重置设备状态（用于用户手动切换后端时） */
+  static resetDevice() {
+    this.device = null;
+    this.webgpuFailed = false;
   }
 }
 

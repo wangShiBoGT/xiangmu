@@ -30,6 +30,7 @@ import FindingsPage from "./components/FindingsPage";
 import ArchivePage from "./components/ArchivePage";
 import BenchmarkPage from "./components/BenchmarkPage";
 import AINexus, { type NexusStatus } from "./components/AINexus";
+import DeviceCompatibilityBanner from "./components/DeviceCompatibilityBanner";
 import {
   importReplay,
   listExperiments,
@@ -1029,6 +1030,9 @@ function App() {
           <>
             <div className="flex-1 overflow-y-auto">
               <div className="mx-auto max-w-[760px] px-6 py-8 space-y-8">
+                {/* WebGPU 兼容性提示横幅 */}
+                <DeviceCompatibilityBanner />
+
                 {messages.length === 0 && (
                   <Onboarding
                     report={report}
