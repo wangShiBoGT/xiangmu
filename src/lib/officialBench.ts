@@ -40,7 +40,7 @@ export const OFFICIAL_BENCH: OfficialBenchEntry[] = [
     sourceLabel: "DeepSeek-R1 官方模型卡（评测表）",
     sourceUrl:
       "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
-    verifiedAt: "2026-07-23",
+    verifiedAt: "2026-08-05",
     scores: [
       { benchmark: "AIME 2024", metric: "pass@1", value: 28.9 },
       { benchmark: "AIME 2024", metric: "cons@64", value: 52.7 },

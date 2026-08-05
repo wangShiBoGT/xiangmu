@@ -33,4 +33,57 @@ describe("officialBench", () => {
     ).not.toBeNull();
     expect(officialBenchFor("onnx-community/Qwen3-0.6B-ONNX")).toBeNull();
   });
+
+  it("DeepSeek-R1 系列三个模型均已录入", () => {
+    const qwen1_5b = officialBenchFor(
+      "onnx-community/DeepSeek-R1-Distill-Qwen-1.5B-ONNX",
+    );
+    const qwen7b = officialBenchFor(
+      "onnx-community/DeepSeek-R1-Distill-Qwen-7B-ONNX",
+    );
+    const llama8b = officialBenchFor(
+      "onnx-community/DeepSeek-R1-Distill-Llama-8B-ONNX",
+    );
+
+    expect(qwen1_5b).not.toBeNull();
+    expect(qwen7b).not.toBeNull();
+    expect(llama8b).not.toBeNull();
+
+    // 验证 AIME 2024 pass@1 成绩符合预期
+    const aime1_5b = qwen1_5b!.scores.find(
+      (s) => s.benchmark === "AIME 2024" && s.metric === "pass@1",
+    );
+    const aime7b = qwen7b!.scores.find(
+      (s) => s.benchmark === "AIME 2024" && s.metric === "pass@1",
+    );
+    const aime8b = llama8b!.scores.find(
+      (s) => s.benchmark === "AIME 2024" && s.metric === "pass@1",
+    );
+
+    expect(aime1_5b?.value).toBe(28.9);
+    expect(aime7b?.value).toBe(55.5);
+    expect(aime8b?.value).toBe(50.4);
+  });
+
+  it("Phi-3.5-mini 已扩展至 11 项基准测试", () => {
+    const phi = officialBenchFor(
+      "onnx-community/Phi-3.5-mini-instruct-onnx-web",
+    );
+    expect(phi).not.toBeNull();
+    expect(phi!.scores.length).toBeGreaterThanOrEqual(11);
+
+    const benchmarks = phi!.scores.map((s) => s.benchmark);
+    expect(benchmarks).toContain("MMLU");
+    expect(benchmarks).toContain("GSM8K");
+    expect(benchmarks).toContain("HumanEval");
+    expect(benchmarks).toContain("MBPP");
+    expect(benchmarks).toContain("ARC Challenge");
+    expect(benchmarks).toContain("Arena Hard");
+  });
+
+  it("所有条目的 verifiedAt 日期为 2026-08-05", () => {
+    for (const e of OFFICIAL_BENCH) {
+      expect(e.verifiedAt).toBe("2026-08-05");
+    }
+  });
 });
