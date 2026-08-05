@@ -90,6 +90,21 @@ export async function probeDevice(): Promise<DeviceReport> {
       ? "WebGPU 被浏览器安全策略阻止"
       : `初始化失败: ${msg.slice(0, 100)}`;
     webgpu = false;
+
+    // 记录到错误追踪系统（如果已启用）
+    if (typeof window !== 'undefined') {
+      import('./errorTracking').then(({ recordWebGPUError }) => {
+        recordWebGPUError('WebGPU 初始化失败', {
+          reason: webgpuFailReason,
+          error: msg,
+          userAgent: navigator.userAgent,
+          memoryGB,
+          cores,
+        });
+      }).catch(() => {
+        // 静默失败，不影响主流程
+      });
+    }
   }
 
   let tier: 1 | 2 | 3 = 1;
