@@ -126,7 +126,7 @@ const INK = "#E8EAF2";
 const INK2 = "#8A8FA3";
 const LINE = "rgba(232,234,242,0.12)";
 const AMBER = "#E2A33C";
-const INDIGO = "#818CF8";
+const MEASURE = "#10A0FF";
 const BG = "#0C0D10";
 const BG2 = "#13151B";
 
@@ -197,7 +197,7 @@ export function renderShareCard(
       if (i === 0) ctx.moveTo(px(i), py(series[i]));
       else ctx.lineTo(px(i), py(series[i]));
     }
-    ctx.strokeStyle = INDIGO;
+    ctx.strokeStyle = MEASURE;
     ctx.lineWidth = 2;
     ctx.stroke();
   }

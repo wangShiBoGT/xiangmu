@@ -23,7 +23,7 @@ export const SCORE_CARD_H = 630;
 const INK = "#E8EAF2";
 const INK2 = "#8A8FA3";
 const LINE = "rgba(232,234,242,0.12)";
-const INDIGO = "#818CF8";
+const MEASURE = "#10A0FF";
 const BG = "#0C0D10";
 
 const SANS =
@@ -78,7 +78,7 @@ export function renderScoreCard(
   const scoreText = String(data.score.total);
   ctx.fillText(scoreText, PAD - 6, 268);
   const scoreW = ctx.measureText(scoreText).width;
-  ctx.fillStyle = INDIGO;
+  ctx.fillStyle = MEASURE;
   ctx.font = `700 54px ${SANS}`;
   ctx.fillText(data.score.grade, PAD + scoreW + 24, 268);
   ctx.fillStyle = INK2;
@@ -115,7 +115,7 @@ export function renderScoreCard(
     ctx.fillText(b.label, barX, by + 5);
     ctx.fillStyle = LINE;
     ctx.fillRect(barX + 90, by - 8, barW, 10);
-    ctx.fillStyle = INDIGO;
+    ctx.fillStyle = MEASURE;
     ctx.fillRect(barX + 90, by - 8, barW * Math.max(0, Math.min(1, b.v)), 10);
     ctx.fillStyle = INK2;
     ctx.font = `400 15px ${MONO}`;
