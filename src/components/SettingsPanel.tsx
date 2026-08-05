@@ -1,5 +1,6 @@
 import type { GenerationParams } from "../lib/chatStore";
 import { clamp } from "../lib/chatStore";
+import { Term } from "./Term";
 
 interface Props {
   params: GenerationParams;
@@ -35,7 +36,7 @@ export default function SettingsPanel({
 
       <label className="block text-[13px] text-ink-2">
         <span className="flex justify-between mb-1">
-          <span>最大生成 tokens</span>
+          <span>最大生成 <Term id="token">tokens</Term></span>
           <span className="font-medium text-ink">{params.maxTokens}</span>
         </span>
         <input
@@ -57,7 +58,7 @@ export default function SettingsPanel({
 
       <label className="block text-[13px] text-ink-2">
         <span className="flex justify-between mb-1">
-          <span>温度（0 = 确定性输出）</span>
+          <span><Term id="temperature">温度</Term></span>
           <span className="font-medium text-ink">
             {params.temperature.toFixed(1)}
           </span>
@@ -81,7 +82,7 @@ export default function SettingsPanel({
 
       <label className="block text-[13px] text-ink-2">
         <span className="flex justify-between mb-1">
-          <span>Top-P</span>
+          <span><Term id="top_p">Top-P</Term></span>
           <span className="font-medium text-ink">
             {params.topP.toFixed(2)}
           </span>
@@ -121,7 +122,7 @@ export default function SettingsPanel({
           checked={params.chineseOnly}
           onChange={(e) => onChange({ ...params, chineseOnly: e.target.checked })}
         />
-        中文思考与回答（以系统提示注入，会记录进 trace）
+        中文思考与回答（以系统提示注入，会记录进 <Term id="trace">trace</Term>）
       </label>
     </div>
   );

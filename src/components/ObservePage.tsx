@@ -98,6 +98,9 @@ import {
   IconAperture,
 } from "./icons";
 import { PrimaryAction } from "./ds";
+import { Term } from "./Term";
+import ReplayControlPanel from "./ReplayControlPanel";
+import { ReplayController } from "../lib/replayControls";
 
 // Ocean 三维视图懒加载：three 只在第一次打开时下载
 const OceanView = lazy(() => import("./OceanView"));
@@ -709,6 +712,8 @@ export default function ObservePage({
   const [demoIdx, setDemoIdx] = useState(-1);
   const [demoFocus, setDemoFocus] = useState<number | null>(null);
   const [demoNote, setDemoNote] = useState<string | null>(null);
+  // Replay 控制器：管理演示回放的播放/暂停/速度/书签
+  const [replayController, setReplayController] = useState<ReplayController | null>(null);
   // Runtime Journey 开场序列：tokenize→prefill→decode 阶段号；null = 不在开场铺垫
   const [journeyStage, setJourneyStage] = useState<number | null>(null);
   // 先猜后验（Cognitive DNA 原则六）：犹豫点揭示前先请观众预测，可跳过、每场只一次
@@ -1632,7 +1637,15 @@ export default function ObservePage({
     let dead = false;
     void loadDemoTrace()
       .then((d) => {
-        if (!dead) setDemo(d);
+        if (!dead) {
+          setDemo(d);
+          // 初始化 Replay 控制器
+          const steps = d.record.root.trace?.steps ?? [];
+          if (steps.length > 0) {
+            const controller = new ReplayController(steps.length);
+            setReplayController(controller);
+          }
+        }
       })
       .catch(() => {});
     return () => {
@@ -2165,6 +2178,22 @@ export default function ObservePage({
                         <span className="px-1 font-mono text-[11px] tabular-nums text-obs-ink2/70 select-none">
                           {Math.max(demoIdx + 1, 0)}/{demoSteps.length}
                         </span>
+                      </div>
+                    )}
+                  {/* Replay 增强控制面板：集成到演示回放中 */}
+                  {replayController &&
+                    (demoPhase === "playing" ||
+                      demoPhase === "paused" ||
+                      demoPhase === "done") &&
+                    demoSteps.length > 0 && (
+                      <div className="absolute bottom-4 left-6 right-6">
+                        <ReplayControlPanel
+                          controller={replayController}
+                          onStepChange={(step) => {
+                            setDemoIdx(step);
+                            if (demoPhase === "playing") pauseDemo();
+                          }}
+                        />
                       </div>
                     )}
                   {/* 仪器底部动作栏 */}
@@ -3065,9 +3094,9 @@ export default function ObservePage({
                 <span className="text-obs-ink">{modelName}</span>
                 <span className="text-obs-ink2">后端</span>
                 <span className="text-obs-ink">{device === "webgpu" ? "WebGPU · GPU 加速" : device === "wasm" ? "WASM · CPU" : "—"}</span>
-                <span className="text-obs-ink2">温度</span>
+                <Term id="temperature">温度</Term>
                 <span className="tabular-nums text-obs-ink">{params.temperature}</span>
-                <span className="text-obs-ink2">Top-P</span>
+                <Term id="topP">Top-P</Term>
                 <span className="tabular-nums text-obs-ink">{params.topP}</span>
                 <span className="text-obs-ink2">Seed</span>
                 <span className="text-obs-ink">每次运行随机生成并记录，随 trace 导出可复现</span>

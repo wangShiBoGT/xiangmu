@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { specialTokenLabel, type TokenStep } from "../lib/trace";
 import { prefersReducedMotion } from "../lib/reducedMotion";
+import { Term } from "./Term";
 
 /** 采样舱（Sampling Chamber）：产品的标志性视觉行为——
  *  每个被采样的 token 都穿过一张概率阈面。
@@ -253,7 +254,7 @@ export default function SamplingChamber({
           {step && !note && (
             <div className="flex flex-col items-center gap-2">
               <p className="text-[11px] tabular-nums text-obs-ink2/50 select-none">
-                第 {index + 1} 步 · p={step.prob.toFixed(2)} · 熵 {step.entropy.toFixed(2)} nats
+                第 {index + 1} 步 · <Term id="probability">p</Term>={step.prob.toFixed(2)} · <Term id="entropy">熵</Term> {step.entropy.toFixed(2)} nats
                 <span className="ml-2 font-mono text-obs-ink2/35">steps[{index}].topk</span>
                 {compareMode && (
                   <span className="ml-2 rounded bg-amber-400/15 px-1.5 py-0.5 text-amber-200">
@@ -326,7 +327,7 @@ export default function SamplingChamber({
           >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-[14px] font-medium text-obs-ink">
-                完整候选分布 · 第 {index + 1} 步
+                完整<Term id="top_k">候选分布</Term> · 第 {index + 1} 步
               </h3>
               <button
                 type="button"

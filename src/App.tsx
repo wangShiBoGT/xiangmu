@@ -30,8 +30,14 @@ import FindingsPage from "./components/FindingsPage";
 import ArchivePage from "./components/ArchivePage";
 import BenchmarkPage from "./components/BenchmarkPage";
 import StatisticsPage from "./components/StatisticsPage";
+import LeaderboardPage from "./components/LeaderboardPage";
+import EmbeddingPage from "./pages/EmbeddingPage";
+import RAGPage from "./pages/RAGPage";
+import PerformancePage from "./pages/PerformancePage";
+import AgentPage from "./pages/AgentPage";
 import AINexus, { type NexusStatus } from "./components/AINexus";
 import DeviceCompatibilityBanner from "./components/DeviceCompatibilityBanner";
+import ServiceWorkerUpdate from "./components/ServiceWorkerUpdate";
 import {
   importReplay,
   listExperiments,
@@ -66,6 +72,7 @@ import {
 import { MODELS, getModel, loadCustomModels } from "./lib/models";
 import { initWebVitals } from "./lib/webVitals";
 import { initProfiler } from "./lib/profiler";
+import { registerServiceWorker, onStatusChange, type ServiceWorkerStatus } from "./lib/serviceWorker";
 import LandingHero from "./components/LandingHero";
 const JourneyPage = lazy(() => import("./components/JourneyPage"));
 const EnhancedInputDemo = lazy(() => import("./components/EnhancedInputDemo"));
@@ -122,6 +129,13 @@ function App() {
   const [docError, setDocError] = useState<string | null>(null);
   const [parsingDoc, setParsingDoc] = useState(false);
   const [webOn, setWebOn] = useState(false);
+  const [swStatus, setSwStatus] = useState<ServiceWorkerStatus>({
+    supported: false,
+    registered: false,
+    active: false,
+    waiting: false,
+    updateAvailable: false,
+  });
   const [searching, setSearching] = useState(false);
   const [visionLoading, setVisionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -163,8 +177,13 @@ function App() {
     | "archive"
     | "benchmark"
     | "statistics"
+    | "leaderboard"
     | "journey"
     | "enhanced-input-demo"
+    | "embedding"
+    | "rag"
+    | "performance"
+    | "agent"
   >("workspace");
   /** 从 Workspace 启动一次 Run：携带提示词进入显微镜层自动开跑 */
   const [workspacePrompt, setWorkspacePrompt] = useState<string | null>(null);
@@ -271,6 +290,19 @@ function App() {
     initWebVitals();
     // 初始化开发模式性能 Profiler
     initProfiler();
+    // 注册 Service Worker
+    registerServiceWorker().then((registered) => {
+      if (registered) {
+        console.log('[App] Service Worker registered successfully');
+        // 监听状态变化
+        onStatusChange((status) => {
+          setSwStatus(status);
+          console.log('[App] Service Worker status:', status);
+        });
+      }
+    }).catch((error) => {
+      console.error('[App] Service Worker registration failed:', error);
+    });
   }, []);
 
   useEffect(() => {
@@ -830,6 +862,10 @@ function App() {
                   ["findings", "解读"],
                   ["archive", "实验档案"],
                   ["benchmark", "成绩单"],
+                  ["leaderboard", "排行榜"],
+                  ["embedding", "向量"],
+                  ["rag", "RAG"],
+                  ["performance", "性能"],
                   ["discover", "设备"],
                 ] as const
               ).map(([v, label]) => (
@@ -958,6 +994,11 @@ function App() {
             onGoArchive={() => setView("archive")}
             onGoBenchmark={() => setView("benchmark")}
             onGoStatistics={() => setView("statistics")}
+            onGoLeaderboard={() => setView("leaderboard")}
+            onGoEmbedding={() => setView("embedding")}
+            onGoRAG={() => setView("rag")}
+            onGoPerformance={() => setView("performance")}
+            onGoAgent={() => setView("agent")}
             onGoDiscover={() => setView("discover")}
             onWantModel={
               status !== "ready"
@@ -1030,6 +1071,17 @@ function App() {
         )}
 
         {!showLanding && view === "statistics" && <StatisticsPage />}
+
+        {!showLanding && view === "leaderboard" && (
+          <LeaderboardPage />
+        )}
+
+        {!showLanding && view === "embedding" && <EmbeddingPage />}
+
+        {!showLanding && view === "rag" && <RAGPage />}
+
+        {!showLanding && view === "performance" && <PerformancePage />}
+        {!showLanding && view === "agent" && <AgentPage />}
 
         {view === "enhanced-input-demo" && (
           <Suspense fallback={<div className="flex-1 bg-obs" />}>
@@ -1258,6 +1310,7 @@ function App() {
           </>
         )}
       </div>
+      <ServiceWorkerUpdate status={swStatus} />
     </div>
   );
 }

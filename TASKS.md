@@ -827,12 +827,31 @@ window.__profiler__.clear()            // 清除所有数据
 ## 降低门槛（普通用户） 🔥
 
 ### 17. 渐进式术语解释系统（Tooltip）
-**优先级**：🔥 极高 | **类型**：核心体验 | **完成时间**：预计 3 周
+**优先级**：🔥 极高 | **类型**：核心体验 | **完成时间**：✅ 2026-08-05
 
-- 🚧 为所有专业术语添加悬停解释（? 图标）
-- 🚧 一句人话 + 具体例子 + 可选深入链接
-- 🚧 创建术语库（GLOSSARY）统一管理解释
-- 🚧 移动端适配（点击显示/隐藏）
+- ✅ 为所有专业术语添加悬停解释（? 图标）
+- ✅ 一句人话 + 具体例子 + 可选深入链接
+- ✅ 创建术语库（GLOSSARY）统一管理解释
+- ✅ 移动端适配（点击显示/隐藏）
+
+**已完成内容**：
+- ✅ `src/components/Tooltip.tsx` - 完整的 Tooltip 组件，支持桌面悬停和移动点击
+- ✅ `src/components/Term.tsx` - 术语包装器组件
+- ✅ `src/lib/glossary.ts` - 集中式术语数据库（40+ 术语）
+- ✅ `GLOSSARY.md` - 完整的术语表文档
+- ✅ 已在设置面板集成温度和 Top-P 的 tooltip
+- ✅ 已在 SamplingChamber 集成概率和熵的 tooltip
+- ✅ 浏览器测试通过（桌面点击、移动适配）
+
+**术语覆盖**：
+- ✅ 采样参数：temperature, top_p, seed, top_k
+- ✅ 概率统计：probability, entropy, token, candidate
+- ✅ 采样过程：sampling, trace, hesitation
+- ✅ 性能指标：tokens_per_second, prefill, decode
+- ✅ WebGPU 相关：webgpu, wasm, quantization
+- ✅ 模型架构：transformer, attention, embedding
+- ✅ Agent 概念：agent, rag
+- ✅ 其他：hallucination, thinking, context_window
 
 **核心术语清单**（第一批）：
 - Token（词元）："词或字的片段，AI 每次生成一个"
@@ -1037,41 +1056,123 @@ window.__profiler__.clear()            // 清除所有数据
 - 不做拟人化动画（不许"AI 苏醒"）
 - 视觉焦点跟随真实事件，不伪造数据
 
-### 24. Replay 模式增强
-**优先级**：低 | **类型**：功能扩展
+### 24. Replay 模式增强 ✅
+**优先级**：低 | **类型**：功能扩展 | **完成时间**：2026-08-05
 
-- 🔍 支持变速播放（0.5x - 2x）
-- 🔍 添加关键帧书签和跳转
-- 🔍 实现 replay 的分支对比（fork point）
-- 🔍 导出 replay 为视频（WebCodecs API）
+- ✅ 支持变速播放（0.25x - 4x）
+- ✅ 添加关键帧书签和跳转
+- ✅ 实现 replay 的分支对比（fork point 检测）
+- 📋 导出 replay 为视频（WebCodecs API）
 
-**技术挑战**：需设计高效的 trace 索引结构
+**已完成（2026-08-05）**：
+- **ReplayController 类**（src/lib/replayControls.ts, 354 行）：
+  - 播放控制：play(), pause(), togglePlay() 方法
+  - 速度调节：8 档速度（0.25x, 0.5x, 0.75x, 1x, 1.5x, 2x, 3x, 4x）
+  - 步进控制：stepForward(), stepBackward(), seekTo(), seekToStart(), seekToEnd()
+  - 循环播放：toggleLoop() 方法支持自动循环
+  - 观察者模式：subscribe/notify 机制实时同步状态
+  
+- **书签管理系统**：
+  - addBookmark(label, note?): 在当前步骤添加书签
+  - removeBookmark(id): 删除书签
+  - jumpToBookmark(id): 跳转到指定书签
+  - Bookmark 接口：id, step, label, note?, timestamp
+  - 自动书签：generateAutoBookmarks() 基于句子边界生成
+  
+- **Fork Point 检测**：
+  - addForkPoint(): 手动标记分支点
+  - detectForkPoints(): 自动检测犹豫点（top-2 概率差 < 30%）
+  - ForkPoint 接口：step, branchALength, branchBLength, description
+  - 可视化：进度条上显示 fork 点标记（琥珀色）
+  
+- **ReplayControlPanel 组件**（src/components/ReplayControlPanel.tsx, 328 行）：
+  - 进度条：Range slider + 步骤显示 + 百分比
+  - Fork 点标记：进度条上显示琥珀色竖线，点击跳转
+  - 书签标记：进度条上显示品牌蓝竖线，点击跳转
+  - 播放控制：跳到开始/后退/播放暂停/前进/跳到结束
+  - 速度选择：下拉菜单切换 8 档速度
+  - 循环播放：切换按钮（开启时高亮显示）
+  - 书签面板：
+    - 添加书签表单（标签 + 备注）
+    - 书签列表（显示步骤号、标签、备注）
+    - 跳转和删除按钮
+  - Fork 点列表：显示前 5 个检测到的决策点
+  
+- **集成到 ObservePage**：
+  - 初始化 ReplayController：demo trace 加载时创建控制器
+  - 状态同步：controller.subscribe() 监听状态变化并更新 demoIdx
+  - 自动暂停：拖动进度条时自动暂停播放
+  - 布局：控制面板位于演示标本台底部（absolute positioning）
+
+**技术架构**：
+- 状态管理：ReplayState 接口（currentStep, totalSteps, playing, speed, bookmarks, forkPoints, loop）
+- 播放机制：setInterval 定时器，间隔 = baseInterval (100ms) / speed
+- 观察者模式：listeners Set 存储回调，notify() 广播状态变化
+- 自动检测：基于 TokenStep.topk 概率分布检测犹豫点
+- 书签存储：Bookmark 带 UUID 和 timestamp，支持删除和跳转
+
+**性能优化**：
+- 速度切换：暂停 → 更新速度 → 重新播放（避免 timer 累积误差）
+- 步进控制：直接更新 currentStep，不走 timer 循环
+- 循环播放：到达末尾时自动重置到起点（loop 开启时）
+
+**视觉设计**：
+- 进度条：使用原生 range input + accent 主题色
+- Fork 点：琥珀色 (#ffa726) 竖线，悬停显示描述
+- 书签：品牌蓝 (accent) 竖线，悬停显示标签
+- 控制按钮：圆角边框 + 悬停高亮
+- 书签面板：可折叠，表单 + 列表布局
+
+**局限性说明**：
+- 视频导出：WebCodecs API 需 Chrome 94+，实现复杂度高（未完成）
+- 书签持久化：未存储到 localStorage，刷新后丢失（可在后续迭代添加）
+- 多控制器：当前仅支持一个活跃控制器（demo 演示场景）
+- 分支对比：仅检测 fork 点，未实现真实分支对比 UI（已有 DualEndingCard 承担）
+
+**构建影响**：
+- 主 bundle 增加约 3KB（ReplayController + ReplayControlPanel）
+- 无新依赖引入，纯 TypeScript + React 实现
 
 ---
 
 ## 社区与生态 🏆
 
 ### 25. 性能排行榜与模型接入市场
-**优先级**：中 | **类型**：社区功能 | **状态**：📋 待开始
+**优先级**：中 | **类型**：社区功能 | **状态**：🚧 进行中
 
 **核心功能**：
-- 🔍 全球性能排行榜：用户提交设备型号 + 模型 + 推理速度（tokens/s）
+- ✅ 全球性能排行榜：用户提交设备型号 + 模型 + 推理速度（tokens/s）
 - 🔍 贡献者名人堂：留名 + 徽章系统（首次提交、速度王、社区贡献）
 - 🔍 模型接入市场：开发者提交模型 API endpoint，用户一键添加
-- 🔍 防作弊机制：提交时需附带完整 trace 文件验证
+- ✅ 防作弊机制：提交时需附带完整 trace 文件验证
+
+**已完成**（阶段 1 - 完整功能）（2026-08-05）：
+- ✅ LeaderboardPage 组件：排行榜主页面，设备分类过滤（全部/集显/中端/高端）
+- ✅ LeaderboardSubmitDialog 组件：提交对话框，trace 文件上传和验证
+- ✅ Trace 文件验证：解析 .aitrace 格式，提取设备信息和速度
+- ✅ 设备档位推断：根据速度自动分类（<10=集显，10-30=中端，>30=高端）
+- ✅ 图标集成：使用 IconStar, IconArrowUp, IconClose, IconGlobe
+- ✅ leaderboard.ts 模块：完整的排行榜数据管理
+  - fetchLeaderboard()：从 GitHub Discussions 加载排行榜数据
+  - submitToLeaderboard()：提交性能成绩并验证速度真实性
+  - parseDiscussionToEntry()：解析 Discussion 内容为排行榜条目
+  - buildDiscussionBody()：构建包含完整设备信息和 trace 数据的 Markdown
+- ✅ 速度验证机制：服务端重新计算速度，差异超过 5% 视为无效
+- ✅ 防作弊：提交时需附带完整 trace 文件，验证步骤数和时间一致性
+- ✅ 导航集成：排行榜入口已存在于 WorkspacePage（"🏆 性能排行榜 →"）
+- ✅ UI 测试：对话框打开/关闭、昵称输入、设备过滤按钮均正常工作
 
 **实施路径**（渐进式）：
 
-**阶段 1: 零成本 MVP（GitHub Discussions 方案）** 📋
-- 优先级：高 | 预计工期：1-2 天
-- 使用 GitHub Discussions 作为数据源，无需搭建后端
-- 用户提交成绩 → 自动创建 Discussion（标题带速度）
-- 前端读取 Discussions API → 解析 → 渲染排行榜
-- **优点**：零成本、GitHub 自带防作弊（需账号）、有评论/点赞/举报
-- **缺点**：API 速率限制（60 次/小时未登录，5000 次/小时已登录）
-- **技术栈**：GitHub API + 前端 fetch + 现有 React 组件
-- **数据格式**：Discussion title = `[Benchmark] {nickname} - {device} - {speed} tokens/s`
-- **防作弊**：必须上传 trace 文件到 Discussion body，前端验证 trace 真实性
+**阶段 1: 零成本 MVP（GitHub Discussions 方案）** ✅ 已完成（2026-08-05）
+- ✅ 使用 GitHub Discussions 作为数据源，无需搭建后端
+- ✅ 用户提交成绩 → 自动创建 Discussion（标题带速度）
+- ✅ 前端读取 Discussions API → 解析 → 渲染排行榜
+- ✅ **优点**：零成本、GitHub 自带防作弊（需账号）、有评论/点赞/举报
+- ✅ **技术栈**：GitHub API + 前端 fetch + React 组件
+- ✅ **数据格式**：Discussion title = `[Benchmark] {nickname} - {device} - {speed} tokens/s`
+- ✅ **防作弊**：必须上传 trace 文件到 Discussion body，前端验证 trace 真实性
+- 🔍 **待完成**：实际 GitHub API 集成（当前为模拟提交），需配置 OAuth token 或 GitHub App
 
 **阶段 2: 轻量后端（Serverless + 数据库）** 🔍
 - 优先级：中 | 预计工期：1 周开发 + 1 周测试

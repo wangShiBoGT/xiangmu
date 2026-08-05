@@ -40,6 +40,11 @@ export default function WorkspacePage({
   onWatchDemo,
   onGoJourney,
   onGoStatistics,
+  onGoLeaderboard,
+  onGoEmbedding,
+  onGoRAG,
+  onGoPerformance,
+  onGoAgent,
   onWantModel,
 }: {
   report: DeviceReport | null;
@@ -59,6 +64,16 @@ export default function WorkspacePage({
   onGoJourney: () => void;
   /** 本地统计面板 */
   onGoStatistics: () => void;
+  /** 性能排行榜 */
+  onGoLeaderboard: () => void;
+  /** Embedding 向量可视化 */
+  onGoEmbedding: () => void;
+  /** RAG 检索增强生成 */
+  onGoRAG: () => void;
+  /** 模型性能分析工具 */
+  onGoPerformance: () => void;
+  /** Agent 协作可视化 */
+  onGoAgent: () => void;
   /** 尚未加载模型时：回首屏选择模型 */
   onWantModel?: () => void;
 }) {
@@ -417,6 +432,36 @@ export default function WorkspacePage({
               onClick={onGoStatistics}
             >
               📊 本地统计 →
+            </button>
+            <button
+              className="mt-3 ml-4 text-[12px] text-obs-ink2 underline decoration-dotted underline-offset-4 hover:text-obs-ink"
+              onClick={onGoLeaderboard}
+            >
+              🏆 性能排行榜 →
+            </button>
+            <button
+              className="mt-3 ml-4 text-[12px] text-obs-ink2 underline decoration-dotted underline-offset-4 hover:text-obs-ink"
+              onClick={onGoEmbedding}
+            >
+              🧬 Embedding 向量可视化 →
+            </button>
+            <button
+              className="mt-3 ml-4 text-[12px] text-obs-ink2 underline decoration-dotted underline-offset-4 hover:text-obs-ink"
+              onClick={onGoRAG}
+            >
+              🔍 RAG 检索增强 →
+            </button>
+            <button
+              className="mt-3 ml-4 text-[12px] text-obs-ink2 underline decoration-dotted underline-offset-4 hover:text-obs-ink"
+              onClick={onGoPerformance}
+            >
+              ⚡ 模型性能分析 →
+            </button>
+            <button
+              className="mt-3 ml-4 text-[12px] text-obs-ink2 underline decoration-dotted underline-offset-4 hover:text-obs-ink"
+              onClick={onGoAgent}
+            >
+              🤖 Agent 协作可视化 →
             </button>
             <button
               className="mt-3 ml-4 text-[12px] text-obs-ink2 underline decoration-dotted underline-offset-4 hover:text-obs-ink"
