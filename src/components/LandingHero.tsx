@@ -365,15 +365,15 @@ export default function LandingHero({
 
       {/* 主体：谜题 → 谜底 → 真实证据切片 → 入口（锚点 A1–A4；首屏第一层无术语无技术卖点）
           矮视口可滚动，主按钮永远可达（P4：不允许存在点不到的入口） */}
-      <div className="landing-hero-scroll relative z-20 flex flex-1 flex-col overflow-y-auto px-6">
-       <div className="m-auto flex w-full flex-col items-center py-10 pb-96">
-        <h2 className="max-w-[680px] whitespace-nowrap text-center text-[clamp(24px,4vw,40px)] font-semibold tracking-[-0.02em] leading-[1.35]">
+      <div className="landing-hero-scroll relative z-20 flex flex-1 flex-col overflow-y-auto px-4 sm:px-6">
+       <div className="m-auto flex w-full flex-col items-center py-8 pb-80 sm:py-10 sm:pb-96">
+        <h2 className="max-w-[680px] px-4 text-center text-[clamp(22px,5vw,40px)] font-semibold tracking-[-0.02em] leading-[1.35] sm:whitespace-nowrap sm:px-0">
           为什么同一句问题，AI 每次回答都不一样？
         </h2>
-        <p className="mt-3 max-w-[680px] text-center text-[16px] leading-relaxed text-[#C0C4D2]">
+        <p className="mt-3 max-w-[680px] px-4 text-center text-[14px] leading-relaxed text-[#C0C4D2] sm:px-0 sm:text-[16px]">
           因为这个答案，曾经差点变成另一个答案。
         </p>
-        <p className="mt-1.5 max-w-[680px] text-center text-[12px] tracking-wide text-[#8A8FA3] select-none">
+        <p className="mt-1.5 max-w-[680px] px-4 text-center text-[11px] tracking-wide text-[#8A8FA3] select-none sm:px-0 sm:text-[12px]">
           理解 AI，不靠信任，靠观察 · Don&rsquo;t trust AI. Observe AI.
         </p>
         <div className="mt-6 flex w-full justify-center">
@@ -401,9 +401,9 @@ export default function LandingHero({
           </div>
         ) : !error && (
           <>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <button
-                className="flex items-center gap-2 rounded-md bg-[#10b981] px-8 py-3 text-[14px] font-medium text-white transition-all hover:bg-[#059669]"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-[#10b981] px-8 py-3 text-[14px] font-medium text-white transition-all hover:bg-[#059669] sm:w-auto"
                 onClick={() => {
                   if (ready) {
                     onEnter();
@@ -418,7 +418,7 @@ export default function LandingHero({
               </button>
               {!ready && (
                 <button
-                  className="rounded-md border border-white/15 bg-white/5 px-6 py-3 text-[14px] text-[#C0C4D2] transition-colors hover:border-white/30 hover:text-white"
+                  className="w-full rounded-md border border-white/15 bg-white/5 px-6 py-3 text-[14px] text-[#C0C4D2] transition-colors hover:border-white/30 hover:text-white sm:w-auto"
                   onClick={() => {
                     logVisit("hero_pick_model");
                     setPickerOpen((o) => !o);
@@ -428,7 +428,7 @@ export default function LandingHero({
                 </button>
               )}
             </div>
-            <p className="mt-3 text-center text-[12px] text-[#8A8FA3]">
+            <p className="mt-3 px-4 text-center text-[11px] text-[#8A8FA3] sm:px-0 sm:text-[12px]">
               推理全部在本机完成，数据不出设备；不会自动下载任何模型
             </p>
             {onReplayImport && (
@@ -503,8 +503,8 @@ export default function LandingHero({
       </div>
 
       {/* 底部信息卡（真实状态，不写死）：固定视口底部；矮视口隐藏，不遮挡首屏主动作 */}
-      <div className="landing-bottom-cards absolute inset-x-0 bottom-0 z-10 mx-auto w-full max-w-3xl px-6 pb-6">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
+      <div className="landing-bottom-cards absolute inset-x-0 bottom-0 z-10 mx-auto w-full max-w-3xl px-4 pb-4 sm:px-6 sm:pb-6">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:grid-cols-4">
           {[
             {
               label: "观察",
@@ -548,7 +548,7 @@ export default function LandingHero({
         </div>
 
         {/* 音频驱动矩阵（可选）：真实频谱驱动背景，不播则为环境波 */}
-        <div className="mt-4 flex items-center justify-center gap-2 text-[12px] text-[#8A8FA3]">
+        <div className="mt-4 flex flex-col items-center justify-center gap-2 text-[11px] text-[#8A8FA3] sm:flex-row sm:text-[12px]">
           <span className="select-none">背景矩阵</span>
           {rig ? (
             <button

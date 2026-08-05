@@ -182,7 +182,7 @@ export default function SamplingChamber({
         </div>
 
         {/* 阈面后：已经形成、可回放的生成路径 */}
-        <div className="flex min-h-[44px] w-full max-w-[560px] flex-wrap items-center justify-center gap-y-0.5 text-[13px] leading-6">
+        <div className="flex min-h-[44px] w-full max-w-[560px] flex-wrap items-center justify-center gap-y-0.5 px-2 text-[13px] leading-6 @sm:px-0">
           {path.length > 0 ? (
             <>
               {index >= PATH_WINDOW && (
@@ -196,7 +196,7 @@ export default function SamplingChamber({
                     className={
                       t.special
                         ? "mx-1 rounded border border-obs-line px-1 text-[11px] text-obs-ink2/60"
-                        : `whitespace-pre ${
+                        : `whitespace-pre text-[12px] @sm:text-[13px] ${
                             i === path.length - 1 && active
                               ? "text-obs-ink"
                               : "text-obs-ink2/80"
@@ -229,7 +229,7 @@ export default function SamplingChamber({
                 <span className="ml-2 font-mono text-obs-ink2/35">steps[{index}].topk</span>
               </p>
               {steps.length > 1 && onStepSeek && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col items-center gap-2 @sm:flex-row">
                   <button
                     type="button"
                     className="rounded border border-obs-line bg-obs-2 px-2 py-0.5 text-[11px] text-obs-ink2 hover:border-measure-400/40 hover:text-obs-ink disabled:opacity-40 disabled:cursor-not-allowed"
@@ -245,7 +245,7 @@ export default function SamplingChamber({
                     max={steps.length - 1}
                     value={index}
                     onChange={(e) => onStepSeek(Number(e.target.value))}
-                    className="w-48 accent-measure-500"
+                    className="w-32 accent-measure-500 @sm:w-48"
                     title={`时间轴：${index + 1} / ${steps.length}`}
                   />
                   <button
@@ -259,7 +259,7 @@ export default function SamplingChamber({
                   </button>
                   <button
                     type="button"
-                    className={`ml-2 rounded border px-2 py-0.5 text-[11px] transition-colors ${
+                    className={`ml-0 mt-2 rounded border px-2 py-0.5 text-[11px] transition-colors @sm:ml-2 @sm:mt-0 ${
                       showThreshold
                         ? "border-amber-400/50 bg-amber-400/15 text-amber-200"
                         : "border-obs-line bg-obs-2 text-obs-ink2 hover:border-measure-400/40"

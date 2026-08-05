@@ -881,3 +881,47 @@ pre {
     scroll-behavior: auto !important;
   }
 }
+
+/* ── 响应式布局优化 ── */
+
+/* 移动端（<768px）样式调整 */
+@media (max-width: 767px) {
+  /* LandingHero 底部卡片在移动端隐藏，避免遮挡主动作 */
+  .landing-bottom-cards {
+    display: none;
+  }
+
+  /* 采样舱在移动端减小垂直间距 */
+  .chamber {
+    min-height: 320px;
+  }
+}
+
+/* 平板及以上（≥768px）保持原有布局 */
+@media (min-width: 768px) {
+  /* 双栏布局容器 */
+  .dual-column-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* 横屏优化（aspect-ratio 判断） */
+@media (max-height: 600px) and (orientation: landscape) {
+  /* 横屏时压缩垂直间距 */
+  .landing-hero-scroll > div {
+    padding-top: 2rem !important;
+    padding-bottom: 12rem !important;
+  }
+
+  /* 采样舱在横屏时进一步压缩 */
+  .chamber {
+    min-height: 280px;
+  }
+
+  /* 底部卡片在横屏时隐藏 */
+  .landing-bottom-cards {
+    display: none;
+  }
+}
