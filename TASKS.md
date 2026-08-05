@@ -402,15 +402,17 @@
 
 ## 开发工具与流程 📋
 
-### 11. 测试覆盖率提升
-**优先级**：中 | **类型**：质量保障
+### 11. 测试覆盖率提升 ✅
+**优先级**：中 | **类型**：质量保障 | **完成时间**：2026-08-05
 
 - ✅ 补充核心组件的单元测试（目标 >80%）
-- 📋 添加 E2E 测试（Playwright）
-- 📋 实现 trace 数据的回归测试
-- 📋 添加视觉回归测试（截图对比）
+- ✅ 添加 E2E 测试（Playwright）
+- ✅ 实现 trace 数据的回归测试
+- ✅ 添加视觉回归测试（截图对比）
 
 **已完成（2026-08-05）**：
+
+**单元测试**（第 1 项）：
 - 新增 src/lib/statistics.test.ts：7 个测试用例覆盖统计聚合、数据导出
 - 新增 src/components/StatisticsPage.test.tsx：4 个测试用例覆盖统计页面逻辑
 - 扩展 src/lib/officialBench.test.ts：新增 3 个测试用例验证评测数据完整性
@@ -418,17 +420,55 @@
 - 所有 11 个新增测试用例全部通过
 - 采用纯逻辑测试策略，重点覆盖业务逻辑层和数据验证层
 
+**E2E 测试**（第 2 项）：
+- 安装 @playwright/test + Chromium 浏览器（114.5 MB）
+- 配置文件：playwright.config.ts（自动启动开发服务器）
+- 5 个测试套件，48 个测试用例：
+  - e2e/landing.spec.ts：首页加载、导航、WebGPU 兼容性横幅
+  - e2e/chat.spec.ts：对话输入、新建会话、设置面板、模型选择
+  - e2e/observe.spec.ts：Observe 模式、Trace 可视化、导出/导入
+  - e2e/multimodal.spec.ts：文档上传、图像理解、联网搜索
+  - e2e/responsive.spec.ts：桌面/平板/移动/横屏布局响应式
+- npm 脚本：test:e2e, test:e2e:ui, test:e2e:headed
+- 测试夹具：e2e/fixtures/test.txt
+
+**Trace 回归测试**（第 3 项）：
+- e2e/trace-regression.spec.ts：6 个测试套件，11 个测试用例
+- 数据完整性：TokenStep 结构、概率分布总和、熵计算正确性
+- 分岔树结构：BranchNode 验证、MAX_BRANCH_NODES=8 限制
+- 深度采集：DeepCapture top-256 长度、restMass 范围、Logits 排序
+- 管线计时：tokenizeMs/prefillMs/decodeMs 非负验证
+- 导出/导入往返一致性
+
+**视觉回归测试**（第 4 项）：
+- e2e/visual-regression.spec.ts：9 个测试套件，30+ 个测试用例
+- 首页视觉：全页面、Hero 区域、CTA 按钮悬停
+- 聊天界面：工作区布局、空状态、输入区域、模型下拉、设置面板
+- Observe 模式：页面布局、SamplingChamber 3D、概率条、时间轴
+- 响应式：移动/平板/桌面三种视口的首页和聊天截图
+- 组件级：消息气泡、加载 spinner、代码块
+- 主题：暗色主题首页、高对比度模式、焦点状态
+- 截图稳定化：禁用动画、隐藏时间戳、等待 3D 渲染
+
+**测试框架配置**：
+- vitest 4.1.10：单元测试和组件测试
+- @playwright/test：E2E 测试和视觉回归测试
+- playwright.config.ts：Chromium、超时 60s、HTML 报告、trace on retry
+- .gitignore：playwright-report/, test-results/
+
 **技术要点**：
 - 使用 vitest 4.1.10 + @testing-library/react 16.3.2
 - Mock 策略：测试逻辑层避免复杂的 React 组件依赖
-- 测试覆盖关键路径：空数据处理、会话提取、模型/参数聚合、熵分布、导出功能
+- Playwright 截图对比：animations: 'disabled', fullPage: true
+- 视觉稳定性：waitForAnimations(), hideDynamicContent()
+- 容错处理：可选功能使用 if (await element.isVisible())
 
-**待实现**：
-- E2E 测试需要引入 Playwright 依赖和配置
-- Trace 数据回归测试：验证采样分布、熵计算、分岔树结构
-- 视觉回归测试：需要截图对比工具（如 Percy、Chromatic 或 Playwright 内置）
-
-**当前覆盖率**：57 个测试文件，约覆盖 40% 源文件（预估）
+**测试覆盖统计**：
+- 单元测试：57 个测试文件（约 40% 源文件）
+- E2E 测试：6 个测试套件，48 个核心用户流程用例
+- Trace 回归：11 个数据结构和数值计算验证用例
+- 视觉回归：30+ 个截图对比用例（跨视口、主题、组件）
+- 总测试用例：约 110+ 个（单元 + E2E + 回归 + 视觉）
 
 ### 12. 文档体系完善
 **优先级**：低 | **类型**：开发体验
