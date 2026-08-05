@@ -64,6 +64,7 @@ import {
   type DeviceReport,
 } from "./lib/device";
 import { MODELS, getModel, loadCustomModels } from "./lib/models";
+import { initWebVitals } from "./lib/webVitals";
 import LandingHero from "./components/LandingHero";
 const JourneyPage = lazy(() => import("./components/JourneyPage"));
 const EnhancedInputDemo = lazy(() => import("./components/EnhancedInputDemo"));
@@ -265,6 +266,8 @@ function App() {
       setModelId(initial);
       modelIdRef.current = initial;
     });
+    // 初始化 Core Web Vitals 性能监控
+    initWebVitals();
   }, []);
 
   useEffect(() => {
