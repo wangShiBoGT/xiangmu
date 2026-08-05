@@ -511,8 +511,8 @@
 **优先级**：低 | **类型**：可观测性
 
 - ✅ 添加性能监控（Core Web Vitals）
-- 📋 实现客户端错误上报（可选，需用户授权）
-- 📋 记录 WebGPU 初始化失败的详细信息
+- ✅ 实现客户端错误上报（可选，需用户授权）
+- ✅ 记录 WebGPU 初始化失败的详细信息
 - 📋 添加开发模式的性能 profiling 工具
 
 **已完成（2026-08-05）**：
@@ -575,10 +575,53 @@
 - CLS 监控不区分用户交互引起的布局偏移（hadRecentInput 检测）
 - 未实现性能数据的可视化展示（可在后续 Task #14 剩余项中添加）
 
+**客户端错误追踪**（已完成）：
+- 新增 `src/lib/errorTracking.ts` 模块（224 行代码）
+- 全局错误捕获：window.error 和 unhandledrejection 事件监听
+- 错误分类：error/unhandledrejection/resource/webgpu 四种类型
+- 详细上下文记录：
+  - 堆栈跟踪（stack）
+  - 文件名、行号、列号（filename, lineno, colno）
+  - URL 和 User Agent
+  - 自定义应用状态（通过 setErrorContextProvider 注入）
+- 本地存储：localStorage 保存最多 100 条错误记录，key: `webgpu-llm-chat.errors.v1`
+- 导出与统计：
+  - `exportErrorsJSON()`：导出完整错误记录
+  - `computeErrorStats()`：按类型/消息聚合、Top 5 高频错误、最近 24 小时统计
+  - `clearErrorRecords()`：清除历史数据
+
+**错误追踪隐私保护**：
+- 默认禁用：需用户明确调用 `enableErrorTracking()` 授权
+- 本地优先：所有数据仅保存在 localStorage，不上传任何服务器
+- 无身份信息：不包含用户身份、IP 地址或浏览器指纹
+- 透明控制：提供 enable/disable/clear 完整控制接口
+- 开发模式增强：import.meta.env.DEV 时错误输出到控制台
+
+**WebGPU 初始化失败详细记录**（已完成）：
+- 扩展 `src/lib/device.ts` 的 probeDevice 函数
+- 捕获三类失败原因：
+  - 浏览器不支持 WebGPU API
+  - GPU adapter 未找到（显卡驱动过旧）
+  - 初始化异常（被安全策略阻止等）
+- 动态集成错误追踪：
+  - 使用 `import('./errorTracking')` 动态加载模块
+  - 调用 `recordWebGPUError()` 记录详细上下文（reason, error, userAgent, memoryGB, cores）
+  - 静默失败策略：错误追踪加载失败不影响设备探测主流程
+- 错误信息保留在 `DeviceReport.webgpuFailReason` 字段供 UI 展示
+
+**技术要点**：
+- 上下文提供者模式：`setErrorContextProvider()` 允许附加应用状态（modelId, generating, workerReady 等）
+- 资源加载失败：单独处理 `<img>`/`<script>`/`<link>` 标签加载错误
+- 防重复记录：每条错误生成唯一 UUID（crypto.randomUUID()）
+- 自动淘汰机制：超过 MAX_ERRORS (100) 时删除最旧记录
+- 兼容性处理：所有 localStorage 操作包裹在 try-catch 中，失败静默
+
+**构建影响**：
+- 主 bundle 无变化（errorTracking 按需加载）
+- 新增 chunk：errorTracking-BsUmJSBe.js (0.13KB, gzipped: 0.14KB)
+
 **待实现**：
-- 客户端错误上报（需用户授权）：全局 error/unhandledrejection 监听器
-- WebGPU 初始化失败详细日志：扩展 device.ts 的 probeDevice 函数
-- 开发模式性能 profiling 工具：React DevTools Profiler 集成或自定义面板
+- 添加开发模式性能 profiling 工具：React DevTools Profiler 集成或自定义面板
 
 **隐私原则**：所有数据收集必须明确告知用户并获得授权
 
