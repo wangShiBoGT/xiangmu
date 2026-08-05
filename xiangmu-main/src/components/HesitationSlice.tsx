@@ -60,7 +60,7 @@ export default function HesitationSlice({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="observe-dark w-full max-w-[520px] rounded-md border border-white/10 bg-[#101118] p-4">
+    <div className="observe-dark w-full max-w-[520px] rounded-md border border-white/10 p-4">
       <p className="mb-3 flex items-baseline justify-between text-[11px] uppercase tracking-[0.18em] text-obs-ink2/70 select-none">
         犹豫点 · 真实记录
         <span className="font-mono normal-case tracking-normal tabular-nums">
