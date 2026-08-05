@@ -1774,6 +1774,10 @@ export default function ObservePage({
         return;
       }
       setDemoIdx(i);
+      // 同步 ReplayController
+      if (replayController) {
+        replayController.seekTo(i);
+      }
       if (fastArrive && i < pauseAt) {
         setDemoNote(null);
         demoTimerRef.current = setTimeout(() => tick(i + 1), arriveFast);
