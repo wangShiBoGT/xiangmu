@@ -260,11 +260,27 @@ async function runGeneration(
   let badNumericRun = 0;
   let numericBroken = false;
 
+  // WASM 模式下的中断检查：定期检查停止信号
+  let lastInterruptCheck = performance.now();
+  const INTERRUPT_CHECK_INTERVAL = 100; // 每 100ms 检查一次
+
   const token_callback_function = (ids: bigint[] | number[]) => {
     startTime ??= performance.now();
+    const now = performance.now();
     if (numTokens++ > 0) {
-      tps = (numTokens / (performance.now() - startTime)) * 1000;
+      tps = (numTokens / (now - startTime)) * 1000;
     }
+
+    // WASM 模式下定期检查中断信号，改善响应性
+    if (TextGenerationPipeline.device === "wasm") {
+      if (now - lastInterruptCheck > INTERRUPT_CHECK_INTERVAL) {
+        lastInterruptCheck = now;
+        if (stopping_criteria.wasInterrupted()) {
+          return; // 已中断，直接返回
+        }
+      }
+    }
+
     if (recorder) {
       const step = recorder.onToken(Number(ids[ids.length - 1]));
       if (step) {
@@ -280,7 +296,7 @@ async function runGeneration(
         }
         stepBuffer.push(step);
         // 合批推送：每 4 步或 100ms，避免高频 postMessage 拖慢生成
-        if (stepBuffer.length >= 4 || performance.now() - lastFlush > 100) {
+        if (stepBuffer.length >= 4 || now - lastFlush > 100) {
           flushSteps();
         }
       }
@@ -320,6 +336,14 @@ async function runGeneration(
     if (recorder) extraProcessors.push(recorder);
 
     const tGenerate = performance.now();
+
+    // 设置生成超时保护（WASM 模式特别需要）
+    const generateTimeout = 5 * 60 * 1000; // 5 分钟超时
+    const timeoutId = setTimeout(() => {
+      stopping_criteria.interrupt();
+      console.warn("生成超时，已自动停止");
+    }, generateTimeout);
+
     const { sequences } = (await model.generate({
       ...inputs,
       do_sample: doSample,
@@ -335,6 +359,8 @@ async function runGeneration(
     } as unknown as Parameters<PreTrainedModel["generate"]>[0])) as {
       sequences: unknown;
     };
+
+    clearTimeout(timeoutId);
 
     if (numericBroken) {
       throw new Error(
