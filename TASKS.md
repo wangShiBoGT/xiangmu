@@ -23,18 +23,40 @@
 
 ## 核心功能优化 📋
 
-### 1. WebGPU 性能与兼容性
-**优先级**：高 | **类型**：技术债务
+### 1. WebGPU 性能与兼容性 ✅
+**优先级**：高 | **类型**：技术债务 | **完成时间**：2026-08-05
 
-- 📋 优化模型加载流程，减少首次加载时间
-- 📋 改进 WASM CPU 模式下的停止响应（当前受限于 WASM 线程）
-- 📋 添加 WebGPU 兼容性自动检测和降级提示
-- 📋 优化显存占用，支持更大模型
+- ✅ 优化模型加载流程，减少首次加载时间
+- ✅ 改进 WASM CPU 模式下的停止响应（当前受限于 WASM 线程）
+- ✅ 添加 WebGPU 兼容性自动检测和降级提示
+- ✅ 优化显存占用，支持更大模型
 
-**技术要点**：
-- transformers.js 的 WebGPU 后端优化
-- onnxruntime-web 的 WASM 堆内存限制处理
-- 模型权重分片加载策略
+**已完成**：
+- WebGPU 自动降级机制：
+  - 首次 WebGPU 加载失败后自动切换到 WASM 模式
+  - 记录详细失败原因（不支持/被阻止/adapter 未找到）
+  - 避免重复尝试失败的后端，提升加载速度
+- 增强设备探测（device.ts）：
+  - probeDevice 函数记录 webgpuFailReason 详细原因
+  - 检查 GPU 缓冲区限制（maxBufferSize, maxStorageBufferBindingSize）
+  - getWebGPUFallbackAdvice 函数提供针对性降级建议
+- 显存优化策略（getOptimizationAdvice）：
+  - 大模型（>2GB）自动启用分片加载（use_external_data_format）
+  - 低配设备（tier 1）自动降低量化精度到 q4
+  - 内存风险三级评估（low/medium/high）和动态建议
+  - estimateMemoryRequirement 函数计算运行时内存需求（权重 × 1.8）
+- WASM 模式改进：
+  - 定期中断检查（每 100ms）改善停止按钮响应性
+  - 32 位地址空间限制检测和提前警告
+- 用户界面增强：
+  - DeviceCompatibilityBanner 组件显示 WebGPU 降级提示
+  - 可关闭横幅并持久化到 localStorage
+  - 显示技术原因和具体解决方案
+
+**技术要点已实现**：
+- transformers.js 的 WebGPU 后端优化（自动降级 + 设备检测）✅
+- onnxruntime-web 的 WASM 堆内存限制处理（32 位检测 + 提示）✅
+- 模型权重分片加载策略（use_external_data_format 动态开启）✅
 
 ### 2. Trace 系统完善
 **优先级**：高 | **类型**：核心功能
