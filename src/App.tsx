@@ -1206,6 +1206,7 @@ function App() {
                   placeholder="问任何问题…"
                   value={input}
                   disabled={isRunning}
+                  aria-label="消息输入"
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {

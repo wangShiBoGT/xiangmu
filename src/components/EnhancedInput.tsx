@@ -94,6 +94,8 @@ export default function EnhancedInput({
             value={value}
             rows={rows}
             disabled={disabled}
+            aria-label="消息输入框"
+            aria-describedby={isGenerating ? "generation-status" : undefined}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
           />
@@ -129,7 +131,7 @@ export default function EnhancedInput({
 
           {/* 右侧：生成状态 */}
           {isGenerating && tokensPerSecond !== undefined && (
-            <div className="flex items-center gap-2 text-obs-ink3">
+            <div id="generation-status" className="flex items-center gap-2 text-obs-ink3" role="status" aria-live="polite">
               <div className="h-2 w-2 animate-pulse rounded-full bg-[#10A0FF]" />
               <span>正在生成... {tokensPerSecond.toFixed(1)} tok/s</span>
             </div>

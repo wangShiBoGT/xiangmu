@@ -412,6 +412,7 @@ export default function LandingHero({
                     onExploreDemo();
                   }
                 }}
+                aria-label={ready ? "进入工作台" : "查看演示"}
               >
                 <IconPlay className="h-3.5 w-3.5" />
                 {ready ? "进入工作台" : "亲眼看这一刻 →"}
@@ -423,6 +424,8 @@ export default function LandingHero({
                     logVisit("hero_pick_model");
                     setPickerOpen((o) => !o);
                   }}
+                  aria-label="选择模型"
+                  aria-expanded={pickerOpen}
                 >
                   用自己的模型跑
                 </button>
@@ -443,7 +446,11 @@ export default function LandingHero({
 
             {/* 知情下载：每个模型标明体积、来源、缓存状态，用户点击才开始加载 */}
             {!ready && pickerOpen && (
-              <div className="mt-6 max-h-[38vh] w-full max-w-xl overflow-y-auto rounded-md border border-white/10 bg-[#101118]/85 p-2">
+              <div
+                className="mt-6 max-h-[38vh] w-full max-w-xl overflow-y-auto rounded-md border border-white/10 bg-[#101118]/85 p-2"
+                role="listbox"
+                aria-label="选择模型"
+              >
                 {MODELS.map((m) => {
                   const size = device === "wasm" ? m.sizeWasm : m.sizeWebgpu;
                   const isCached = cached[m.id] === true;
@@ -452,6 +459,8 @@ export default function LandingHero({
                       key={m.id}
                       className="flex w-full items-center gap-3 rounded-md px-3.5 py-2.5 text-left transition-colors hover:bg-white/5"
                       onClick={() => onPickModel(m.id)}
+                      role="option"
+                      aria-label={`${m.name} - ${m.vendor} - ${formatSize(size)} ${isCached ? '已缓存' : m.builtin ? '本站直载' : '在线下载'}`}
                     >
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2">

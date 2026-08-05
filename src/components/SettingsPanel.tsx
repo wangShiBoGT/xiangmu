@@ -17,9 +17,13 @@ export default function SettingsPanel({
   onClose,
 }: Props) {
   return (
-    <div className="absolute right-5 top-16 z-10 max-h-[calc(100vh-96px)] w-76 space-y-5 overflow-y-auto overscroll-contain rounded-md bg-surface p-5 shadow-float">
+    <div
+      className="absolute right-5 top-16 z-10 max-h-[calc(100vh-96px)] w-76 space-y-5 overflow-y-auto overscroll-contain rounded-md bg-surface p-5 shadow-float"
+      role="dialog"
+      aria-labelledby="settings-title"
+    >
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-ink text-[16px]">生成设置</h2>
+        <h2 id="settings-title" className="font-semibold text-ink text-[16px]">生成设置</h2>
         <button
           className="text-ink-3 hover:text-ink rounded-md px-1.5 transition-colors"
           aria-label="关闭设置"
@@ -41,6 +45,10 @@ export default function SettingsPanel({
           step={64}
           className="w-full accent-accent"
           value={params.maxTokens}
+          aria-label="最大生成 tokens"
+          aria-valuemin={64}
+          aria-valuemax={4096}
+          aria-valuenow={params.maxTokens}
           onChange={(e) =>
             onChange({ ...params, maxTokens: clamp(+e.target.value, 16, 8192) })
           }
@@ -61,6 +69,10 @@ export default function SettingsPanel({
           step={0.1}
           className="w-full accent-accent"
           value={params.temperature}
+          aria-label="温度参数"
+          aria-valuemin={0}
+          aria-valuemax={1.5}
+          aria-valuenow={params.temperature}
           onChange={(e) =>
             onChange({ ...params, temperature: clamp(+e.target.value, 0, 2) })
           }
@@ -81,6 +93,10 @@ export default function SettingsPanel({
           step={0.05}
           className="w-full accent-accent"
           value={params.topP}
+          aria-label="Top-P 参数"
+          aria-valuemin={0.1}
+          aria-valuemax={1}
+          aria-valuenow={params.topP}
           onChange={(e) =>
             onChange({ ...params, topP: clamp(+e.target.value, 0, 1) })
           }
@@ -92,6 +108,7 @@ export default function SettingsPanel({
           type="checkbox"
           className="accent-accent"
           checked={showThinking}
+          aria-label="显示推理段"
           onChange={(e) => onToggleThinking(e.target.checked)}
         />
         显示推理段（&lt;think&gt; 输出）

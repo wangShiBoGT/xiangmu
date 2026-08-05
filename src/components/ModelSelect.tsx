@@ -245,8 +245,40 @@ export default function ModelSelect({
                     if (e.key === "Enter") submitCustom();
                   }}
                 />
-                <div className="mt-2 flex items-center gap-3 text-[11px] text-ink-2">
+              <div className="mt-2 flex items-center gap-3 text-[11px] text-ink-2">
                   <label className="flex cursor-pointer items-center gap-1.5">
+                    <input
+                      type="checkbox"
+                      className="accent-accent"
+                      checked={draftThinking}
+                      aria-label="支持推理标签"
+                      onChange={(e) => setDraftThinking(e.target.checked)}
+                    />
+                    支持 &lt;think&gt;
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-1.5">
+                    <input
+                      type="checkbox"
+                      className="accent-accent"
+                      checked={draftExternal}
+                      aria-label="external_data"
+                      onChange={(e) => setDraftExternal(e.target.checked)}
+                    />
+                    external_data
+                  </label>
+                  <Dropdown
+                    options={[
+                      { value: "", label: "dtype: auto" },
+                      { value: "fp16", label: "fp16" },
+                      { value: "int4", label: "int4" },
+                      { value: "q4", label: "q4" },
+                      { value: "q4f16", label: "q4f16" },
+                    ]}
+                    selected={draftDtype}
+                    onChange={(v) => setDraftDtype(v as ModelDtype | "")}
+                    ariaLabel="数据类型"
+                  />
+                </div>
                     <input
                       type="checkbox"
                       checked={draftThinking}

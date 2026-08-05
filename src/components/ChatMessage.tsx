@@ -226,6 +226,7 @@ export default function ChatMessage({
           <button
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] text-obs-ink3 transition-colors hover:bg-obs-line/30 hover:text-obs-ink"
             onClick={copy}
+            aria-label={copied ? "已复制到剪贴板" : "复制回答内容"}
           >
             {copied ? (
               <IconCheck className="h-3.5 w-3.5" />
@@ -238,6 +239,7 @@ export default function ChatMessage({
             <button
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] text-obs-ink3 transition-colors hover:bg-obs-line/30 hover:text-obs-ink"
               onClick={onRegenerate}
+              aria-label="重新生成这条回答"
             >
               <IconRefresh className="h-3.5 w-3.5" />
               重新生成

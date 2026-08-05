@@ -136,20 +136,25 @@ export default function ActivityCard({
   return (
     <div
       className={`group relative mb-3 overflow-hidden rounded-xl border ${style.border} ${style.bg} shadow-md transition-all duration-200`}
+      role="region"
+      aria-labelledby={`activity-${type}-title`}
     >
       {/* 头部 */}
       <button
         onClick={() => setExpanded(!expanded)}
         className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${style.headerBg}`}
+        aria-expanded={expanded}
+        aria-controls={`activity-${type}-content`}
+        aria-label={`${expanded ? '收起' : '展开'}${title}`}
       >
         {/* 状态指示器 - 圆点 */}
-        <div className={`h-3 w-3 rounded-full ${style.statusDot}`} />
+        <div className={`h-3 w-3 rounded-full ${style.statusDot}`} aria-hidden="true" />
 
         {style.icon}
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className={`text-[14px] font-semibold ${style.textColor}`}>
+            <span id={`activity-${type}-title`} className={`text-[14px] font-semibold ${style.textColor}`}>
               {title}
             </span>
             {duration !== undefined && !isRunning && (
@@ -169,11 +174,13 @@ export default function ActivityCard({
           className={`h-4 w-4 text-obs-ink3 transition-transform duration-200 ${
             expanded ? "rotate-180" : ""
           }`}
+          aria-hidden="true"
         />
       </button>
 
       {/* 内容区域 */}
       <div
+        id={`activity-${type}-content`}
         className="overflow-hidden transition-all duration-300"
         style={{
           maxHeight: expanded ? (contentHeight ? `${contentHeight}px` : "2000px") : "0px",

@@ -17,7 +17,8 @@ export interface DropdownOption {
 
 interface Props {
   options: DropdownOption[];
-  value: string;
+  value?: string;
+  selected?: string;
   onChange: (value: string) => void;
   /** 触发器上显示的文案；缺省 = 选中项 label */
   triggerLabel?: string;
@@ -37,6 +38,7 @@ interface Props {
 export default function Dropdown({
   options,
   value,
+  selected,
   onChange,
   triggerLabel,
   ariaLabel,
@@ -47,6 +49,7 @@ export default function Dropdown({
   menuWidthClassName = "w-56",
   align = "left",
 }: Props) {
+  const currentValue = selected ?? value ?? "";
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const [dropUp, setDropUp] = useState(false);
@@ -56,8 +59,8 @@ export default function Dropdown({
   const listRef = useRef<HTMLDivElement>(null);
   const listId = useId();
 
-  const selectedIdx = options.findIndex((o) => o.value === value);
-  const selected = selectedIdx >= 0 ? options[selectedIdx] : null;
+  const selectedIdx = options.findIndex((o) => o.value === currentValue);
+  const selectedOption = selectedIdx >= 0 ? options[selectedIdx] : null;
 
   const openMenu = () => {
     if (disabled) return;
@@ -76,7 +79,7 @@ export default function Dropdown({
     const opt = options[idx];
     if (!opt || opt.disabled) return;
     setOpen(false);
-    if (opt.value !== value) onChange(opt.value);
+    if (opt.value !== currentValue) onChange(opt.value);
   };
 
   useEffect(() => {
@@ -185,7 +188,7 @@ export default function Dropdown({
         onKeyDown={onKeyDown}
       >
         <span className="min-w-0 truncate">
-          {triggerLabel ?? selected?.label ?? ariaLabel}
+          {triggerLabel ?? selectedOption?.label ?? ariaLabel}
         </span>
         <IconChevronDown
           className={`h-2.5 w-2.5 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
@@ -210,7 +213,7 @@ export default function Dropdown({
           }}
         >
           {options.map((o, i) => {
-            const isSel = o.value === value;
+            const isSel = o.value === currentValue;
             return (
               <button
                 key={o.value}
