@@ -43,6 +43,7 @@ export default function SamplingChamber({
   note,
   children,
   onStepSeek,
+  compareParams,
 }: {
   mode: ChamberMode;
   /** 全部已知步骤（live 为已到达的，demo 为整份 trace） */
@@ -59,6 +60,12 @@ export default function SamplingChamber({
   children?: React.ReactNode;
   /** 时间轴回溯：跳转到指定步骤 */
   onStepSeek?: (stepIndex: number) => void;
+  /** 可选的对比参数配置（用于实时参数对比） */
+  compareParams?: {
+    temperature?: number;
+    topP?: number;
+    enabled: boolean;
+  };
 }) {
   const step = index >= 0 ? steps[index] : null;
   const active = mode === "sampling" && step !== null;
@@ -87,6 +94,28 @@ export default function SamplingChamber({
   const [showThreshold, setShowThreshold] = useState(false);
   const thresholdProb = 0.1; // 10% 阈值线
 
+  // 参数对比模式：模拟不同温度下的候选分布
+  const compareMode = compareParams?.enabled ?? false;
+  const compareTemp = compareParams?.temperature ?? 1.0;
+  const compareTopP = compareParams?.topP ?? 1.0;
+
+  // 在对比模式下重新计算候选分布
+  const compareCands = useMemo(() => {
+    if (!compareMode || !step) return [];
+    // 模拟温度调整：logit / T 后重新 softmax
+    // 这里简化处理，实际应该从原始 logits 重算
+    const adjusted = step.topk.map(c => {
+      // 温度缩放：高温让分布更平滑，低温让分布更尖锐
+      const adjustedProb = Math.pow(c.prob, 1 / compareTemp);
+      return { ...c, prob: adjustedProb };
+    });
+    // 重新归一化
+    const sum = adjusted.reduce((s, c) => s + c.prob, 0);
+    return adjusted.map(c => ({ ...c, prob: c.prob / sum })).slice(0, 5);
+  }, [compareMode, step, compareTemp]);
+
+  const displayCands = compareMode ? compareCands : cands;
+
   return (
     <div className="chamber relative overflow-hidden rounded-md border border-obs-line bg-obs-2">
       {runLabel && (
@@ -113,7 +142,7 @@ export default function SamplingChamber({
         {/* 阈面前：当前步已记录的候选分布（真实 topk，亮度/体积 ∝ 概率） */}
         <div className="relative flex h-16 w-full items-center justify-center">
           {step && mode === "sampling" ? (
-            cands.map((c, i) => {
+            displayCands.map((c, i) => {
               const chosen = c.id === step.id;
               const t = tokenLabel(c.text);
               const belowThreshold = showThreshold && c.prob < thresholdProb;
@@ -126,7 +155,7 @@ export default function SamplingChamber({
                       ? "border-measure-400/70 bg-measure-500/15 text-obs-ink"
                       : "border-obs-line bg-obs-2/70 text-obs-ink2 hover:border-measure-400/40 hover:bg-measure-500/8"
                   } ${t.special ? "italic opacity-80" : ""} ${belowThreshold ? "opacity-40" : ""}`}
-                  style={candStyle(c.prob, i, cands.length)}
+                  style={candStyle(c.prob, i, displayCands.length)}
                   title={`点击查看完整分布 · p=${c.prob.toFixed(3)}`}
                   onClick={() => setExpandedCand(expandedCand === index ? null : index)}
                 >
@@ -227,6 +256,11 @@ export default function SamplingChamber({
               <p className="text-[11px] tabular-nums text-obs-ink2/50 select-none">
                 第 {index + 1} 步 · p={step.prob.toFixed(2)} · 熵 {step.entropy.toFixed(2)} nats
                 <span className="ml-2 font-mono text-obs-ink2/35">steps[{index}].topk</span>
+                {compareMode && (
+                  <span className="ml-2 rounded bg-amber-400/15 px-1.5 py-0.5 text-amber-200">
+                    对比模式: T={compareTemp.toFixed(2)}
+                  </span>
+                )}
               </p>
               {steps.length > 1 && onStepSeek && (
                 <div className="flex flex-col items-center gap-2 @sm:flex-row">
@@ -247,6 +281,10 @@ export default function SamplingChamber({
                     onChange={(e) => onStepSeek(Number(e.target.value))}
                     className="w-32 accent-measure-500 @sm:w-48"
                     title={`时间轴：${index + 1} / ${steps.length}`}
+                    aria-label={`时间轴回溯，当前第 ${index + 1} 步，共 ${steps.length} 步`}
+                    aria-valuemin={0}
+                    aria-valuemax={steps.length - 1}
+                    aria-valuenow={index}
                   />
                   <button
                     type="button"
