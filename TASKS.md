@@ -470,15 +470,79 @@
 - 视觉回归：30+ 个截图对比用例（跨视口、主题、组件）
 - 总测试用例：约 110+ 个（单元 + E2E + 回归 + 视觉）
 
-### 12. 文档体系完善
-**优先级**：低 | **类型**：开发体验
+### 12. 文档体系完善 ✅
+**优先级**：低 | **类型**：开发体验 | **完成时间**：2026-08-05
 
-- 📋 创建 `docs/任务看板.md`（本文件）
-- 📋 编写 `docs/合规速查表.md`（设计红线）
-- 📋 完善 `docs/00-START-HERE.md`（快速上手）
-- 📋 更新 API 文档和组件 Props 说明
+- ✅ 创建 `docs/任务看板.md`（本文件）
+- ✅ 编写 `docs/合规速查表.md`（设计红线）
+- ✅ 完善 `docs/00-START-HERE.md`（快速上手）
+- ✅ 更新 API 文档和组件 Props 说明
 
-**目标**：降低新贡献者的上手成本
+**已完成（2026-08-05）**：
+
+**任务看板**（第 1 项）：
+- 创建 docs/任务看板.md：完整复制 TASKS.md 内容
+- 包含所有已完成任务的详细文档（Phase 0 颜色系统重构至 Task #13 构建优化）
+- 记录每个任务的优先级、类型、完成时间、技术要点、局限性说明
+- 提供清晰的任务状态标识（✅ 已完成 | 🚧 进行中 | 📋 待开始 | 🔍 需调研）
+
+**设计合规速查表**（第 2 项）：
+- 创建 docs/合规速查表.md：全面的 UI 设计规范文档
+- 绝对禁止：AI 风格渐变色、固定字号、硬编码值、无障碍盲区
+- 强制要求：CSS 变量系统、流式字号、Grid 布局、Token 化
+- 配色系统：观测蓝 #10A0FF + 5-7 层灰阶梯（#0a0a0a → #2a2a2a）
+- 排版系统：clamp() 流式字号、var() 引用字体栈、严格行高控制
+- 布局系统：页面级 Grid、间距/圆角 Token、响应式优先
+- 组件规范：按钮/卡片/输入框/消息气泡的完整设计规格
+- 设计原则：专业工具定位、暗色优先、色彩克制、无障碍 WCAG AA
+- Code Review Checklist：17 项 UI 改动前的检查清单
+
+**快速上手指南**（第 3 项）：
+- 创建 docs/00-START-HERE.md：新用户/贡献者的完整入门指南
+- 环境要求：硬件配置（GPU/CPU/内存）、软件版本（浏览器/Node.js）、WebGPU 检查
+- 6 步快速启动：克隆 → 安装 → 启动 → 打开浏览器 → 首次加载 → 开始对话
+- 核心功能：对话模式（Create）、观测模式（Observe）、统计分析、Benchmark、实验工具
+- 常见问题：模型下载失败、WebGPU 不可用、生成速度慢、清除缓存、多模态功能、Observe 概念解释
+- 深入学习：推荐阅读顺序、开发者资源、关键目录结构、开发命令、调试技巧
+- 贡献指南：准备工作、开发流程、Commit 规范、测试要求
+- 问题报告：Issue 模板、环境信息收集
+
+**API 文档更新**（第 4 项）：
+- 创建 docs/API文档.md：完整的 API 参考文档
+- 核心组件文档：
+  - SamplingChamber：Props 接口、使用示例、功能说明
+  - ChatMessage：消息对象结构、生成状态、回调函数
+  - EnhancedInput：输入控制、附件上传、快捷键支持
+  - ModelSelect：模型选择、设备兼容性过滤
+  - SettingsPanel：生成参数配置、高级选项
+- 工具函数文档：
+  - Device Detection：probeDevice(), recommendModel(), getOptimizationAdvice()
+  - Trace Recording：TraceRecorder 类、exportReplay(), importReplay()
+  - Document Processing：parseDocument(), buildDocPrompt()
+  - Image Processing：fileToDataURL()
+  - Statistics：computeOverallStats(), exportStatsToCSV()
+- 类型定义：ModelInfo, GenerationTrace, TokenStep, BranchNode, PipelineTiming
+- Worker API：消息协议、加载模型、生成流程、停止生成的完整示例
+- 性能监控：window.__profiler__ 开发模式 API
+- 错误处理：错误追踪、记录、导出、清除功能
+
+**文档结构**：
+```
+docs/
+├── 00-START-HERE.md      # 快速上手（新用户必读）
+├── 任务看板.md            # 开发进度和已完成功能
+├── 合规速查表.md          # UI 设计红线和规范
+└── API文档.md            # 组件 Props 和工具函数参考
+```
+
+**技术要点**：
+- Markdown 格式：清晰的标题层级、代码块语法高亮、表格和列表
+- TypeScript 接口：完整的 Props 类型定义和 JSDoc 注释风格
+- 代码示例：每个组件和函数都提供实际使用示例
+- 交叉引用：文档之间互相链接，形成知识网络
+- 中文优先：所有文档使用中文编写，确保本地团队可读性
+
+**目标达成**：降低新贡献者的上手成本，提供完整的开发文档体系
 
 ---
 
