@@ -37,3 +37,5 @@ public/ort/
 .impeccable/
 .claude/skills/impeccable/
 .claude/settings.local.json
+playwright-report/
+test-results/
