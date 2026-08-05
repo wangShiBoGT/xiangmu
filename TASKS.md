@@ -369,15 +369,34 @@
 - 会话历史无 token 计数：只能从实验存档统计 token 数据
 - 温度/熵分布仅来自 Observe 模式：Create 模式的对话不记录 trace
 
-### 10. Benchmark 页面数据更新
-**优先级**：低 | **类型**：内容维护
+### 10. Benchmark 页面数据更新 ✅
+**优先级**：低 | **类型**：内容维护 | **完成时间**：2026-08-05
 
-- 📋 添加更多官方模型的 benchmark 数据
-- 📋 更新 DeepSeek-R1 系列的最新成绩
-- 📋 添加数据来源的可信度标注
-- 📋 实现 benchmark 数据的版本管理
+- ✅ 添加更多官方模型的 benchmark 数据
+- ✅ 更新 DeepSeek-R1 系列的最新成绩
+- ✅ 添加数据来源的可信度标注
+- ✅ 实现 benchmark 数据的版本管理
+
+**已完成**：
+- 扩展 Phi-3.5-mini 官方成绩：新增 7 项基准测试（MBPP: 69.6, ARC Challenge: 84.6, BoolQ: 78.0, PIQA: 84.1, TriviaQA: 58.8, MATH: 48.5, Arena Hard: 37.0）
+- 新增 DeepSeek-R1-Distill-Qwen-7B 完整评测：AIME 2024 (pass@1: 55.5, cons@64: 83.3), MATH-500: 92.8, GPQA Diamond: 49.1, LiveCodeBench: 37.6, CodeForces: 1189
+- 新增 DeepSeek-R1-Distill-Llama-8B 完整评测：AIME 2024 (pass@1: 50.4, cons@64: 80.0), MATH-500: 89.1, GPQA Diamond: 49.0, LiveCodeBench: 39.6, CodeForces: 1205
+- 所有条目更新 verifiedAt 字段为 2026-08-05，确保数据时效性
+- 所有新增数据均从 HuggingFace 官方模型卡逐条核实，附带 sourceUrl 可点击验证
 
 **数据规范**：严格遵循 Evidence First 原则，所有数据必须有官方引用
+
+**技术要点**：
+- OFFICIAL_BENCH 数组从 2 条扩展至 4 条记录
+- 每个条目包含 modelId, upstream, sourceLabel, sourceUrl, verifiedAt, scores 完整字段
+- 琥珀色（amber）视觉标识区分官方数据与本机实测（绿色）
+- 未能核实的模型（Qwen3-0.6B/1.7B, Gemma 3 1B, Llama 3.2 1B, GLM-Edge 1.5B, Qwen2.5-Coder 1.5B）如实保持「未录入」状态，宁缺毋假
+
+**局限性说明**：
+- Qwen2.5-1.5B-Instruct：官方博客无独立数据表，blog 只展示系列整体或大尺寸模型成绩
+- Gemma 3 1B / Llama 3.2 1B：模型卡 gated，无法逐条核对
+- GLM-Edge 1.5B：模型卡无评测表
+- Qwen2.5-Coder 1.5B：成绩仅在图表图片中，无可核文本数值
 
 ---
 
