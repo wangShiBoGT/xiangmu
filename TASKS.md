@@ -1,7 +1,11 @@
 # 开发任务看板
 
-> 最后更新：2026-08-05
+> 最后更新：2026-08-05 23:45
 > 状态说明：✅ 已完成 | 🚧 进行中 | 📋 待开始 | 🔍 需调研
+> 
+> **重大调研完成**：完成第一性原理分析和产品价值验证（详见 [`调研总结-2026-08-05.md`](./调研总结-2026-08-05.md)）
+> **核心发现**：普通用户看不懂专业术语是最致命问题，需立即添加 Tooltip 解释系统
+> **商业价值**：教育市场（1 亿潜在营收）+ 企业调试（节省 40 万人力）+ 隐私用户（长尾）
 
 ## 已完成任务 ✅
 
@@ -600,14 +604,50 @@ docs/
 **局限性说明**：
 - 模型文件（models/ 目录 8.2GB）未纳入构建优化，仍需手动管理
 - WASM 文件（23MB）无法进一步压缩，已是 ONNX Runtime 最小构建
-- Service Worker 离线支持未实现：需要缓存策略设计和 sw.js 编写
-- 模型增量更新未实现：transformers.js 默认全量下载模型文件
 
-**待实现（低优先级）**：
-- 添加 Service Worker 实现离线访问（需要缓存策略：Cache First for static assets, Network First for API）
-- 实现模型文件增量更新（需要 Range 请求支持和断点续传逻辑）
-- 添加 bundle 分析工具（如 rollup-plugin-visualizer）生成可视化报告
-- 探索 Brotli 压缩替代 gzip（压缩比可提升 15-20%，但需服务器支持）
+**已实现（低优先级）**：
+- ✅ 添加 Service Worker 实现离线访问（Cache First for static assets, Cache with Network Fallback for models, Network First for API）
+- ✅ 实现模型文件增量更新（Range 请求支持和断点续传逻辑）
+
+**Service Worker 实现**（2026-08-05）：
+- public/sw.js：完整的 Service Worker 脚本
+  - 三层缓存策略：静态资源、模型文件、运行时资源
+  - 支持 HTTP Range 请求：模型分片下载直接转发到网络
+  - 自动版本管理：激活时清理旧缓存
+  - 消息通信：SKIP_WAITING/CLEAR_CACHE/GET_CACHE_SIZE
+  - 缓存大小限制：单文件 >100MB 不缓存
+- src/lib/serviceWorker.ts：注册和状态管理
+  - registerServiceWorker()：检测支持、注册 sw.js
+  - onStatusChange()：监听状态变化
+  - updateServiceWorker()：手动更新并刷新页面
+  - clearServiceWorkerCache()：清除所有缓存
+- ServiceWorkerUpdate.tsx：更新通知组件
+  - 底部通知栏显示"新版本可用"
+  - 立即更新/稍后按钮
+- PWA 支持：manifest.json + theme-color meta
+
+**增量更新实现**（2026-08-05）：
+- src/lib/incrementalDownload.ts：完整的断点续传实现
+  - downloadWithResume()：支持恢复的下载函数
+  - supportsRangeRequests()：检测服务器 Range 支持
+  - 5MB 分片策略：单独缓存到 CacheStorage
+  - getMissingRanges()：计算缺失范围，仅下载缺失部分
+  - 重试机制：单分片失败最多重试 3 次
+  - 进度回调：报告已下载字节数和百分比
+  - assembleChunks()：合并分片为完整文件
+  - clearModelCache()/getModelCacheSize()：缓存管理
+
+**技术架构**：
+- Service Worker 生命周期：install → activate → fetch
+- CacheStorage API：多层缓存（静态/运行时/模型分片）
+- Range 请求：服务器返回 206 Partial Content
+- 断点续传：分片独立缓存，恢复时只下载缺失部分
+
+**性能收益**：
+- 离线访问：无网络时仍可使用已缓存的模型和资源
+- 增量更新：下载中断后可恢复，无需重新下载
+- 版本管理：自动检测新版本并提示更新
+- 存储优化：大文件智能缓存，避免占用过多空间
 
 ---
 
@@ -784,9 +824,208 @@ window.__profiler__.clear()            // 清除所有数据
 
 ---
 
+## 降低门槛（普通用户） 🔥
+
+### 17. 渐进式术语解释系统（Tooltip）
+**优先级**：🔥 极高 | **类型**：核心体验 | **完成时间**：预计 3 周
+
+- 🚧 为所有专业术语添加悬停解释（? 图标）
+- 🚧 一句人话 + 具体例子 + 可选深入链接
+- 🚧 创建术语库（GLOSSARY）统一管理解释
+- 🚧 移动端适配（点击显示/隐藏）
+
+**核心术语清单**（第一批）：
+- Token（词元）："词或字的片段，AI 每次生成一个"
+- 温度（Temperature）："控制 AI 的创造性：0=保守，1.5=大胆"
+- Top-P（核采样）："只考虑累计概率达到 90% 的词"
+- 熵（Entropy）："AI 的纠结程度：越高越犹豫"
+- 采样（Sampling）："AI 从候选词里选一个的过程"
+- 概率（Probability）："AI 认为每个词应该出现的可能性（0-100%）"
+- Top-K："概率最高的前 K 个候选词"
+- Trace："AI 生成每个词的完整记录"
+
+**第一性原理验证**：
+- ✅ 解决真实需求：普通人看不懂术语 → 悬停即可学习
+- ✅ 独特价值：市面上没有"边用边学"的 AI 工具
+- ✅ 粘性来源：每次用都能学到新知识 → 学习驱动
+- ✅ 降低门槛：从"只有专业人能用"到"任何人都能懂"
+
+**用户测试标准**（找 3 个不懂 AI 的人）：
+- ✅ 能找到温度滑块并知道往哪调
+- ✅ 能看懂 Observe 模式的概率分布
+- ✅ 能用自己的话解释"Token""采样""熵"
+
+**技术实现**：
+- Tooltip 组件（300ms 延迟悬停，点击切换）
+- GLOSSARY 术语库（集中管理所有解释）
+- Term 包装器（`<Term id="token">tokens</Term>`）
+- 渐进式设计：Level 1（一句话）→ Level 2（例子）→ Level 3（深入链接）
+
+**商业价值**：
+- 教育市场：培训机构用来教 AI 原理（每学员 2000 元）
+- 用户留存：看懂了才会继续用（+20% 留存率）
+- 差异化：唯一"自带教学"的 AI 工具
+
+**完整实现计划**：
+- 详见 [`TASKS-TOOLTIP-SYSTEM.md`](./TASKS-TOOLTIP-SYSTEM.md)
+
+---
+
+## 专业用户工具链 🔍
+
+### 17. Embedding 向量可视化
+**优先级**：中 | **类型**：专业功能
+
+- 🔍 调研 transformers.js 的 embedding 模型支持（all-MiniLM-L6-v2, BGE-M3 等）
+- 🔍 实现文本向量化：输入文本 → 768 维向量 → 降维可视化（t-SNE/UMAP）
+- 🔍 构建向量空间可视化：3D 散点图展示语义距离
+- 🔍 添加相似度计算：余弦相似度、欧氏距离、点积
+- 🔍 支持批量文本向量化并导出（JSON/CSV）
+
+**技术要点**：
+- 使用 transformers.js 的 AutoModel.from_pretrained('Xenova/all-MiniLM-L6-v2')
+- 向量降维库：UMAP-js 或 t-SNE-js（纯前端实现）
+- 3D 可视化复用现有 Three.js 基础设施（SamplingChamber 同款）
+- 本地计算：所有向量化和相似度计算在浏览器内完成，数据不出设备
+
+**应用场景**：
+- 文本聚类分析：查看一批文档的语义分布
+- 查询相似度：输入问题，找最相关的 N 个文档
+- 模型 embedding 质量评估：观察不同模型的向量空间结构
+
+### 18. RAG 检索增强生成
+**优先级**：中 | **类型**：专业功能
+
+- 🔍 构建本地向量数据库：IndexedDB 存储文档向量
+- 🔍 实现混合检索：BM25 关键词检索 + 向量语义检索
+- 🔍 添加文档分块策略：固定长度 / 语义分割 / 滑动窗口
+- 🔍 集成检索流程可视化：查询 → 召回 → 重排序 → 上下文注入
+- 🔍 支持知识库管理：批量导入文档、索引构建、增量更新
+
+**技术架构**：
+- BM25 实现：使用 js-bm25 或自行实现（Token 分词 + TF-IDF）
+- 向量检索：HNSW 近似最近邻（hnswlib-wasm）或暴力搜索（<1000 文档时）
+- 重排序：交叉编码器模型（cross-encoder）或规则策略（时间衰减、长度惩罚）
+- 可视化：RetrievalCard 组件展示召回路径（已有基础）
+
+**RAG 流程 Trace**：
+- 记录每步检索决策：query → candidates → scores → final_context
+- 对比不同检索策略的召回效果（纯关键词 vs 纯向量 vs 混合）
+- 可视化上下文窗口占用：prompt tokens / context tokens / max_tokens
+
+**隐私保护**：
+- 所有文档和向量存储在用户本地 IndexedDB
+- 不上传任何文档内容或向量到服务器
+- 支持一键清空知识库
+
+### 19. 模型性能分析工具
+**优先级**：中 | **类型**：专业功能
+
+- 🔍 添加推理性能剖析：逐层耗时统计（prefill/decode 分层）
+- 🔍 显存/内存占用监控：权重加载 / KV cache / 激活值峰值
+- 🔍 算子性能热图：Attention / FFN / LayerNorm 耗时分布
+- 🔍 量化精度对比：q4 vs q4f16 vs fp16 的速度和质量权衡
+- 🔍 批量性能测试：不同 batch size / 序列长度的吞吐量曲线
+
+**技术实现**：
+- 使用 onnxruntime-web 的 profiling API（SessionOptions.enableProfiling）
+- performance.measure 记录关键路径耗时
+- GPU 显存：WebGPU API 的 GPUDevice.createBuffer().size 累计
+- 导出性能报告：JSON 格式包含完整性能数据和设备信息
+
+**对比维度**：
+- 不同设备档位：tier 1（集显）/ tier 2（中端独显）/ tier 3（高端显卡）
+- 不同量化方案：int8 / q4 / q4f16 / fp16
+- 不同模型尺寸：0.6B / 1.5B / 3B（未来支持）
+
+### 20. 参数调优实验平台
+**优先级**：低 | **类型**：专业功能
+
+- 🔍 网格搜索：temperature [0.3, 0.5, 0.7, 1.0] × top_p [0.8, 0.9, 0.95] 笛卡尔积
+- 🔍 贝叶斯优化：自动探索参数空间，最小化目标损失（困惑度 / 人工评分）
+- 🔍 A/B 对比实验：同一 prompt 不同参数并行运行，记录分岔点
+- 🔍 参数敏感性分析：单变量扫描，绘制参数-指标曲线
+- 🔍 实验管理：保存实验配置、结果归档、最优参数推荐
+
+**实验记录**：
+- 扩展现有 ExperimentRecord：新增 experimentType 字段（grid_search / bayesian / ab_test）
+- 参数配置哈希：避免重复运行相同配置
+- 自动评估指标：entropy / perplexity / repetition_penalty / diversity
+
+**可视化**：
+- 参数空间热图：2D 网格展示 temperature × top_p 对输出质量的影响
+- 帕累托前沿：速度 vs 质量的权衡曲线
+- 实验对比表：多组实验的并排对比（表格 + 雷达图）
+
+**局限性说明**：
+- 纯本地运行：大规模网格搜索（>100 组合）耗时较长
+- 自动评估：困惑度可计算，但语义质量仍需人工判断
+- 不支持分布式：单机单卡顺序执行，无法并行加速
+
+### 21. WebTransport 通信层升级
+**优先级**：低 | **类型**：需调研
+
+- 🔍 调研 WebTransport 在本项目的适用性
+- 🔍 评估技术收益：当前项目是否需要多流并行和连接迁移
+- 🔍 兼容性影响：WebTransport 需 Chrome 97+ / Firefox 114+，当前 WebSocket 降级方案
+- 🔍 实现成本：需后端支持 HTTP/3 + QUIC，当前纯静态服务器无此能力
+
+**技术分析**：
+- **当前架构**：Worker 线程内推理，主线程通过 postMessage 通信（无网络 I/O）
+- **WebTransport 收益有限**：推理不走网络，模型文件用 HTTP 缓存（Cache Storage）
+- **可能适用场景**：
+  - 多模型并行推理：同时加载多个模型，独立流传输结果（当前单模型无此需求）
+  - 实时协作：多用户共享 trace（当前单机离线工具）
+  - 模型流式下载：边下边推理（当前 Cache Storage 已够用）
+
+**结论**：
+- 🔴 **不推荐引入**：当前项目定位是"浏览器本地推理"，零后端、零网络依赖
+- WebTransport 适合高并发服务端场景，对纯前端离线工具是过度设计
+- 如未来支持云端混合推理（本地 + API 模型），再考虑升级通信层
+
+### 22. 对标成熟项目功能差距分析
+**优先级**：中 | **类型**：产品战略
+
+- 🔍 调研 langfuse 用户真实需求（GitHub issues 高频痛点）
+- 🔍 对比 LangSmith / Phoenix / LangFuse 核心功能差异
+- 🔍 识别本项目独特价值：浏览器本地 + 零后端 + 隐私优先
+- 🔍 补齐关键功能短板：Prompt 版本管理 / 成本追踪 / 团队协作
+- 🔍 产品定位澄清：Observability 工具 vs 完整 LLMOps 平台
+
+**langfuse 用户高频需求**（从 GitHub issues 提取）：
+- **性能问题**：N+1 查询、数据库优化、大规模 trace 慢查询
+- **数据完整性**：模型定价过期、重复代码、审计日志准确性
+- **开发者体验**：本地开发配置困难、文档不全、特性开关过期未清理
+- **集成能力**：多语言 SDK、第三方工具集成、导入导出格式
+
+**本项目独特优势**：
+- ✅ **零后端依赖**：langfuse 需 PostgreSQL + ClickHouse，本项目纯前端
+- ✅ **隐私优先**：所有数据本地存储，无需担心 API key 泄露或数据上传
+- ✅ **即开即用**：无需 Docker / 数据库 / 配置，打开网页即可使用
+- ✅ **可视化深度**：3D token 流、分岔树、实时熵监控（langfuse 主要是表格）
+
+**功能短板**：
+- ❌ Prompt 版本管理和 A/B 测试（langfuse 核心功能）
+- ❌ 成本追踪和预算告警（本项目无 API 调用，不适用）
+- ❌ 团队协作和权限管理（单机工具，无多用户需求）
+- ❌ 生产环境监控和告警（定位是研究工具，非生产监控）
+
+**产品定位建议**：
+- **主赛道**：本地 LLM 可观测性工具 —— 研究者 / 开发者的"显微镜"
+- **差异化**：浏览器内运行 + 隐私优先 + 深度可视化
+- **不对标**：LangSmith（云服务）、Phoenix（生产监控）的完整 LLMOps 平台
+- **补齐方向**：专业用户工具链（向量/RAG/调优），而非企业协作功能
+
+**实施路径**：
+1. 先补齐 Task #17~#20 专业工具（向量/RAG/性能/调优）
+2. 持续监控 langfuse/LangSmith 的 issues，提取可适配的需求
+3. 保持"纯前端 + 隐私优先"定位，不跟风云服务特性
+
+---
+
 ## 实验性功能 🔍
 
-### 15. Agent 协作可视化
+### 23. Agent 协作可视化
 **优先级**：低 | **类型**：概念验证
 
 - 🔍 调研多 Agent 协作的 trace 格式
@@ -798,7 +1037,7 @@ window.__profiler__.clear()            // 清除所有数据
 - 不做拟人化动画（不许"AI 苏醒"）
 - 视觉焦点跟随真实事件，不伪造数据
 
-### 16. Replay 模式增强
+### 24. Replay 模式增强
 **优先级**：低 | **类型**：功能扩展
 
 - 🔍 支持变速播放（0.5x - 2x）
@@ -810,11 +1049,312 @@ window.__profiler__.clear()            // 清除所有数据
 
 ---
 
+## 社区与生态 🏆
+
+### 25. 性能排行榜与模型接入市场
+**优先级**：中 | **类型**：社区功能 | **状态**：📋 待开始
+
+**核心功能**：
+- 🔍 全球性能排行榜：用户提交设备型号 + 模型 + 推理速度（tokens/s）
+- 🔍 贡献者名人堂：留名 + 徽章系统（首次提交、速度王、社区贡献）
+- 🔍 模型接入市场：开发者提交模型 API endpoint，用户一键添加
+- 🔍 防作弊机制：提交时需附带完整 trace 文件验证
+
+**实施路径**（渐进式）：
+
+**阶段 1: 零成本 MVP（GitHub Discussions 方案）** 📋
+- 优先级：高 | 预计工期：1-2 天
+- 使用 GitHub Discussions 作为数据源，无需搭建后端
+- 用户提交成绩 → 自动创建 Discussion（标题带速度）
+- 前端读取 Discussions API → 解析 → 渲染排行榜
+- **优点**：零成本、GitHub 自带防作弊（需账号）、有评论/点赞/举报
+- **缺点**：API 速率限制（60 次/小时未登录，5000 次/小时已登录）
+- **技术栈**：GitHub API + 前端 fetch + 现有 React 组件
+- **数据格式**：Discussion title = `[Benchmark] {nickname} - {device} - {speed} tokens/s`
+- **防作弊**：必须上传 trace 文件到 Discussion body，前端验证 trace 真实性
+
+**阶段 2: 轻量后端（Serverless + 数据库）** 🔍
+- 优先级：中 | 预计工期：1 周开发 + 1 周测试
+- **触发条件**：阶段 1 有 >50 个提交 + 每周 >10 新提交 + 用户活跃讨论
+- **技术栈**：Vercel Functions + Supabase PostgreSQL + Supabase Storage
+- **成本**：免费额度内（Supabase 500MB + Vercel Serverless）
+- **数据库设计**：
+  ```sql
+  -- 排行榜表
+  CREATE TABLE leaderboard (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    nickname VARCHAR(50) NOT NULL,
+    avatar_url TEXT,
+    device_name VARCHAR(100),
+    device_tier INT, -- 1=集显, 2=中端, 3=高端
+    gpu_name VARCHAR(100),
+    model_id VARCHAR(50),
+    speed FLOAT NOT NULL, -- tokens/s
+    trace_url TEXT, -- Trace 文件链接
+    verified BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
+
+  -- 模型接入表
+  CREATE TABLE model_endpoints (
+    id UUID PRIMARY KEY,
+    provider_name VARCHAR(50),
+    provider_url TEXT,
+    contact_name VARCHAR(50),
+    api_endpoint TEXT NOT NULL,
+    model_list JSONB,
+    rating FLOAT DEFAULT 0,
+    vote_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
+
+  -- 用户徽章表
+  CREATE TABLE user_badges (
+    user_id UUID REFERENCES auth.users(id),
+    badge_type VARCHAR(20), -- 'first_submit', 'speed_king', 'contributor'
+    earned_at TIMESTAMP DEFAULT NOW()
+  );
+  ```
+- **API 端点**：
+  - `GET /api/leaderboard` - 获取排行榜（按速度排序，分页）
+  - `POST /api/leaderboard` - 提交成绩（验证 trace 真实性 + 上传文件）
+  - `GET /api/model-endpoints` - 获取模型市场列表
+  - `POST /api/model-endpoints` - 提交模型接入点
+  - `POST /api/vote` - 为模型接入点评分
+- **认证系统**：Supabase Auth（GitHub/Google 一键登录）
+- **文件存储**：Supabase Storage（trace 文件上传，50MB 限制）
+
+**阶段 3: 完整社区平台（可选，长期规划）** 🔍
+- 优先级：低 | 预计工期：1 个月
+- **触发条件**：阶段 2 月活用户 >500 + 每周提交 >50
+- **新增功能**：
+  - 用户个人主页（展示所有提交、徽章墙、历史趋势图）
+  - 模型市场（浏览、搜索、一键接入、用户评价）
+  - 社区讨论（技术交流、优化技巧、问题求助）
+  - 管理后台（审核提交、封禁作弊、数据导出）
+- **技术升级**：Next.js App Router（全栈）+ Vercel Edge Cache（CDN 加速）
+
+**前端组件设计**：
+```tsx
+// src/components/LeaderboardPage.tsx
+export default function LeaderboardPage() {
+  const [rankings, setRankings] = useState<LeaderboardEntry[]>([]);
+  const [filter, setFilter] = useState<'all' | 'tier1' | 'tier2' | 'tier3'>('all');
+  
+  return (
+    <div className="leaderboard-container">
+      <h1>🏆 全球性能排行榜</h1>
+      
+      {/* 分类过滤 */}
+      <div className="filter-tabs">
+        <button onClick={() => setFilter('all')}>全部设备</button>
+        <button onClick={() => setFilter('tier1')}>集显组</button>
+        <button onClick={() => setFilter('tier2')}>中端独显组</button>
+        <button onClick={() => setFilter('tier3')}>高端显卡组</button>
+      </div>
+      
+      {/* 排行榜表格 */}
+      <table className="ranking-table">
+        <thead>
+          <tr>
+            <th>排名</th>
+            <th>贡献者</th>
+            <th>设备信息</th>
+            <th>模型</th>
+            <th>速度 (tokens/s)</th>
+            <th>验证</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rankings.map((r, i) => (
+            <tr key={r.id}>
+              <td className="rank">#{i + 1}</td>
+              <td className="contributor">
+                <img src={r.avatar_url} alt="" />
+                <span>{r.nickname}</span>
+                {r.badges.map(b => <Badge type={b} />)}
+              </td>
+              <td className="device">{r.device_name}</td>
+              <td className="model">{r.model_id}</td>
+              <td className="speed">{r.speed.toFixed(1)}</td>
+              <td className="trace">
+                <a href={r.trace_url} target="_blank">查看 Trace →</a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      
+      {/* 提交按钮 */}
+      <button className="submit-cta" onClick={openSubmitDialog}>
+        🚀 提交我的成绩
+      </button>
+    </div>
+  );
+}
+
+// src/components/LeaderboardSubmit.tsx
+export default function LeaderboardSubmit() {
+  const [nickname, setNickname] = useState('');
+  const [traceFile, setTraceFile] = useState<File | null>(null);
+  
+  const handleSubmit = async () => {
+    // 1. 验证 trace 文件真实性
+    const isValid = await verifyTraceFile(traceFile);
+    if (!isValid) {
+      alert('无效的 trace 文件，请从 Observe 模式导出真实记录');
+      return;
+    }
+    
+    // 2. 提取设备信息和速度
+    const trace = await parseTraceFile(traceFile);
+    const speed = calculateSpeed(trace);
+    
+    // 3. 提交到后端（或创建 GitHub Discussion）
+    await submitToLeaderboard({
+      nickname,
+      device: trace.device,
+      model: trace.modelId,
+      speed,
+      traceFile,
+    });
+    
+    alert('🎉 提交成功！等待审核...');
+  };
+  
+  return (
+    <dialog className="submit-dialog">
+      <h2>提交性能成绩</h2>
+      <input 
+        type="text" 
+        placeholder="你的昵称" 
+        value={nickname}
+        onChange={e => setNickname(e.target.value)}
+      />
+      <input 
+        type="file" 
+        accept=".aitrace"
+        onChange={e => setTraceFile(e.target.files?.[0] || null)}
+      />
+      <p className="hint">
+        💡 Trace 文件必须来自真实推理，我们会验证数据真实性
+      </p>
+      <button onClick={handleSubmit}>提交</button>
+    </dialog>
+  );
+}
+```
+
+**防作弊机制**：
+- **Trace 文件验证**：
+  - 检查文件格式（必须是 `.aitrace` v2 格式）
+  - 验证 TokenStep 数据完整性（概率总和=1、熵计算正确）
+  - 检查 PipelineTiming 合理性（速度不超过物理极限）
+  - 验证设备信息一致性（GPU 型号 + 显存 + 速度匹配）
+- **速度异常检测**：
+  - 对比同设备历史提交，标记异常快的结果
+  - 人工审核速度 > 平均值 2σ 的提交
+- **用户信誉系统**：
+  - 首次提交需等待审核
+  - 多次提交通过后自动信任
+  - 作弊一次永久封禁
+
+**商业价值**：
+- **社区驱动增长**：用户为上榜而主动传播项目
+- **数据资产积累**：真实设备性能数据库（可用于模型推荐）
+- **开发者生态**：模型接入市场吸引第三方贡献者
+- **差异化竞争**：市面上没有"浏览器 LLM 性能排行榜"
+
+**隐私保护**：
+- Trace 文件不包含对话内容（仅概率分布 + 速度数据）
+- 用户可选匿名提交（不显示 GitHub 账号）
+- 设备信息脱敏（只显示 GPU 型号，不显示 IP/浏览器指纹）
+
+**实施建议**：
+1. ✅ **立即做**：完成 Task #17（Tooltip 系统），让普通用户看懂项目
+2. ✅ **下一步**：创建 GitHub Discussions 分类（5 分钟）
+3. ✅ **快速验证**：开发阶段 1 MVP（1-2 天），看用户是否真的会提交
+4. ⏳ **观察数据**：等有真实提交后，再决定是否上后端（避免过早优化）
+
+---
+
+## 任务优先级总览
+
+### 按优先级排序
+
+**🔥 极高优先级**（立即执行）：
+1. **Task #17 - Tooltip 系统** (🚧 进行中，70% 完成)
+   - 目标：解决"普通用户看不懂项目"的核心痛点
+   - 剩余工作：用户测试 + 移动端适配 + 扩展到更多 UI
+   - 预计完成：1 周
+
+**⚡ 高优先级**（近期规划，1-2 个月内）：
+2. **Task #25.1 - 排行榜 MVP**（阶段 1：GitHub Discussions）
+   - 目标：社区驱动增长 + 数据资产积累
+   - 预计工期：1-2 天
+   - 前置条件：Task #17 完成（让用户看懂项目才会提交成绩）
+
+3. **Task #19 - RAG 检索增强生成**
+   - 目标：专业用户的文档理解能力增强
+   - 预计工期：2 周
+   - 商业价值：企业调试场景（节省人力成本）
+
+**📊 中优先级**（3-6 个月规划）：
+4. **Task #18 - Embedding 向量可视化**
+   - 目标：文本语义空间可视化
+   - 预计工期：1.5 周
+   - 依赖：Task #19（RAG 的基础能力）
+
+5. **Task #20 - 模型性能分析工具**
+   - 目标：推理性能剖析 + 量化精度对比
+   - 预计工期：2 周
+
+6. **Task #22 - 对标成熟项目功能差距分析**
+   - 目标：明确产品定位 + 补齐关键短板
+   - 预计工期：调研 1 周 + 实施按需
+
+7. **Task #25.2 - 排行榜后端升级**（阶段 2：Serverless + 数据库）
+   - 触发条件：阶段 1 有 >50 个提交
+   - 预计工期：1 周开发 + 1 周测试
+
+**🔬 低优先级**（6 个月后或按需）：
+8. **Task #21 - 参数调优实验平台**
+9. **Task #23 - Agent 协作可视化**
+10. **Task #24 - Replay 模式增强**
+11. **Task #25.3 - 完整社区平台**（阶段 3）
+
+**❌ 不推荐**：
+- **Task #21（WebTransport 升级）**：纯前端离线工具无此需求，过度设计
+
+---
+
+## 开发路线图
+
+### Q3 2026（当前季度）
+- ✅ 完成 Task #17（Tooltip 系统）← **当前任务**
+- ✅ 快速验证 Task #25.1（排行榜 MVP）
+- 🚧 启动 Task #19（RAG 检索增强）
+
+### Q4 2026
+- Task #18（向量可视化）
+- Task #20（性能分析工具）
+- Task #22（对标分析 + 功能补齐）
+- 根据 Task #25.1 数据决定是否升级到阶段 2
+
+### 2027 H1
+- 剩余中优先级任务
+- 根据用户反馈调整优先级
+- 探索商业化路径（教育市场 / 企业工具）
+
+---
+
 ## 任务优先级说明
 
-**高优先级**：影响核心功能或用户体验，应优先处理
-**中优先级**：重要但非紧急，可排期处理
-**低优先级**：锦上添花的功能，资源充裕时处理
+**极高优先级（🔥）**：解决核心痛点，直接影响用户留存和产品价值
+**高优先级（⚡）**：重要功能或商业价值明确，应尽快排期
+**中优先级（📊）**：重要但非紧急，可排期处理
+**低优先级（🔬）**：锦上添花的功能，资源充裕时处理
 
 ## 开发规范
 
