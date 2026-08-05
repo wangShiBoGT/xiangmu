@@ -15,7 +15,6 @@ import {
   PLAYBACK_SPEEDS,
   type ReplayState,
 } from '../lib/replayControls';
-import Dropdown from './Dropdown';
 
 interface Props {
   controller: ReplayController;
@@ -56,18 +55,19 @@ export default function ReplayControlPanel({ controller, onStepChange }: Props) 
   };
 
   return (
-    <div className="border-t border-obs-line/30 bg-gradient-to-b from-obs-1 to-[#05070C] px-6 py-3">
+    <div className="rounded-xl border border-obs-line/30 bg-gradient-to-b from-obs-1/95 to-[#05070C]/95 px-5 py-3 backdrop-blur-sm shadow-2xl">
+      {/* 进度信息 */}
+      <div className="mb-2 flex items-center justify-center gap-4 text-[11px] text-obs-ink2/80">
+        <span className="font-mono">
+          步骤 {state.currentStep + 1} / {state.totalSteps}
+        </span>
+        <span className="font-mono">
+          {progress.toFixed(1)}%
+        </span>
+      </div>
+
       {/* 进度条 */}
       <div className="mb-3">
-        <div className="mb-2 flex items-center justify-between text-[11px] text-obs-ink2/80">
-          <span className="font-mono">
-            步骤 {state.currentStep + 1} / {state.totalSteps}
-          </span>
-          <span className="font-mono">
-            {progress.toFixed(1)}%
-          </span>
-        </div>
-
         <div className="relative">
           <input
             type="range"
@@ -108,99 +108,104 @@ export default function ReplayControlPanel({ controller, onStepChange }: Props) 
         </div>
       </div>
 
-      {/* 播放控制 */}
-      <div className="flex items-center gap-2">
+      {/* 控制按钮组 - 居中布局 */}
+      <div className="flex items-center justify-center gap-1.5">
         {/* 跳到开始 */}
         <button
           type="button"
-          className="rounded-md border border-obs-line/40 bg-obs-2/50 p-1.5 text-obs-ink2/70 transition-all hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-obs-line/40 bg-obs-2/50 text-obs-ink2/70 transition-all hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink"
           onClick={() => controller.seekToStart()}
           title="跳到开始"
         >
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M11 6L6 12l5 6V6zm7 0l-5 6 5 6V6z" />
           </svg>
         </button>
 
         {/* 后退 */}
         <button
           type="button"
-          className="rounded-md border border-obs-line/40 bg-obs-2/50 p-1.5 text-obs-ink2/70 transition-all hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-obs-line/40 bg-obs-2/50 text-obs-ink2/70 transition-all hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink"
           onClick={() => controller.stepBackward()}
           title="后退一步"
         >
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
           </svg>
         </button>
 
         {/* 播放/暂停 */}
         <button
           type="button"
-          className="rounded-md bg-accent/90 px-5 py-1.5 text-[12px] font-medium text-white transition-all hover:bg-accent hover:shadow-lg hover:shadow-accent/20"
+          className="flex h-8 items-center justify-center gap-1.5 rounded-md bg-accent px-4 text-[13px] font-medium text-white transition-all hover:bg-accent/90"
           onClick={() => controller.togglePlay()}
         >
           {state.playing ? (
-            <span className="flex items-center gap-1.5">
+            <>
               <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
               </svg>
               暂停
-            </span>
+            </>
           ) : (
-            <span className="flex items-center gap-1.5">
+            <>
               <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
               播放
-            </span>
+            </>
           )}
         </button>
 
         {/* 前进 */}
         <button
           type="button"
-          className="rounded-md border border-obs-line/40 bg-obs-2/50 p-1.5 text-obs-ink2/70 transition-all hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-obs-line/40 bg-obs-2/50 text-obs-ink2/70 transition-all hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink"
           onClick={() => controller.stepForward()}
           title="前进一步"
         >
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" />
           </svg>
         </button>
 
         {/* 跳到结束 */}
         <button
           type="button"
-          className="rounded-md border border-obs-line/40 bg-obs-2/50 p-1.5 text-obs-ink2/70 transition-all hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-obs-line/40 bg-obs-2/50 text-obs-ink2/70 transition-all hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink"
           onClick={() => controller.seekToEnd()}
           title="跳到结束"
         >
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 6l5 6-5 6V6zm7 0l5 6-5 6V6z" />
           </svg>
         </button>
 
         {/* 分隔线 */}
-        <div className="h-5 w-px bg-obs-line/30 mx-1" />
+        <div className="h-5 w-px bg-obs-line/30 mx-1.5" />
 
-        {/* 速度选择 */}
-        <Dropdown
-          options={PLAYBACK_SPEEDS.map((speed) => ({
-            value: String(speed.value),
-            label: speed.label,
-          }))}
-          value={String(state.speed)}
-          onChange={(value) => controller.setSpeed(Number(value))}
-          ariaLabel="选择播放速度"
-          tone="obs"
-          triggerClassName="rounded-[6px] border border-obs-line bg-obs-2 px-3 py-2 text-[12px] text-obs-ink transition-colors hover:border-obs-line/80 focus:outline-none"
-        />
+        {/* 速度选择 - 紧凑按钮样式 */}
+        <div className="relative">
+          <select
+            className="h-8 appearance-none rounded-md border border-obs-line/40 bg-obs-2/50 pl-2.5 pr-7 text-[12px] font-medium text-obs-ink transition-all hover:border-obs-line/80 focus:border-accent focus:outline-none cursor-pointer"
+            value={state.speed}
+            onChange={(e) => controller.setSpeed(Number(e.target.value))}
+          >
+            {PLAYBACK_SPEEDS.map((speed) => (
+              <option key={speed.value} value={speed.value}>
+                {speed.label}
+              </option>
+            ))}
+          </select>
+          <svg className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-obs-ink2/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
 
         {/* 循环播放 */}
         <button
           type="button"
-          className={`rounded-md border p-1.5 text-[12px] transition-all ${
+          className={`flex h-8 w-8 items-center justify-center rounded-md border transition-all ${
             state.loop
               ? 'border-accent/40 bg-accent/20 text-accent'
               : 'border-obs-line/40 bg-obs-2/50 text-obs-ink2/70 hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink'
@@ -208,19 +213,20 @@ export default function ReplayControlPanel({ controller, onStepChange }: Props) 
           onClick={() => controller.toggleLoop()}
           title="循环播放"
         >
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
         </button>
 
         {/* 书签管理 */}
         <button
           type="button"
-          className="ml-auto rounded-md border border-obs-line/40 bg-obs-2/50 px-3 py-1.5 text-[12px] text-obs-ink2/70 transition-all hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-obs-line/40 bg-obs-2/50 text-obs-ink2/70 transition-all hover:border-accent/40 hover:bg-obs-2 hover:text-obs-ink"
           onClick={() => setShowBookmarks(!showBookmarks)}
+          title="书签"
         >
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
           </svg>
         </button>
       </div>

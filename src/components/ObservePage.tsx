@@ -1376,10 +1376,13 @@ export default function ObservePage({
     () => (displaySteps.length > 0 ? evaluateRules(displaySteps, rules) : []),
     [displaySteps, rules],
   );
-  const annotations = useMemo(
-    () => matchesByToken(ruleMatches, displaySteps.length),
-    [ruleMatches, displaySteps.length],
-  );
+  const annotations = useMemo(() => {
+    // 生成中不显示标注，避免对不完整的句子进行误判
+    if (phase === 'running') {
+      return Array.from({ length: displaySteps.length }, () => []);
+    }
+    return matchesByToken(ruleMatches, displaySteps.length);
+  }, [ruleMatches, displaySteps.length, phase]);
 
   const jumpToToken = useCallback((index: number) => {
     setSelected(index);
@@ -2136,9 +2139,11 @@ export default function ObservePage({
                       </div>
                     )}
                   {/* Replay 传输控制：播放/暂停/逐步，每一步全世界同步 */}
-                  {(demoPhase === "playing" ||
-                    demoPhase === "paused" ||
-                    demoPhase === "done") &&
+                  {/* 简化的演示回放控制 - 仅在 Replay 面板未激活时显示 */}
+                  {!replayController &&
+                    (demoPhase === "playing" ||
+                      demoPhase === "paused" ||
+                      demoPhase === "done") &&
                     demoSteps.length > 0 && (
                       <div className="absolute bottom-44 right-6 flex items-center gap-1 rounded-md border border-obs-line bg-obs-2/85 px-1.5 py-1">
                         <button
@@ -2186,7 +2191,7 @@ export default function ObservePage({
                       demoPhase === "paused" ||
                       demoPhase === "done") &&
                     demoSteps.length > 0 && (
-                      <div className="absolute bottom-4 left-6 right-6">
+                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[min(90%,1000px)]">
                         <ReplayControlPanel
                           controller={replayController}
                           onStepChange={(step) => {
