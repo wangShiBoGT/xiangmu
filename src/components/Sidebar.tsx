@@ -46,7 +46,7 @@ export default function Sidebar({
           mobileOpen ? "flex translate-x-0" : "hidden -translate-x-full md:translate-x-0"
         }`}
       >
-      <div className="px-4 pt-5 pb-3">
+        <div className="px-4 pt-5 pb-3">
         <div className="flex items-center justify-between gap-2.5 px-1 pb-5 select-none">
           <div className="flex items-center gap-2.5">
             <IconAperture className="h-[19px] w-[19px] text-ink" />
@@ -121,6 +121,7 @@ export default function Sidebar({
       <div className="px-5 py-4 text-[11px] tracking-wide text-ink-3 select-none">
         Local-first · 推理完全在本机，数据不出设备
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

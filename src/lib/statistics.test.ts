@@ -31,6 +31,7 @@ describe("computeOverallStats", () => {
         id: "sess-1",
         title: "测试会话",
         createdAt: Date.now(),
+        updatedAt: Date.now(),
         messages: [
           { role: "user", content: "你好" },
           { role: "assistant", content: "你好！" },
@@ -60,14 +61,22 @@ describe("computeOverallStats", () => {
       createdAt: Date.now(),
       name: "测试实验",
       starred: false,
-      source: "manual",
+      source: "run" as const,
       prompt: "测试提示",
       modelId,
-      params: { temperature: 0.7, topP: 0.9, maxTokens: 100 },
+      params: { temperature: 0.7, topP: 0.9 },
       seed: null,
       device: "webgpu",
       root: {
+        forkStep: 0,
+        forcedId: -1,
+        forcedText: "",
+        children: [],
         trace: {
+          modelId,
+          params: { temperature: 0.7, topP: 0.9 },
+          promptIds: [],
+          device: "webgpu",
           steps: Array(tokens)
             .fill(null)
             .map((_, i) => ({
@@ -78,9 +87,8 @@ describe("computeOverallStats", () => {
               entropy: avgEntropy,
               dt: 10,
             })),
-          pipeline: null,
-          agent: null,
-          branches: [],
+          pipeline: undefined,
+          agent: undefined,
           extensions: {},
         },
       },
@@ -88,9 +96,9 @@ describe("computeOverallStats", () => {
         tokens,
         avgTps,
         avgEntropy,
-        duration: tokens * 10,
+        branches: 1,
       },
-      ruleset: null,
+      ruleset: undefined,
     });
 
     const sessions: ChatSession[] = [];
@@ -129,14 +137,22 @@ describe("computeOverallStats", () => {
       createdAt: Date.now(),
       name: "测试",
       starred: false,
-      source: "manual",
+      source: "run" as const,
       prompt: "测试",
       modelId: "test-model",
-      params: { temperature: temp, topP, maxTokens: 100 },
+      params: { temperature: temp, topP },
       seed: null,
       device: "webgpu",
       root: {
+        forkStep: 0,
+        forcedId: -1,
+        forcedText: "",
+        children: [],
         trace: {
+          modelId: "test-model",
+          params: { temperature: temp, topP },
+          promptIds: [],
+          device: "webgpu",
           steps: Array(tokens)
             .fill(null)
             .map((_, i) => ({
@@ -147,14 +163,13 @@ describe("computeOverallStats", () => {
               entropy: 2.0,
               dt: 10,
             })),
-          pipeline: null,
-          agent: null,
-          branches: [],
+          pipeline: undefined,
+          agent: undefined,
           extensions: {},
         },
       },
-      stats: { tokens, avgTps: 50, avgEntropy: 2.0, duration: tokens * 10 },
-      ruleset: null,
+      stats: { tokens, avgTps: 50, avgEntropy: 2.0, branches: 1 },
+      ruleset: undefined,
     });
 
     const sessions: ChatSession[] = [];
@@ -189,14 +204,22 @@ describe("computeOverallStats", () => {
       createdAt: Date.now(),
       name: "测试",
       starred: false,
-      source: "manual",
+      source: "run" as const,
       prompt: "测试",
       modelId: "test-model",
-      params: { temperature: 0.7, topP: 0.9, maxTokens: 100 },
+      params: { temperature: 0.7, topP: 0.9 },
       seed: null,
       device: "webgpu",
       root: {
+        forkStep: 0,
+        forcedId: -1,
+        forcedText: "",
+        children: [],
         trace: {
+          modelId: "test-model",
+          params: { temperature: 0.7, topP: 0.9 },
+          promptIds: [],
+          device: "webgpu",
           steps: entropies.map((entropy, i) => ({
             id: i,
             text: "词",
@@ -205,9 +228,8 @@ describe("computeOverallStats", () => {
             entropy,
             dt: 10,
           })),
-          pipeline: null,
-          agent: null,
-          branches: [],
+          pipeline: undefined,
+          agent: undefined,
           extensions: {},
         },
       },
@@ -215,9 +237,9 @@ describe("computeOverallStats", () => {
         tokens: entropies.length,
         avgTps: 50,
         avgEntropy: entropies.reduce((a, b) => a + b, 0) / entropies.length,
-        duration: entropies.length * 10,
+        branches: 1,
       },
-      ruleset: null,
+      ruleset: undefined,
     });
 
     const sessions: ChatSession[] = [];

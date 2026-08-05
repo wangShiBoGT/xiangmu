@@ -399,3 +399,21 @@ export function IconThinking({ className }: IconProps) {
     </svg>
   );
 }
+
+/** 菜单（三横线） */
+export function IconMenu({ className }: IconProps) {
+  return (
+    <Base className={className}>
+      <path d="M3 12h18M3 6h18M3 18h18" />
+    </Base>
+  );
+}
+
+/** 柱状图 */
+export function IconBarChart({ className }: IconProps) {
+  return (
+    <Base className={className}>
+      <path d="M12 20V10M18 20V4M6 20v-4" />
+    </Base>
+  );
+}

@@ -97,7 +97,6 @@ export default function SamplingChamber({
   // 参数对比模式：模拟不同温度下的候选分布
   const compareMode = compareParams?.enabled ?? false;
   const compareTemp = compareParams?.temperature ?? 1.0;
-  const compareTopP = compareParams?.topP ?? 1.0;
 
   // 在对比模式下重新计算候选分布
   const compareCands = useMemo(() => {

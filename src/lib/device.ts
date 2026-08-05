@@ -76,7 +76,6 @@ export async function probeDevice(): Promise<DeviceReport> {
         // 检查 GPU 内存限制
         if (adapter.limits) {
           const maxBufferSize = adapter.limits.maxBufferSize ?? 0;
-          const maxStorageBufferBindingSize = adapter.limits.maxStorageBufferBindingSize ?? 0;
           if (maxBufferSize < 256 * 1024 * 1024) {
             console.warn(`GPU 缓冲区限制较低: ${(maxBufferSize / 1024 / 1024).toFixed(0)} MB`);
           }

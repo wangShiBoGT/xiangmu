@@ -44,7 +44,6 @@ export default function ModelSelect({
   const [draftThinking, setDraftThinking] = useState(false);
   const [draftExternal, setDraftExternal] = useState(false);
   const [draftDtype, setDraftDtype] = useState<ModelDtype | "">("");
-  const [addError, setAddError] = useState<string | null>(null);
 
   const submitCustom = () => {
     try {
@@ -55,7 +54,6 @@ export default function ModelSelect({
         dtype: draftDtype || null,
       });
       setCustoms([...getCustomModels()]);
-      setAddError(null);
       setDraftId("");
       setDraftThinking(false);
       setDraftExternal(false);
@@ -65,7 +63,7 @@ export default function ModelSelect({
       setOpen(false);
       onChange(model.id);
     } catch (e) {
-      setAddError(e instanceof Error ? e.message : String(e));
+      console.error("添加自定义模型失败:", e);
     }
   };
 
@@ -245,7 +243,7 @@ export default function ModelSelect({
                     if (e.key === "Enter") submitCustom();
                   }}
                 />
-              <div className="mt-2 flex items-center gap-3 text-[11px] text-ink-2">
+                <div className="mt-2 flex items-center gap-3 text-[11px] text-ink-2">
                   <label className="flex cursor-pointer items-center gap-1.5">
                     <input
                       type="checkbox"
@@ -279,46 +277,7 @@ export default function ModelSelect({
                     ariaLabel="数据类型"
                   />
                 </div>
-                    <input
-                      type="checkbox"
-                      checked={draftThinking}
-                      onChange={(e) => setDraftThinking(e.target.checked)}
-                    />
-                    思考模型（输出 &lt;think&gt;）
-                  </label>
-                  <label className="flex cursor-pointer items-center gap-1.5">
-                    <input
-                      type="checkbox"
-                      checked={draftExternal}
-                      onChange={(e) => setDraftExternal(e.target.checked)}
-                    />
-                    外部权重（.onnx_data）
-                  </label>
-                </div>
-                <label className="mt-2 flex items-center gap-1.5 text-[11px] text-ink-2">
-                  权重精度
-                  <Dropdown
-                    ariaLabel="权重精度"
-                    tone="paper"
-                    menuWidthClassName="w-52"
-                    value={draftDtype}
-                    onChange={(v) => setDraftDtype(v as ModelDtype | "")}
-                    options={[
-                      { value: "", label: "自动", hint: "WebGPU=q4f16 / CPU=q4" },
-                      { value: "q4", label: "q4" },
-                      { value: "q4f16", label: "q4f16" },
-                      { value: "fp16", label: "fp16" },
-                      { value: "int8", label: "int8" },
-                      { value: "uint8", label: "uint8" },
-                      { value: "fp32", label: "fp32" },
-                    ]}
-                  />
-                  <span className="text-ink-3">输出乱码时改选 q4 / fp16</span>
-                </label>
-                {addError && (
-                  <p className="mt-1.5 text-[11px] text-red-500">{addError}</p>
-                )}
-                <div className="mt-2 flex gap-2">
+                <div className="mt-3 flex items-center justify-end gap-2">
                   <button
                     type="button"
                     className="rounded-md bg-accent px-2.5 py-1 text-[12px] text-white hover:opacity-85 disabled:opacity-50"
@@ -330,10 +289,7 @@ export default function ModelSelect({
                   <button
                     type="button"
                     className="rounded-md px-2.5 py-1 text-[12px] text-ink-2 hover:bg-hover"
-                    onClick={() => {
-                      setAdding(false);
-                      setAddError(null);
-                    }}
+                    onClick={() => setAdding(false)}
                   >
                     取消
                   </button>

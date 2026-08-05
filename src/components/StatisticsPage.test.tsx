@@ -25,6 +25,7 @@ describe("StatisticsPage logic", () => {
         id: "sess-1",
         title: "测试",
         createdAt: Date.now(),
+        updatedAt: Date.now(),
         messages: [
           { role: "user", content: "问题" },
           { role: "assistant", content: "回答" },

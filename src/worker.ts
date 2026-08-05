@@ -57,7 +57,7 @@ class TextGenerationPipeline {
   static async getInstance(
     modelId: string,
     progress_callback?: (info: ProgressInfo) => void,
-  ) {
+  ): Promise<{ tokenizer: PreTrainedTokenizer; model: PreTrainedModel; device: Device }> {
     // 优化 1: 带缓存的设备检测，失败后自动降级
     if (this.device === null) {
       const detected = await detectDevice();
@@ -227,7 +227,8 @@ async function runGeneration(
   modelId: string,
   opts: GenerateOptions = {},
 ) {
-  const { tokenizer, model } = await TextGenerationPipeline.getInstance(modelId);
+  const pipeline = await TextGenerationPipeline.getInstance(modelId);
+  const { tokenizer, model, device } = pipeline;
   const src = opts.src;
 
   let inputs: { input_ids: Tensor; attention_mask: Tensor };
@@ -303,10 +304,10 @@ async function runGeneration(
     }
 
     // WASM 模式下定期检查中断信号，改善响应性
-    if (TextGenerationPipeline.device === "wasm") {
+    if (device === "wasm") {
       if (now - lastInterruptCheck > INTERRUPT_CHECK_INTERVAL) {
         lastInterruptCheck = now;
-        if (stopping_criteria.wasInterrupted()) {
+        if (stopping_criteria.interrupted) {
           return; // 已中断，直接返回
         }
       }
@@ -463,10 +464,11 @@ async function load(modelId: string, forceDevice?: Device) {
 
     // 阶段 2: 加载模型文件
     const loadStart = performance.now();
-    const { tokenizer, model, device } =
+    const pipeline =
       await TextGenerationPipeline.getInstance(modelId, (x) =>
         self.postMessage(x),
       );
+    const { tokenizer, model, device } = pipeline;
     const loadTime = performance.now() - loadStart;
 
     // 阶段 3: 编译与预热

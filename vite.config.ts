@@ -98,6 +98,20 @@ export default defineConfig({
   preview: {
     host: true,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // 三大体积瓶颈独立拆分
+          'vendor-three': ['three', 'three/examples/jsm/controls/OrbitControls'],
+          'vendor-office': ['xlsx', 'mammoth'],
+          'vendor-pdf': ['pdfjs-dist/legacy/build/pdf.mjs'],
+        },
+      },
+    },
+    // 警告阈值提高到 1000 KB，xlsx 压缩后 934KB 是合理的大小
+    chunkSizeWarningLimit: 1000,
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
