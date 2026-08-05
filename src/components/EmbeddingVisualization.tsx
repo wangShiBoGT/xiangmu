@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 export interface VisPoint {
   /** 原始索引 */
@@ -33,8 +34,10 @@ export default function EmbeddingVisualization({
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const labelRendererRef = useRef<CSS2DRenderer | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const pointMeshesRef = useRef<THREE.Mesh[]>([]);
+  const labelObjectsRef = useRef<CSS2DObject[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // 初始化 Three.js 场景
@@ -62,6 +65,15 @@ export default function EmbeddingVisualization({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
+
+    // CSS2D 标签渲染器
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(width, height);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    container.appendChild(labelRenderer.domElement);
+    labelRendererRef.current = labelRenderer;
 
     // 控制器
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -92,6 +104,7 @@ export default function EmbeddingVisualization({
       requestAnimationFrame(animate);
       controls.update();
       renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
     };
     animate();
 
@@ -102,6 +115,7 @@ export default function EmbeddingVisualization({
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      labelRenderer.setSize(w, h);
     };
     window.addEventListener('resize', handleResize);
 
@@ -111,6 +125,7 @@ export default function EmbeddingVisualization({
       renderer.dispose();
       controls.dispose();
       container.removeChild(renderer.domElement);
+      container.removeChild(labelRenderer.domElement);
     };
   }, []);
 
@@ -119,9 +134,11 @@ export default function EmbeddingVisualization({
     const scene = sceneRef.current;
     if (!scene || points.length === 0) return;
 
-    // 清除旧点
+    // 清除旧点和标签
     pointMeshesRef.current.forEach((mesh) => scene.remove(mesh));
     pointMeshesRef.current = [];
+    labelObjectsRef.current.forEach((label) => scene.remove(label));
+    labelObjectsRef.current = [];
 
     // 创建新点
     const geometry = new THREE.SphereGeometry(0.3, 16, 16);
@@ -145,6 +162,32 @@ export default function EmbeddingVisualization({
 
       scene.add(mesh);
       pointMeshesRef.current.push(mesh);
+
+      // 创建文本标签
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'text-label';
+      labelDiv.textContent = pt.label;
+      labelDiv.style.cssText = `
+        color: #38bdf8;
+        font-size: 12px;
+        font-weight: 500;
+        background: rgba(10, 13, 18, 0.92);
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(56, 189, 248, 0.4);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        white-space: nowrap;
+        user-select: none;
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        backdrop-filter: blur(4px);
+      `;
+
+      const labelObject = new CSS2DObject(labelDiv);
+      labelObject.position.set(0, 0.8, 0);
+      mesh.add(labelObject);
+      labelObjectsRef.current.push(labelObject);
     });
 
     // 渲染相似度连线
@@ -283,6 +326,19 @@ export default function EmbeddingVisualization({
             </p>
           </div>
         </div>
+
+        {/* 相似度连线说明 */}
+        {similarityEdges.length > 0 && (
+          <div className="rounded-md border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-[11px] backdrop-blur-sm">
+            <p className="font-medium text-emerald-300">🔗 相似度连线</p>
+            <p className="mt-1.5 text-emerald-200/80">
+              绿色连线表示两段文本相似度 &gt; 0.7，线条越亮表示相似度越高
+            </p>
+            <p className="mt-1 text-[10px] text-emerald-200/60">
+              共检测到 {similarityEdges.length} 对高相似文本
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 鼠标悬停/选中的文本提示 */}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   IconActivity,
   IconChevronDown,
@@ -38,6 +38,74 @@ interface AINexusProps {
 
 export default function AINexus({ info }: AINexusProps) {
   const [collapsed, setCollapsed] = useState(true);
+
+  // 拖动相关状态
+  const [position, setPosition] = useState(() => {
+    const saved = localStorage.getItem('ainexus-position');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return { x: window.innerWidth - 380 - 24, y: 80 };
+      }
+    }
+    return { x: window.innerWidth - 380 - 24, y: 80 };
+  });
+  const [dragging, setDragging] = useState(false);
+  const dragStartRef = useRef<{ x: number; y: number; startX: number; startY: number } | null>(null);
+
+  // 保存位置到 localStorage
+  useEffect(() => {
+    localStorage.setItem('ainexus-position', JSON.stringify(position));
+  }, [position]);
+
+  // 保存位置到 localStorage
+  useEffect(() => {
+    localStorage.setItem('ainexus-position', JSON.stringify(position));
+  }, [position]);
+
+  // 拖动逻辑
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // 只在点击头部区域时开始拖动
+    if ((e.target as HTMLElement).closest('.ainexus-drag-handle')) {
+      e.preventDefault();
+      dragStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        startX: position.x,
+        startY: position.y,
+      };
+      setDragging(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!dragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragStartRef.current) return;
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+
+      // 边界检测：面板不能拖出视口
+      const newX = Math.max(0, Math.min(window.innerWidth - 380, dragStartRef.current.startX + dx));
+      const newY = Math.max(0, Math.min(window.innerHeight - 64, dragStartRef.current.startY + dy));
+
+      setPosition({ x: newX, y: newY });
+    };
+
+    const handleMouseUp = () => {
+      setDragging(false);
+      dragStartRef.current = null;
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragging, position.x, position.y]);
 
   // 自动展开逻辑
   useEffect(() => {
@@ -95,14 +163,19 @@ export default function AINexus({ info }: AINexusProps) {
 
   return (
     <div
-      className={`fixed right-6 top-20 z-50 w-[380px] overflow-hidden rounded-xl border border-obs-line/30 bg-obs/95 shadow-xl backdrop-blur-md transition-all duration-300 ${
+      className={`fixed z-50 w-[380px] overflow-hidden rounded-xl border border-obs-line/30 bg-obs/95 shadow-xl backdrop-blur-md transition-all duration-300 ${
         collapsed ? "h-[64px]" : "h-auto"
-      }`}
+      } ${dragging ? 'cursor-grabbing select-none' : ''}`}
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+      }}
     >
-      {/* 头部 - 始终可见 */}
+      {/* 头部 - 始终可见，可拖动 */}
       <button
+        onMouseDown={handleMouseDown}
         onClick={handleToggle}
-        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-obs-line/20"
+        className="ainexus-drag-handle flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-obs-line/20 cursor-grab active:cursor-grabbing"
       >
         {/* 状态指示器 */}
         <div
