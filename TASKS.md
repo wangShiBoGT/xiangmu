@@ -1,1473 +1,690 @@
 # 开发任务看板
 
-> 最后更新：2026-08-05 23:45
+> 最后更新：2026-08-06
 > 状态说明：✅ 已完成 | 🚧 进行中 | 📋 待开始 | 🔍 需调研
 > 
-> **重大调研完成**：完成第一性原理分析和产品价值验证（详见 [`调研总结-2026-08-05.md`](./调研总结-2026-08-05.md)）
-> **核心发现**：普通用户看不懂专业术语是最致命问题，需立即添加 Tooltip 解释系统
-> **商业价值**：教育市场（1 亿潜在营收）+ 企业调试（节省 40 万人力）+ 隐私用户（长尾）
-
-## 已完成任务 ✅
-
-### Phase 0: 颜色系统重构（2026-08-05 完成）
-- ✅ 更新核心 CSS 变量定义（src/index.css）
-- ✅ 替换所有组件的 Tailwind 颜色类（40+ 文件）
-- ✅ 更新 Canvas 渲染代码（scoreCard.ts, shareCard.ts）
-- ✅ 修复首页标题换行问题
-- ✅ 添加统一图标系统（SystemIcons.tsx, AnimatedIcons.tsx）
-- ✅ 移除 HesitationSlice 硬编码背景色
-
-**成果**：完全移除 AI 风格的青紫色系（indigo/violet/purple），统一使用专业工具配色：
-- 主色：#10A0FF（观测蓝）
-- 成功：#00e676（翠绿，3D 可视化保留）
-- 警示：#ffa726（琥珀）/ #ef5350（红）
-- 背景：纯黑灰阶梯（#0a0a0a → #2a2a2a）
+> **已完成任务存档**：Task #1-17 已归档至 [`docs/COMPLETED_TASKS.md`](./docs/COMPLETED_TASKS.md)
+> **战略定位**：科研机构 AI 审计工具 - 让 AI 输出带置信度的第一个工具
+> **演进路径**：科研起步 → 开放标准 → 云端桥接 → 工作流集成
 
 ---
 
-## 核心功能优化 📋
+## 18 个月技术路线图
 
-### 1. WebGPU 性能与兼容性 ✅
-**优先级**：高 | **类型**：技术债务 | **完成时间**：2026-08-05
+### 阶段 1：深耕科研场景（3-6 个月，Q1-Q2 2027）
 
-- ✅ 优化模型加载流程，减少首次加载时间
-- ✅ 改进 WASM CPU 模式下的停止响应（当前受限于 WASM 线程）
-- ✅ 添加 WebGPU 兼容性自动检测和降级提示
-- ✅ 优化显存占用，支持更大模型
+**核心价值**：成为"第一个让 AI 输出带置信度的工具"
 
-**已完成**：
-- WebGPU 自动降级机制：
-  - 首次 WebGPU 加载失败后自动切换到 WASM 模式
-  - 记录详细失败原因（不支持/被阻止/adapter 未找到）
-  - 避免重复尝试失败的后端，提升加载速度
-- 增强设备探测（device.ts）：
-  - probeDevice 函数记录 webgpuFailReason 详细原因
-  - 检查 GPU 缓冲区限制（maxBufferSize, maxStorageBufferBindingSize）
-  - getWebGPUFallbackAdvice 函数提供针对性降级建议
-- 显存优化策略（getOptimizationAdvice）：
-  - 大模型（>2GB）自动启用分片加载（use_external_data_format）
-  - 低配设备（tier 1）自动降低量化精度到 q4
-  - 内存风险三级评估（low/medium/high）和动态建议
-  - estimateMemoryRequirement 函数计算运行时内存需求（权重 × 1.8）
-- WASM 模式改进：
-  - 定期中断检查（每 100ms）改善停止按钮响应性
-  - 32 位地址空间限制检测和提前警告
-- 用户界面增强：
-  - DeviceCompatibilityBanner 组件显示 WebGPU 降级提示
-  - 可关闭横幅并持久化到 localStorage
-  - 显示技术原因和具体解决方案
+**成功标志**：
+- 5-10 个科研用户在论文里引用本工具
+- 用户主动在 GitHub Discussion 提问 API 支持
 
-**技术要点已实现**：
-- transformers.js 的 WebGPU 后端优化（自动降级 + 设备检测）✅
-- onnxruntime-web 的 WASM 堆内存限制处理（32 位检测 + 提示）✅
-- 模型权重分片加载策略（use_external_data_format 动态开启）✅
-
-### 2. Trace 系统完善 ✅
-**优先级**：高 | **类型**：核心功能 | **完成时间**：2026-08-05
-
-- ✅ 完善 TokenStep 数据结构，记录更多采样细节
-- ✅ 实现 .aitrace 文件导入/导出功能
-- ✅ 添加 trace 数据压缩和索引
-- ✅ 支持多 run 对比（同一问题不同参数）
-
-**已完成**：
-- TokenStep 数据结构已完善（trace.ts）：
-  - 基础字段：id, text, prob, topk (top-8), entropy, dt
-  - 可选字段：deep (DeepCapture，top-256 采样前 logits)
-  - PipelineTiming：tokenizeMs, prefillMs, decodeMs
-- .aitrace v2 格式导入/导出（trace.ts + experiments.ts）：
-  - exportReplay() 函数：导出为 JSON 格式，包含 prompt/params/modelId/steps/device/promptIds/pipeline/branches/agent/extensions
-  - importReplay() 函数：兼容 aitrace/v2 和旧版 browser-ai-replay/v1 格式
-  - 分岔树 (BranchNode) 支持：最多 8 个节点，sanitizeBranches 校验防止损坏
-  - Agent 事件扩展 (AgentEvent)：工具调用/结果/决策点，锚定在 token 时间线上
-  - 开放扩展 (extensions)：各 runtime 命名空间自携数据，导入/导出原样保留
-- IndexedDB 持久化存储（experiments.ts）：
-  - ExperimentRecord 接口：id/createdAt/name/starred/source/prompt/modelId/params/seed/device/root/stats/ruleset
-  - saveExperiment/listExperiments/getExperiment/updateExperiment/deleteExperiment CRUD 操作
-  - 自动淘汰机制：selectEvictions 函数按规则清理旧记录
-- 多 run 对比支持（experiments.ts）：
-  - isComparable() 函数：检查两个实验是否可对比（相同 prompt/modelId/seed/device）
-  - compatKey() 函数：生成对比键
-  - paramsDiff() 函数：计算参数差异
-  - firstDivergence() 函数：找到分岔点
-  - computeStats() 函数：计算分岔树统计信息
-
-**技术架构**：
-- 数据流：worker.ts (生成) → TraceRecorder/DeepRecorder (采集) → GenerationTrace (内存) → IndexedDB (持久化) → .aitrace (导出)
-- 深度采集 (DeepRecorder)：top-256 候选 + 温度逆推 logit，restCount/restMass 统计截断外质量
-- 真实 Top-P (TopPWarper)：nucleus 过滤，保留累计概率达到 p 的最小候选集
-- 只读记录 (TraceRecorder)：不改动 logits，记录每步 top-k/精确熵/选中概率
-- 窗口差分解码：用最近 8 个 token 的上下文解码出本 token 文本，正确处理多字节字符
-
-**数据完整性保障**：
-- 所有数值来自真实推理（softmax 后、采样前的分布），绝不伪造
-- 导入时校验：sanitizeBranches 过滤非法节点，MAX_BRANCH_NODES=8 限制
-- 格式版本控制：AITRACE_FORMAT="aitrace/v2"，REPLAY_V1_FORMAT 永久兼容
-- 数值稳定性：减最大值后 softmax，top-k 用部分选择不做全量排序
+**砍掉的功能**（暂不投入开发资源）：
+- ❌ 3D 可视化、动画、炫酷效果
+- ❌ Agent/RAG/Embedding 子页面的新功能迭代
+- ❌ 排行榜社区运营
 
 ---
 
-## 可观测性增强 🔍
+### 阶段 2：API 桥接 + 开放标准（6-9 个月，Q2-Q3 2027）
 
-### 3. SamplingChamber 交互增强 ✅
-**优先级**：中 | **类型**：体验优化 | **完成时间**：2026-08-05
+**核心价值**：从"只能跑浏览器小模型"扩展到"能审计所有主流 API"
 
-- ✅ 添加候选词点击下钻（查看完整 topk 分布）
-- ✅ 实现采样历史时间轴回溯
-- ✅ 添加概率阈值可视化标线
-- ✅ 支持自定义采样参数实时对比
-
-**已完成**：
-- 候选词下钻：点击候选词展开完整 topk 分布弹层，显示所有候选的概率条形图，高亮选中 token
-- 时间轴回溯：上一步/下一步按钮 + range slider 拖动跳转，支持 `onStepSeek` 回调
-- 概率阈值标线：10% 阈值虚线 + 切换按钮，低于阈值的候选词自动降低透明度
-- 参数对比：新增 `compareParams` 属性支持实时对比不同温度下的候选分布，模拟温度缩放效果并重新归一化，对比模式下显示琥珀色标识徽章
-- 无障碍增强：时间轴 slider 添加完整 ARIA 属性（aria-label, aria-valuemin/max/now）
-
-**视觉要求已满足**：
-- 保持 3D 绿色柱状图不变 ✅
-- 新增交互元素使用 measure 蓝色系 ✅
-- 动效通过 `prefers-reduced-motion` 检测 ✅
-
-### 4. 思考链（Thinking Chain）改进 ✅
-**优先级**：中 | **类型**：核心功能 | **完成时间**：2026-08-05
-
-- ✅ 优化 `<think>` 块的流式渲染性能
-- ✅ 添加思考过程的可视化时间线
-- ✅ 支持思考块内的语义高亮
-- ✅ 实现思考过程的逐步展开动画
-
-**已完成**：
-- 流式渲染性能优化：
-  - 使用 `useMemo` 缓存思考内容解析结果，避免重复计算
-  - 长思考链（>100 行）自动启用虚拟滚动，仅渲染可见区域 + 10 行缓冲区
-  - 虚拟滚动启用时显示总行数提示，让用户知道优化已生效
-- 可视化时间轴（ThinkingTimeline 组件）：
-  - 将思考过程拆分为推理/假设/结论/疑问四类段落
-  - 按时间比例显示彩色进度条，悬停显示详细内容
-  - 显示图例说明各颜色含义
-- 语义高亮（highlightThinking 函数）：
-  - 推理步骤：品牌蓝色（第一步/首先/然后/因此等关键词）
-  - 假设条件：琥珀色（假设/如果/给定等关键词）
-  - 结论推断：成功绿色（结论/综上/因此等关键词）
-  - 支持中英文关键词识别
-- 逐步展开动画：
-  - 生成中自动展开 ActivityCard，让用户实时看到思考流
-  - 结束后自动收起，减少干扰
-  - 展开/收起状态持久化到 localStorage
-  - 流式渲染中显示思考秒数进度条
-
-**技术约束已满足**：
-- 支持流式渲染中间态（实时显示思考进度）✅
-- 折叠/展开状态持久化（ActivityCard localStorage）✅
-- 长思考链虚拟滚动优化（>100 行自动启用）✅
+**成功标志**：
+- 至少 1 个第三方工具采用 `.aitrace` 格式
+- 用户开始用本工具审计 GPT-4 / Claude 输出
+- 有人在 Twitter 发："终于有工具能看 GPT 哪句话在瞎说了"
 
 ---
 
-## 多模态与工具能力 📋
+### 阶段 3：工作流集成（9-18 个月，Q3 2027 - Q2 2028）
 
-### 5. 文档理解增强 ✅
-**优先级**：中 | **类型**：功能扩展 | **完成时间**：2026-08-05
+**核心价值**：从"独立工具"变成"研究者工作流的一环"
 
-- ✅ 支持 PDF 文件直接上传和解析
-- ✅ 添加文档内容的语义分块
-- ✅ 实现多文档同时加载和索引
-- ✅ 优化长文档的 context 管理
-
-**已完成**：
-- PDF 文件解析（documents.ts）：
-  - 使用 pdfjs-dist/legacy 兼容旧浏览器（Chrome 140+ 原生支持 Uint8Array.toHex）
-  - 逐页提取文本内容，超过 MAX_DOC_CHARS × 2 自动停止
-  - GlobalWorkerOptions.workerSrc 配置 PDF worker 路径
-- 多格式文档支持（documents.ts）：
-  - PDF：pdfjs-dist 提取文本
-  - Word (.docx)：mammoth 提取纯文本
-  - Excel (.xlsx/.xls/.csv)：xlsx 转 CSV 格式，多工作表独立标注
-  - 文本 (.txt/.md)：直接读取
-  - ACCEPT_EXTS = ".pdf,.docx,.xlsx,.xls,.csv,.txt,.md"
-- 语义分块与截断（truncateDoc 函数）：
-  - 清理连续空行（\n{3,} → \n\n）
-  - MAX_DOC_CHARS = 6000 字符限制（小模型上下文有限）
-  - 返回 truncated 标记告知用户内容被截断
-- 多文档索引（buildDocPrompt 函数）：
-  - 支持同时加载多个文档（ParsedDocument[]）
-  - 每个文档独立标注【文档《name》（内容较长，以下为节选）】
-  - 拼接格式：文档列表 + "\n\n请基于以上文档内容回答：" + 用户问题
-- 文件上传集成（App.tsx）：
-  - fileInputRef 支持 multiple 多选
-  - accept 属性：ACCEPT_EXTS + ACCEPT_IMAGE_EXTS
-  - 文件拖拽上传支持（DragEvent）
-  - parseDocument 异步解析，错误处理友好提示
-
-**技术细节**：
-- PDF worker 懒加载：import("pdfjs-dist/legacy/build/pdf.mjs") 动态导入，减小首屏体积
-- Word 解析：mammoth.extractRawText 提取纯文本（不保留样式）
-- Excel 解析：XLSX.read + sheet_to_csv 转换，多工作表合并输出
-- 错误处理：不支持的扩展名、空文件、提取失败均有明确错误提示
-- 内存优化：PDF 提取超过限制立即停止，避免解析整个大文件
-
-**已满足需求**：
-- ✅ PDF 直接上传和解析（pdfjs-dist）
-- ✅ 语义分块（truncateDoc 清理空行 + 截断）
-- ✅ 多文档同时加载（buildDocPrompt 支持数组）
-- ✅ 长文档优化（MAX_DOC_CHARS 限制 + 提前停止）
-
-### 6. 图像理解集成 ✅
-**优先级**：低 | **类型**：功能扩展 | **完成时间**：2026-08-05
-
-- ✅ 调研 transformers.js 对多模态模型的支持
-- ✅ 集成 vision-language 模型（如 Qwen-VL）
-- ✅ 实现图像预处理和 embedding
-- ✅ 添加图文混排的对话展示
-
-**已完成**：
-- transformers.js 多模态支持调研：
-  - AutoModelForVision2Seq：视觉-语言序列模型加载器
-  - AutoProcessor：统一处理文本和图像输入
-  - RawImage.fromURL：图像加载和预处理
-  - 支持 vision_encoder + decoder_model_merged 架构
-- SmolVLM-256M-Instruct 集成（models.ts + worker.ts）：
-  - 模型：HuggingFaceTB/SmolVLM-256M-Instruct
-  - 尺寸：WebGPU q4f16 约 189MB，WASM int8 约 260MB
-  - 特点：轻量视觉模型，看图说话/识别图中文字，中文能力有限
-  - 按需加载：首次带图提问时才下载，之后走浏览器缓存
-- VisionPipeline 独立管线（worker.ts）：
-  - 与聊天模型分离，首次使用才加载
-  - 分层量化：WebGPU 用 q4f16（embed_tokens/vision_encoder/decoder_model_merged），WASM 用 int8
-  - 自动设备检测：detectDevice() 判断 WebGPU/WASM 后端
-  - 消息格式：processor.apply_chat_template 处理图文混排输入
-- 图像预处理（images.ts）：
-  - fileToDataURL：读取图片 → createImageBitmap → Canvas 缩放 → JPEG dataURL
-  - MAX_IMAGE_EDGE = 512px：最长边限制，既够模型看清又控制存储体积
-  - 质量压缩：JPEG 0.85 quality
-  - MAX_IMAGES = 2：每条消息最多 2 张图（小模型上下文限制）
-  - 支持格式：ACCEPT_IMAGE_EXTS = ".jpg,.jpeg,.png,.webp,.gif,.bmp"
-- 图文混排展示（App.tsx + ChatMessage.tsx）：
-  - 消息结构：ChatMessage { role, content, images?: string[] }
-  - 图片附件渲染：DataURL 直接显示在消息气泡内
-  - 文件上传：fileInputRef 支持图片和文档混合选择
-  - 自动路由：worker 检测 last message 是否带图，自动切换到 generateVision
-
-**技术架构**：
-- 模型加载：AutoProcessor + AutoModelForVision2Seq.from_pretrained
-- 输入格式：[{ role: "user", content: [{ type: "image" }, { type: "text", text }] }]
-- 图像处理：RawImage.fromURL(dataURL) → processor(text, rawImages, { do_image_splitting: false })
-- 推理：model.generate({ ...inputs, do_sample: false, max_new_tokens, repetition_penalty: 1.1 })
-- 流式输出：TextStreamer 实时返回生成文本
-
-**性能与显存**：
-- WebGPU 模式：189MB 模型权重 × 1.8 运行时开销 ≈ 340MB 峰值显存
-- WASM 模式：260MB 模型权重 × 1.8 ≈ 468MB 内存（32 位地址空间内）
-- 首次加载：在线下载 + 编译着色器约需 10-30 秒（取决于网速和 GPU）
-- 缓存优化：isModelCached 检查 transformers-cache，已缓存免重下
-
-**局限性说明**：
-- 小模型上下文：不喂历史消息，只看当前问题 + 图片
-- 中文能力有限：SmolVLM 回答可能偏英文
-- 图片数量限制：MAX_IMAGES = 2（localStorage 存储和模型性能平衡）
-- 无批量处理：每次推理串行处理所有图片
+**成功标志**：
+- 浏览器插件在 Chrome Web Store 有 1000+ 用户
+- 被一篇论文在 Methods 章节引用
+- 有大厂 PM 私下联系
 
 ---
 
-## UI/UX 细节打磨 🚧
+## 当前开发计划（阶段 1 详细任务）
 
-### 7. 响应式布局优化 ✅
-**优先级**：中 | **类型**：体验优化 | **完成时间**：2026-08-05
+### Sprint 1：核心审计功能（Week 1-2）
 
-- ✅ 优化移动端（<768px）的 SamplingChamber 展示
-- ✅ 改进 Sidebar 在窄屏下的收起/展开行为
-- ✅ 适配平板（768px-1024px）的双栏布局
-- ✅ 添加横屏模式的特殊优化
+#### Task 1.1：高熵 Token 自动标红 + 一句话摘要
+**优先级**：🔥 极高 | **预计工期**：2 天 | **负责页面**：ObservePage.tsx
 
-**已完成**：
-- Sidebar：添加汉堡菜单，支持抽屉式滑入/滑出，带遮罩层和关闭按钮
-- SamplingChamber：使用容器查询优化 token 路径和时间轴控制响应式布局
-- LandingHero：优化标题换行、按钮全宽/自适应、底部卡片响应式网格
-- 添加横屏模式（高度<600px）专项优化，压缩间距避免遮挡
-- 全局 CSS 媒体查询支持移动端/平板/横屏三种布局模式
+**功能描述**：
+- 在 `TokenText` 组件中，自动识别熵值 > 3.0 的 token，用琥珀色底色标记
+- 页面顶部显示一句话摘要："⚠ 本次回答 N 处模型不确定，建议核查"
 
-**设计原则**：
-- 移动端优先展示核心内容，技术细节渐进披露
-- 保持 token 流的可读性，不强行压缩
+**UI 规范**：
+```typescript
+// 高熵 token 样式（TokenText.tsx）
+className={`
+  ${step.entropy > 3.0 
+    ? 'bg-caution-500/20 border-b-2 border-caution-500' 
+    : ''
+  }
+  ${step.entropy > 4.0 
+    ? 'bg-alert-500/20 border-b-2 border-alert-500' 
+    : ''
+  }
+`}
 
-### 8. 无障碍访问（A11y）✅
-**优先级**：中 | **类型**：合规要求 | **完成时间**：2026-08-05
-
-- ✅ 添加完整的 ARIA 标签
-- ✅ 优化键盘导航（Tab/Enter/Esc）
-- ✅ 添加屏幕阅读器友好的替代文本
-- ✅ 确保色彩对比度符合 WCAG AA 标准
-
-**已完成**：
-- ARIA 标签：为 8 个核心组件添加 aria-label, aria-labelledby, aria-expanded, aria-controls, aria-describedby
-  - SettingsPanel: role="dialog" + 所有 range inputs 的 aria-valuemin/max/now
-  - ModelSelect: 自定义模型表单 checkboxes 的 aria-label
-  - Dropdown: 键盘导航已存在（箭头键、Enter、Escape、Home、End）
-  - EnhancedInput: textarea aria-label + generation status aria-live="polite"
-  - ActivityCard: role="region" + 可折叠区域的完整 ARIA 属性
-  - ChatMessage: 操作按钮的描述性 aria-label
-  - App: 主输入框 aria-label
-  - LandingHero: CTA 按钮和模型选择器的 role/aria-label/aria-expanded
-- 键盘导航：Dropdown 组件已实现完整键盘支持（继承自之前的实现）
-- 色彩对比度修复：
-  - 用户消息气泡从 bg-brand-500（荧光绿，对比度 1.67:1 ❌）改为 bg-accent（深石墨 #2f3135，对比度 >4.5:1 ✅）
-  - 主按钮（ui.tsx Button primary variant）同样改用 bg-accent 确保白色文字可读
-  - 暗色主题已通过 WCAG AA（对比度 7.16-16.76:1）
-
-**WCAG AA 合规说明**：
-- 正常文本对比度要求：4.5:1 ✅
-- 大文本对比度要求：3:1 ✅
-- 所有交互元素均有键盘访问能力 ✅
-- 所有状态变化均有屏幕阅读器反馈 ✅
-
-**注意**：完整的无障碍验证仍需人工使用辅助技术进行测试
-
----
-
-## 数据与分析 📋
-
-### 9. 本地统计面板 ✅
-**优先级**：低 | **类型**：功能扩展 | **完成时间**：2026-08-05
-
-- ✅ 统计总对话数、总 token 数、平均生成速度
-- ✅ 按模型/参数聚合性能指标
-- ✅ 可视化 entropy/temperature 分布
-- ✅ 导出统计报告（CSV/JSON）
-
-**已完成**：
-- 统计数据聚合（statistics.ts）：
-  - computeOverallStats：从 localStorage 会话历史和 IndexedDB 实验存档中提取统计
-  - SessionStats：会话级统计（消息数、用户/助手消息比例）
-  - ModelStats：按模型聚合（运行次数、总/平均 token、平均/最快/最慢速度、平均熵）
-  - ParameterStats：按温度+Top-P 组合聚合（运行次数、平均 token、平均熵）
-  - EntropyDistribution：熵值分 10 个区间 [0, 0.5) ~ [4.5, 5.0) 统计分布
-  - TemperatureDistribution：温度使用频率统计
-- 统计面板 UI（StatisticsPage.tsx）：
-  - 四个标签页：总览/按模型/按参数/分布统计
-  - 总览标签：四个 StatCard 展示关键指标（会话数、存档数、总 token、平均速度）
-  - 按模型标签：表格展示每个模型的运行次数、token 统计、速度范围、平均熵
-  - 按参数标签：表格展示每种温度+Top-P 组合的使用情况和效果
-  - 分布统计标签：水平条形图可视化熵分布和温度分布（观测蓝/琥珀色）
-- 导出功能：
-  - exportStatsToCSV：导出为分节 CSV 格式（# 开头的节标题 + 表格数据）
-  - exportStatsToJSON：导出为完整 JSON 格式（保留原始数据结构）
-  - 下载按钮：生成 Blob URL 并触发浏览器下载，文件名带时间戳
-- 导航集成：
-  - App.tsx：添加 "statistics" 视图类型和路由
-  - WorkspacePage.tsx：添加 onGoStatistics 回调和 "📊 本地统计 →" 链接
-
-**数据来源**：
-- localStorage.getItem("webgpu-llm-chat.sessions.v1")：会话历史（聊天消息）
-- IndexedDB "browser-ai-microscope"."experiments"：实验存档（trace 数据）
-- 实时 trace 数据（每次 Observe 运行自动存档）
-
-**技术要点**：
-- 聚合算法：Map-reduce 模式累积统计，避免重复遍历
-- 百分比计算：总数 > 0 时计算占比，避免除零错误
-- 条形图可视化：CSS width 百分比 + 透明色背景（观测蓝/琥珀色 60% 透明度）
-- 响应式表格：overflow-x-auto 支持横向滚动（移动端友好）
-
-**局限性说明**：
-- 仅统计本地数据：不跨设备、不上传云端
-- IndexedDB 容量限制：MAX_EXPERIMENTS = 200 条存档（超出自动淘汰未星标记录）
-- 会话历史无 token 计数：只能从实验存档统计 token 数据
-- 温度/熵分布仅来自 Observe 模式：Create 模式的对话不记录 trace
-
-### 10. Benchmark 页面数据更新 ✅
-**优先级**：低 | **类型**：内容维护 | **完成时间**：2026-08-05
-
-- ✅ 添加更多官方模型的 benchmark 数据
-- ✅ 更新 DeepSeek-R1 系列的最新成绩
-- ✅ 添加数据来源的可信度标注
-- ✅ 实现 benchmark 数据的版本管理
-
-**已完成**：
-- 扩展 Phi-3.5-mini 官方成绩：新增 7 项基准测试（MBPP: 69.6, ARC Challenge: 84.6, BoolQ: 78.0, PIQA: 84.1, TriviaQA: 58.8, MATH: 48.5, Arena Hard: 37.0）
-- 新增 DeepSeek-R1-Distill-Qwen-7B 完整评测：AIME 2024 (pass@1: 55.5, cons@64: 83.3), MATH-500: 92.8, GPQA Diamond: 49.1, LiveCodeBench: 37.6, CodeForces: 1189
-- 新增 DeepSeek-R1-Distill-Llama-8B 完整评测：AIME 2024 (pass@1: 50.4, cons@64: 80.0), MATH-500: 89.1, GPQA Diamond: 49.0, LiveCodeBench: 39.6, CodeForces: 1205
-- 所有条目更新 verifiedAt 字段为 2026-08-05，确保数据时效性
-- 所有新增数据均从 HuggingFace 官方模型卡逐条核实，附带 sourceUrl 可点击验证
-
-**数据规范**：严格遵循 Evidence First 原则，所有数据必须有官方引用
-
-**技术要点**：
-- OFFICIAL_BENCH 数组从 2 条扩展至 4 条记录
-- 每个条目包含 modelId, upstream, sourceLabel, sourceUrl, verifiedAt, scores 完整字段
-- 琥珀色（amber）视觉标识区分官方数据与本机实测（绿色）
-- 未能核实的模型（Qwen3-0.6B/1.7B, Gemma 3 1B, Llama 3.2 1B, GLM-Edge 1.5B, Qwen2.5-Coder 1.5B）如实保持「未录入」状态，宁缺毋假
-
-**局限性说明**：
-- Qwen2.5-1.5B-Instruct：官方博客无独立数据表，blog 只展示系列整体或大尺寸模型成绩
-- Gemma 3 1B / Llama 3.2 1B：模型卡 gated，无法逐条核对
-- GLM-Edge 1.5B：模型卡无评测表
-- Qwen2.5-Coder 1.5B：成绩仅在图表图片中，无可核文本数值
-
----
-
-## 开发工具与流程 📋
-
-### 11. 测试覆盖率提升 ✅
-**优先级**：中 | **类型**：质量保障 | **完成时间**：2026-08-05
-
-- ✅ 补充核心组件的单元测试（目标 >80%）
-- ✅ 添加 E2E 测试（Playwright）
-- ✅ 实现 trace 数据的回归测试
-- ✅ 添加视觉回归测试（截图对比）
-
-**已完成（2026-08-05）**：
-
-**单元测试**（第 1 项）：
-- 新增 src/lib/statistics.test.ts：7 个测试用例覆盖统计聚合、数据导出
-- 新增 src/components/StatisticsPage.test.tsx：4 个测试用例覆盖统计页面逻辑
-- 扩展 src/lib/officialBench.test.ts：新增 3 个测试用例验证评测数据完整性
-- 修复数据完整性问题：在 models.ts 中新增 DeepSeek-R1 7B 和 Llama 8B 注册
-- 所有 11 个新增测试用例全部通过
-- 采用纯逻辑测试策略，重点覆盖业务逻辑层和数据验证层
-
-**E2E 测试**（第 2 项）：
-- 安装 @playwright/test + Chromium 浏览器（114.5 MB）
-- 配置文件：playwright.config.ts（自动启动开发服务器）
-- 5 个测试套件，48 个测试用例：
-  - e2e/landing.spec.ts：首页加载、导航、WebGPU 兼容性横幅
-  - e2e/chat.spec.ts：对话输入、新建会话、设置面板、模型选择
-  - e2e/observe.spec.ts：Observe 模式、Trace 可视化、导出/导入
-  - e2e/multimodal.spec.ts：文档上传、图像理解、联网搜索
-  - e2e/responsive.spec.ts：桌面/平板/移动/横屏布局响应式
-- npm 脚本：test:e2e, test:e2e:ui, test:e2e:headed
-- 测试夹具：e2e/fixtures/test.txt
-
-**Trace 回归测试**（第 3 项）：
-- e2e/trace-regression.spec.ts：6 个测试套件，11 个测试用例
-- 数据完整性：TokenStep 结构、概率分布总和、熵计算正确性
-- 分岔树结构：BranchNode 验证、MAX_BRANCH_NODES=8 限制
-- 深度采集：DeepCapture top-256 长度、restMass 范围、Logits 排序
-- 管线计时：tokenizeMs/prefillMs/decodeMs 非负验证
-- 导出/导入往返一致性
-
-**视觉回归测试**（第 4 项）：
-- e2e/visual-regression.spec.ts：9 个测试套件，30+ 个测试用例
-- 首页视觉：全页面、Hero 区域、CTA 按钮悬停
-- 聊天界面：工作区布局、空状态、输入区域、模型下拉、设置面板
-- Observe 模式：页面布局、SamplingChamber 3D、概率条、时间轴
-- 响应式：移动/平板/桌面三种视口的首页和聊天截图
-- 组件级：消息气泡、加载 spinner、代码块
-- 主题：暗色主题首页、高对比度模式、焦点状态
-- 截图稳定化：禁用动画、隐藏时间戳、等待 3D 渲染
-
-**测试框架配置**：
-- vitest 4.1.10：单元测试和组件测试
-- @playwright/test：E2E 测试和视觉回归测试
-- playwright.config.ts：Chromium、超时 60s、HTML 报告、trace on retry
-- .gitignore：playwright-report/, test-results/
-
-**技术要点**：
-- 使用 vitest 4.1.10 + @testing-library/react 16.3.2
-- Mock 策略：测试逻辑层避免复杂的 React 组件依赖
-- Playwright 截图对比：animations: 'disabled', fullPage: true
-- 视觉稳定性：waitForAnimations(), hideDynamicContent()
-- 容错处理：可选功能使用 if (await element.isVisible())
-
-**测试覆盖统计**：
-- 单元测试：57 个测试文件（约 40% 源文件）
-- E2E 测试：6 个测试套件，48 个核心用户流程用例
-- Trace 回归：11 个数据结构和数值计算验证用例
-- 视觉回归：30+ 个截图对比用例（跨视口、主题、组件）
-- 总测试用例：约 110+ 个（单元 + E2E + 回归 + 视觉）
-
-### 12. 文档体系完善 ✅
-**优先级**：低 | **类型**：开发体验 | **完成时间**：2026-08-05
-
-- ✅ 创建 `docs/任务看板.md`（本文件）
-- ✅ 编写 `docs/合规速查表.md`（设计红线）
-- ✅ 完善 `docs/00-START-HERE.md`（快速上手）
-- ✅ 更新 API 文档和组件 Props 说明
-
-**已完成（2026-08-05）**：
-
-**任务看板**（第 1 项）：
-- 创建 docs/任务看板.md：完整复制 TASKS.md 内容
-- 包含所有已完成任务的详细文档（Phase 0 颜色系统重构至 Task #13 构建优化）
-- 记录每个任务的优先级、类型、完成时间、技术要点、局限性说明
-- 提供清晰的任务状态标识（✅ 已完成 | 🚧 进行中 | 📋 待开始 | 🔍 需调研）
-
-**设计合规速查表**（第 2 项）：
-- 创建 docs/合规速查表.md：全面的 UI 设计规范文档
-- 绝对禁止：AI 风格渐变色、固定字号、硬编码值、无障碍盲区
-- 强制要求：CSS 变量系统、流式字号、Grid 布局、Token 化
-- 配色系统：观测蓝 #10A0FF + 5-7 层灰阶梯（#0a0a0a → #2a2a2a）
-- 排版系统：clamp() 流式字号、var() 引用字体栈、严格行高控制
-- 布局系统：页面级 Grid、间距/圆角 Token、响应式优先
-- 组件规范：按钮/卡片/输入框/消息气泡的完整设计规格
-- 设计原则：专业工具定位、暗色优先、色彩克制、无障碍 WCAG AA
-- Code Review Checklist：17 项 UI 改动前的检查清单
-
-**快速上手指南**（第 3 项）：
-- 创建 docs/00-START-HERE.md：新用户/贡献者的完整入门指南
-- 环境要求：硬件配置（GPU/CPU/内存）、软件版本（浏览器/Node.js）、WebGPU 检查
-- 6 步快速启动：克隆 → 安装 → 启动 → 打开浏览器 → 首次加载 → 开始对话
-- 核心功能：对话模式（Create）、观测模式（Observe）、统计分析、Benchmark、实验工具
-- 常见问题：模型下载失败、WebGPU 不可用、生成速度慢、清除缓存、多模态功能、Observe 概念解释
-- 深入学习：推荐阅读顺序、开发者资源、关键目录结构、开发命令、调试技巧
-- 贡献指南：准备工作、开发流程、Commit 规范、测试要求
-- 问题报告：Issue 模板、环境信息收集
-
-**API 文档更新**（第 4 项）：
-- 创建 docs/API文档.md：完整的 API 参考文档
-- 核心组件文档：
-  - SamplingChamber：Props 接口、使用示例、功能说明
-  - ChatMessage：消息对象结构、生成状态、回调函数
-  - EnhancedInput：输入控制、附件上传、快捷键支持
-  - ModelSelect：模型选择、设备兼容性过滤
-  - SettingsPanel：生成参数配置、高级选项
-- 工具函数文档：
-  - Device Detection：probeDevice(), recommendModel(), getOptimizationAdvice()
-  - Trace Recording：TraceRecorder 类、exportReplay(), importReplay()
-  - Document Processing：parseDocument(), buildDocPrompt()
-  - Image Processing：fileToDataURL()
-  - Statistics：computeOverallStats(), exportStatsToCSV()
-- 类型定义：ModelInfo, GenerationTrace, TokenStep, BranchNode, PipelineTiming
-- Worker API：消息协议、加载模型、生成流程、停止生成的完整示例
-- 性能监控：window.__profiler__ 开发模式 API
-- 错误处理：错误追踪、记录、导出、清除功能
-
-**文档结构**：
-```
-docs/
-├── 00-START-HERE.md      # 快速上手（新用户必读）
-├── 任务看板.md            # 开发进度和已完成功能
-├── 合规速查表.md          # UI 设计红线和规范
-└── API文档.md            # 组件 Props 和工具函数参考
+// 摘要卡片（ObservePage.tsx 顶部）
+<div className="rounded-xl border border-caution-500/30 bg-caution-500/10 px-4 py-3">
+  <p className="text-sm text-obs-ink">
+    <IconAlert className="inline h-4 w-4 text-caution-500 mr-1" />
+    本次回答 {highEntropyCount} 处模型不确定（熵值 &gt; 3.0），建议人工核查
+  </p>
+</div>
 ```
 
-**技术要点**：
-- Markdown 格式：清晰的标题层级、代码块语法高亮、表格和列表
-- TypeScript 接口：完整的 Props 类型定义和 JSDoc 注释风格
-- 代码示例：每个组件和函数都提供实际使用示例
-- 交叉引用：文档之间互相链接，形成知识网络
-- 中文优先：所有文档使用中文编写，确保本地团队可读性
+**状态定义**：
+- 默认：摘要卡片固定显示
+- 加载中：显示"正在分析..."
+- 空态：无高熵时显示"✓ 本次回答置信度正常"（绿色）
 
-**目标达成**：降低新贡献者的上手成本，提供完整的开发文档体系
-
----
-
-## 性能与构建 ✅
-
-### 13. 构建优化 ✅
-**优先级**：低 | **类型**：工程优化 | **完成时间**：2026-08-05
-
-- ✅ 分析 bundle 大小，拆分 vendor chunk
-- ✅ 优化 lazy loading 的 chunk 粒度
-- 📋 添加 Service Worker 和离线支持
-- 📋 实现模型文件的增量更新
-
-**已完成（2026-08-05）**：
-- **Bundle 拆分优化**：
-  - 拆分三大依赖包独立 chunk：
-    - `vendor-three.js`：536KB (gzip: 135KB) - Three.js + OrbitControls
-    - `vendor-office.js`：934KB (gzip: 274KB) - xlsx + mammoth
-    - `vendor-pdf.js`：475KB (gzip: 144KB) - pdfjs-dist
-  - 主 bundle `index.js`：666KB (gzip: 205KB) - React + 业务逻辑
-  - Worker bundle `worker.js`：512KB - transformers.js 推理引擎（在 worker 中独立加载）
-  
-- **Lazy Loading 粒度优化**：
-  - 按需加载组件均拆分为独立 chunk，单个文件小于 30KB：
-    - `OceanView.js`：15.6KB (gzip: 6.2KB)
-    - `InstrumentCluster.js`：14.7KB (gzip: 5.8KB)
-    - `CompareView.js`：11.5KB (gzip: 4.7KB)
-    - `JourneyPage.js`：7.0KB (gzip: 2.8KB)
-    - `EnhancedInputDemo.js`：27.4KB (gzip: 6.2KB)
-  - 延迟加载体验优化，首屏加载时间减少约 40%
-  
-- **构建配置优化**：
-  - 新增 `vite.config.ts` 中的 `build.rollupOptions.output.manualChunks` 配置
-  - 调整 `chunkSizeWarningLimit` 到 1000KB，消除合理大小依赖的警告
-  - 保持 CSS 单文件：126KB (gzip: 19KB)，避免 FOUC（无样式闪烁）
-
-**构建产物统计**：
-- 总 JavaScript 体积（压缩前）：3.8MB → 按需拆分为多个 chunk
-- 总 JavaScript 体积（gzip 后）：约 770KB（主要业务逻辑）
-- CSS：126KB (gzip: 19KB)
-- WASM：23MB (gzip: 5.7MB) - ONNX Runtime 推理引擎核心
-- PDF Worker：1.3MB - PDF.js worker（独立线程）
-- 构建时间：约 54 秒（M1 MacBook Pro / Ryzen 7）
-
-**技术要点**：
-- 使用 Rollup `manualChunks` 按库拆分，避免自动拆分的不确定性
-- transformers.js 未拆出独立 chunk，因其只在 worker 中加载，不影响主线程
-- 大依赖包（xlsx 934KB）压缩比高达 70%（gzip 后 274KB），保持单 chunk 合理
-
-**性能收益**：
-- 首屏 TTI（Time to Interactive）：从约 2.5s 降至 1.5s（4G 网络环境）
-- 代码拆分后浏览器缓存命中率提升：更新业务逻辑时 vendor chunk 无需重新下载
-- 按需加载组件：用户不访问对比视图时，CompareView.js 永远不会下载
-
-**局限性说明**：
-- 模型文件（models/ 目录 8.2GB）未纳入构建优化，仍需手动管理
-- WASM 文件（23MB）无法进一步压缩，已是 ONNX Runtime 最小构建
-
-**已实现（低优先级）**：
-- ✅ 添加 Service Worker 实现离线访问（Cache First for static assets, Cache with Network Fallback for models, Network First for API）
-- ✅ 实现模型文件增量更新（Range 请求支持和断点续传逻辑）
-
-**Service Worker 实现**（2026-08-05）：
-- public/sw.js：完整的 Service Worker 脚本
-  - 三层缓存策略：静态资源、模型文件、运行时资源
-  - 支持 HTTP Range 请求：模型分片下载直接转发到网络
-  - 自动版本管理：激活时清理旧缓存
-  - 消息通信：SKIP_WAITING/CLEAR_CACHE/GET_CACHE_SIZE
-  - 缓存大小限制：单文件 >100MB 不缓存
-- src/lib/serviceWorker.ts：注册和状态管理
-  - registerServiceWorker()：检测支持、注册 sw.js
-  - onStatusChange()：监听状态变化
-  - updateServiceWorker()：手动更新并刷新页面
-  - clearServiceWorkerCache()：清除所有缓存
-- ServiceWorkerUpdate.tsx：更新通知组件
-  - 底部通知栏显示"新版本可用"
-  - 立即更新/稍后按钮
-- PWA 支持：manifest.json + theme-color meta
-
-**增量更新实现**（2026-08-05）：
-- src/lib/incrementalDownload.ts：完整的断点续传实现
-  - downloadWithResume()：支持恢复的下载函数
-  - supportsRangeRequests()：检测服务器 Range 支持
-  - 5MB 分片策略：单独缓存到 CacheStorage
-  - getMissingRanges()：计算缺失范围，仅下载缺失部分
-  - 重试机制：单分片失败最多重试 3 次
-  - 进度回调：报告已下载字节数和百分比
-  - assembleChunks()：合并分片为完整文件
-  - clearModelCache()/getModelCacheSize()：缓存管理
-
-**技术架构**：
-- Service Worker 生命周期：install → activate → fetch
-- CacheStorage API：多层缓存（静态/运行时/模型分片）
-- Range 请求：服务器返回 206 Partial Content
-- 断点续传：分片独立缓存，恢复时只下载缺失部分
-
-**性能收益**：
-- 离线访问：无网络时仍可使用已缓存的模型和资源
-- 增量更新：下载中断后可恢复，无需重新下载
-- 版本管理：自动检测新版本并提示更新
-- 存储优化：大文件智能缓存，避免占用过多空间
-
----
-
-### 14. 监控与错误追踪 ✅
-**优先级**：低 | **类型**：可观测性 | **完成时间**：2026-08-05
-
-- ✅ 添加性能监控（Core Web Vitals）
-- ✅ 实现客户端错误上报（可选，需用户授权）
-- ✅ 记录 WebGPU 初始化失败的详细信息
-- ✅ 添加开发模式的性能 profiling 工具
-
-**已完成（2026-08-05）**：
-- **Core Web Vitals 性能监控**：
-  - 新增 `src/lib/webVitals.ts` 模块（334 行代码）
-  - 使用 PerformanceObserver API 监控 6 项关键性能指标：
-    - LCP (Largest Contentful Paint)：最大内容绘制时间
-    - FID (First Input Delay)：首次输入延迟
-    - CLS (Cumulative Layout Shift)：累积布局偏移
-    - FCP (First Contentful Paint)：首次内容绘制
-    - TTFB (Time to First Byte)：首字节时间
-    - INP (Interaction to Next Paint)：交互到下次绘制（Chrome 96+）
-  
-- **性能评级系统**：
-  - 根据 web.dev/vitals 官方阈值自动评级：good / needs-improvement / poor
-  - 例如 LCP：≤2500ms (good), ≤4000ms (needs-improvement), >4000ms (poor)
-  - 每个指标都有明确的阈值定义，便于识别性能瓶颈
-  
-- **设备信息采集**：
-  - 视口尺寸（viewport width/height）
-  - 设备内存（deviceMemory，单位 GB）
-  - CPU 核心数（hardwareConcurrency）
-  - 网络连接类型和速度（effectiveType, downlink, rtt）
-  - User Agent 字符串
-  
-- **数据存储与导出**：
-  - 本地 localStorage 存储，key: `webgpu-llm-chat.web-vitals.v1`
-  - 最多保留 50 条性能快照，超出自动淘汰最旧记录
-  - 提供 `exportWebVitalsJSON()` 导出完整数据
-  - 提供 `computeWebVitalsStats()` 计算统计信息（平均值、P50/P75/P90）
-  - 提供 `clearWebVitalsSnapshots()` 清除历史数据
-  
-- **集成方式**：
-  - App.tsx 启动时自动调用 `initWebVitals()`
-  - 静默失败策略：不支持的浏览器和 API 不影响正常使用
-  - 延迟批量保存：3 秒内收集的所有指标合并为一个快照
-  
-**技术要点**：
-- 使用 PerformanceObserver 监听各类性能事件（非阻塞异步 API）
-- 支持 `buffered: true` 获取历史条目（页面加载期间的指标）
-- 兼容性处理：所有 API 调用都包裹在 try-catch 中，失败静默
-- TypeScript 类型安全：navigationType 使用 string 避免浏览器枚举值差异
-- INP 监控使用类型断言绕过 TypeScript 的非标准属性检查
-
-**性能影响**：
-- 监控开销极小：PerformanceObserver 是浏览器原生优化的 API
-- 延迟批量写入：避免频繁操作 localStorage 影响主线程
-- 构建产物增加：约 3KB (gzip 后约 1KB)
-- 主 bundle 从 665.84KB 增至 668.76KB（+2.92KB）
-
-**隐私保护**：
-- 所有数据仅保存在用户本地浏览器，不上传任何服务器
-- 不包含任何用户身份信息（无 IP、无指纹）
-- 不自动启用追踪或分析
-- 符合 TASKS.md 隐私原则："所有数据收集必须明确告知用户并获得授权"
-
-**局限性说明**：
-- INP 指标仅在 Chrome 96+ 支持，旧浏览器会静默跳过
-- Safari 对部分 PerformanceObserver 类型支持有限
-- CLS 监控不区分用户交互引起的布局偏移（hadRecentInput 检测）
-- 未实现性能数据的可视化展示（可在后续 Task #14 剩余项中添加）
-
-**客户端错误追踪**（已完成）：
-- 新增 `src/lib/errorTracking.ts` 模块（224 行代码）
-- 全局错误捕获：window.error 和 unhandledrejection 事件监听
-- 错误分类：error/unhandledrejection/resource/webgpu 四种类型
-- 详细上下文记录：
-  - 堆栈跟踪（stack）
-  - 文件名、行号、列号（filename, lineno, colno）
-  - URL 和 User Agent
-  - 自定义应用状态（通过 setErrorContextProvider 注入）
-- 本地存储：localStorage 保存最多 100 条错误记录，key: `webgpu-llm-chat.errors.v1`
-- 导出与统计：
-  - `exportErrorsJSON()`：导出完整错误记录
-  - `computeErrorStats()`：按类型/消息聚合、Top 5 高频错误、最近 24 小时统计
-  - `clearErrorRecords()`：清除历史数据
-
-**错误追踪隐私保护**：
-- 默认禁用：需用户明确调用 `enableErrorTracking()` 授权
-- 本地优先：所有数据仅保存在 localStorage，不上传任何服务器
-- 无身份信息：不包含用户身份、IP 地址或浏览器指纹
-- 透明控制：提供 enable/disable/clear 完整控制接口
-- 开发模式增强：import.meta.env.DEV 时错误输出到控制台
-
-**WebGPU 初始化失败详细记录**（已完成）：
-- 扩展 `src/lib/device.ts` 的 probeDevice 函数
-- 捕获三类失败原因：
-  - 浏览器不支持 WebGPU API
-  - GPU adapter 未找到（显卡驱动过旧）
-  - 初始化异常（被安全策略阻止等）
-- 动态集成错误追踪：
-  - 使用 `import('./errorTracking')` 动态加载模块
-  - 调用 `recordWebGPUError()` 记录详细上下文（reason, error, userAgent, memoryGB, cores）
-  - 静默失败策略：错误追踪加载失败不影响设备探测主流程
-- 错误信息保留在 `DeviceReport.webgpuFailReason` 字段供 UI 展示
-
-**技术要点**：
-- 上下文提供者模式：`setErrorContextProvider()` 允许附加应用状态（modelId, generating, workerReady 等）
-- 资源加载失败：单独处理 `<img>`/`<script>`/`<link>` 标签加载错误
-- 防重复记录：每条错误生成唯一 UUID（crypto.randomUUID()）
-- 自动淘汰机制：超过 MAX_ERRORS (100) 时删除最旧记录
-- 兼容性处理：所有 localStorage 操作包裹在 try-catch 中，失败静默
-
-**构建影响**：
-- 主 bundle 无变化（errorTracking 按需加载）
-- 新增 chunk：errorTracking-BsUmJSBe.js (0.13KB, gzipped: 0.14KB)
-
-**开发模式性能 Profiler**（已完成）：
-- 新增 `src/lib/profiler.ts` 模块（406 行代码）
-- 四大性能分析功能：
-  - React 组件渲染追踪：记录每次 mount/update 的 actualDuration/baseDuration
-  - 长任务检测：PerformanceObserver 监控超过 50ms 的任务
-  - 内存快照：performance.memory 采集 JS 堆使用情况（Chrome）
-  - 自定义性能标记：mark/measure API 封装，支持任意代码段计时
-- 性能报告生成：
-  - 组件渲染分析：总次数、慢渲染（>16ms）、按组件聚合统计（平均/最大耗时）
-  - 长任务分析：总数、平均耗时、任务列表（带 attribution）
-  - 内存分析：快照数量、当前使用、峰值内存（MB）
-  - 性能标记：自定义计时点列表
-- 开发体验优化：
-  - 全局访问：暴露到 `window.__profiler__` 对象
-  - 控制台友好：printReport() 使用 console.group/table 格式化展示
-  - JSON 导出：exportProfilerJSON() 导出完整原始数据和报告
-  - 自动告警：慢渲染（>16ms）和长任务实时输出 console.warn
-  - 便捷 API：enable/disable/report/export/clear/mark/measure/snapshot
-
-**Profiler 安全边界**：
-- 仅开发模式：import.meta.env.DEV 检查，生产环境完全禁用
-- 默认不启用：initProfiler() 只加载模块，需手动调用 enableProfiler()
-- 内存限制：最多保留 200 条性能记录，超出自动淘汰最旧记录
-- 兼容性处理：所有 API 调用包裹在 try-catch 中，不支持时静默跳过
-
-**Profiler 使用示例**：
-```javascript
-// 控制台中操作
-window.__profiler__.enable()           // 启用监控
-window.__profiler__.mark('start')      // 标记开始点
-// ... 待测代码 ...
-window.__profiler__.measure('task', 'start') // 测量耗时
-window.__profiler__.snapshot()         // 拍摄内存快照
-window.__profiler__.report()           // 打印格式化报告
-window.__profiler__.export()           // 导出 JSON 数据
-window.__profiler__.clear()            // 清除所有数据
-```
-
-**Profiler 技术细节**：
-- PerformanceObserver：监听 longtask/measure 事件类型，buffered: false
-- performance.memory：Chrome 专有 API，返回 usedJSHeapSize/totalJSHeapSize/jsHeapSizeLimit
-- performance.mark/measure：标准 User Timing API，支持自定义计时
-- 阈值判断：16ms (60fps) 用于慢渲染，50ms 用于长任务
-
-**构建影响**：
-- 主 bundle 从 669.04KB 增至 671.32KB (+2.28KB)
-- 开发模式独占，生产构建中代码被 tree-shaking 移除
-
-**Task #14 完成总结**：
-- ✅ Core Web Vitals 性能监控（LCP/FID/CLS/FCP/TTFB/INP）
-- ✅ 客户端错误追踪系统（全局错误捕获 + WebGPU 专项集成）
-- ✅ WebGPU 初始化失败详细记录（三类失败原因 + 动态追踪）
-- ✅ 开发模式性能 Profiler（组件渲染/长任务/内存/自定义标记）
-- 隐私保护：所有数据本地存储，明确授权机制，无身份信息
-- 性能影响：Core Web Vitals +2.92KB，errorTracking +0.13KB，profiler +2.28KB
-
-**隐私原则**：所有数据收集必须明确告知用户并获得授权
-
----
-
-## 降低门槛（普通用户） 🔥
-
-### 17. 渐进式术语解释系统（Tooltip）
-**优先级**：🔥 极高 | **类型**：核心体验 | **完成时间**：✅ 2026-08-05
-
-- ✅ 为所有专业术语添加悬停解释（? 图标）
-- ✅ 一句人话 + 具体例子 + 可选深入链接
-- ✅ 创建术语库（GLOSSARY）统一管理解释
-- ✅ 移动端适配（点击显示/隐藏）
-
-**已完成内容**：
-- ✅ `src/components/Tooltip.tsx` - 完整的 Tooltip 组件，支持桌面悬停和移动点击
-- ✅ `src/components/Term.tsx` - 术语包装器组件
-- ✅ `src/lib/glossary.ts` - 集中式术语数据库（40+ 术语）
-- ✅ `GLOSSARY.md` - 完整的术语表文档
-- ✅ 已在设置面板集成温度和 Top-P 的 tooltip
-- ✅ 已在 SamplingChamber 集成概率和熵的 tooltip
-- ✅ 浏览器测试通过（桌面点击、移动适配）
-
-**术语覆盖**：
-- ✅ 采样参数：temperature, top_p, seed, top_k
-- ✅ 概率统计：probability, entropy, token, candidate
-- ✅ 采样过程：sampling, trace, hesitation
-- ✅ 性能指标：tokens_per_second, prefill, decode
-- ✅ WebGPU 相关：webgpu, wasm, quantization
-- ✅ 模型架构：transformer, attention, embedding
-- ✅ Agent 概念：agent, rag
-- ✅ 其他：hallucination, thinking, context_window
-
-**核心术语清单**（第一批）：
-- Token（词元）："词或字的片段，AI 每次生成一个"
-- 温度（Temperature）："控制 AI 的创造性：0=保守，1.5=大胆"
-- Top-P（核采样）："只考虑累计概率达到 90% 的词"
-- 熵（Entropy）："AI 的纠结程度：越高越犹豫"
-- 采样（Sampling）："AI 从候选词里选一个的过程"
-- 概率（Probability）："AI 认为每个词应该出现的可能性（0-100%）"
-- Top-K："概率最高的前 K 个候选词"
-- Trace："AI 生成每个词的完整记录"
-
-**第一性原理验证**：
-- ✅ 解决真实需求：普通人看不懂术语 → 悬停即可学习
-- ✅ 独特价值：市面上没有"边用边学"的 AI 工具
-- ✅ 粘性来源：每次用都能学到新知识 → 学习驱动
-- ✅ 降低门槛：从"只有专业人能用"到"任何人都能懂"
-
-**用户测试标准**（找 3 个不懂 AI 的人）：
-- ✅ 能找到温度滑块并知道往哪调
-- ✅ 能看懂 Observe 模式的概率分布
-- ✅ 能用自己的话解释"Token""采样""熵"
+**数据来源**：`GenerationTrace.steps[].entropy` 真实值
 
 **技术实现**：
-- Tooltip 组件（300ms 延迟悬停，点击切换）
-- GLOSSARY 术语库（集中管理所有解释）
-- Term 包装器（`<Term id="token">tokens</Term>`）
-- 渐进式设计：Level 1（一句话）→ Level 2（例子）→ Level 3（深入链接）
-
-**商业价值**：
-- 教育市场：培训机构用来教 AI 原理（每学员 2000 元）
-- 用户留存：看懂了才会继续用（+20% 留存率）
-- 差异化：唯一"自带教学"的 AI 工具
-
-**完整实现计划**：
-- 详见 [`TASKS-TOOLTIP-SYSTEM.md`](./TASKS-TOOLTIP-SYSTEM.md)
+1. TokenText 添加 `highlightUncertain` prop
+2. ObservePage 计算 `highEntropyCount`
+3. useMemo 缓存避免重复计算
 
 ---
 
-## 专业用户工具链 🔍
+#### Task 1.2：句子级置信度视图
+**优先级**：🔥 极高 | **预计工期**：3 天 | **负责页面**：新增 SentenceConfidenceView.tsx
 
-### 18. Embedding 向量可视化
-**优先级**：中 | **类型**：专业功能
+**功能描述**：
+- 按句子（`.` `!` `?` `。` 等）拆分 token 流
+- 每句显示平均熵值（0-5）+ 颜色条
+- 点击展开查看内部 token
 
-- 🔍 调研 transformers.js 的 embedding 模型支持（all-MiniLM-L6-v2, BGE-M3 等）
-- 🔍 实现文本向量化：输入文本 → 768 维向量 → 降维可视化（t-SNE/UMAP）
-- 🔍 构建向量空间可视化：3D 散点图展示语义距离
-- 🔍 添加相似度计算：余弦相似度、欧氏距离、点积
-- 🔍 支持批量文本向量化并导出（JSON/CSV）
-
-**技术要点**：
-- 使用 transformers.js 的 AutoModel.from_pretrained('Xenova/all-MiniLM-L6-v2')
-- 向量降维库：UMAP-js 或 t-SNE-js（纯前端实现）
-- 3D 可视化复用现有 Three.js 基础设施（SamplingChamber 同款）
-- 本地计算：所有向量化和相似度计算在浏览器内完成，数据不出设备
-
-**应用场景**：
-- 文本聚类分析：查看一批文档的语义分布
-- 查询相似度：输入问题，找最相关的 N 个文档
-- 模型 embedding 质量评估：观察不同模型的向量空间结构
-
-### 19. RAG 检索增强生成
-**优先级**：高 | **类型**：专业功能
-
-- 🔍 构建本地向量数据库：IndexedDB 存储文档向量
-- 🔍 实现混合检索：BM25 关键词检索 + 向量语义检索
-- 🔍 添加文档分块策略：固定长度 / 语义分割 / 滑动窗口
-- 🔍 集成检索流程可视化：查询 → 召回 → 重排序 → 上下文注入
-- 🔍 支持知识库管理：批量导入文档、索引构建、增量更新
-
-**技术架构**：
-- BM25 实现：使用 js-bm25 或自行实现（Token 分词 + TF-IDF）
-- 向量检索：HNSW 近似最近邻（hnswlib-wasm）或暴力搜索（<1000 文档时）
-- 重排序：交叉编码器模型（cross-encoder）或规则策略（时间衰减、长度惩罚）
-- 可视化：RetrievalCard 组件展示召回路径（已有基础）
-
-**RAG 流程 Trace**：
-- 记录每步检索决策：query → candidates → scores → final_context
-- 对比不同检索策略的召回效果（纯关键词 vs 纯向量 vs 混合）
-- 可视化上下文窗口占用：prompt tokens / context tokens / max_tokens
-
-**隐私保护**：
-- 所有文档和向量存储在用户本地 IndexedDB
-- 不上传任何文档内容或向量到服务器
-- 支持一键清空知识库
-
-### 20. 模型性能分析工具
-**优先级**：中 | **类型**：专业功能
-
-- 🔍 添加推理性能剖析：逐层耗时统计（prefill/decode 分层）
-- 🔍 显存/内存占用监控：权重加载 / KV cache / 激活值峰值
-- 🔍 算子性能热图：Attention / FFN / LayerNorm 耗时分布
-- 🔍 量化精度对比：q4 vs q4f16 vs fp16 的速度和质量权衡
-- 🔍 批量性能测试：不同 batch size / 序列长度的吞吐量曲线
-
-**技术实现**：
-- 使用 onnxruntime-web 的 profiling API（SessionOptions.enableProfiling）
-- performance.measure 记录关键路径耗时
-- GPU 显存：WebGPU API 的 GPUDevice.createBuffer().size 累计
-- 导出性能报告：JSON 格式包含完整性能数据和设备信息
-
-**对比维度**：
-- 不同设备档位：tier 1（集显）/ tier 2（中端独显）/ tier 3（高端显卡）
-- 不同量化方案：int8 / q4 / q4f16 / fp16
-- 不同模型尺寸：0.6B / 1.5B / 3B（未来支持）
-
-### 20. 参数调优实验平台
-**优先级**：低 | **类型**：专业功能
-
-- 🔍 网格搜索：temperature [0.3, 0.5, 0.7, 1.0] × top_p [0.8, 0.9, 0.95] 笛卡尔积
-- 🔍 贝叶斯优化：自动探索参数空间，最小化目标损失（困惑度 / 人工评分）
-- 🔍 A/B 对比实验：同一 prompt 不同参数并行运行，记录分岔点
-- 🔍 参数敏感性分析：单变量扫描，绘制参数-指标曲线
-- 🔍 实验管理：保存实验配置、结果归档、最优参数推荐
-
-**实验记录**：
-- 扩展现有 ExperimentRecord：新增 experimentType 字段（grid_search / bayesian / ab_test）
-- 参数配置哈希：避免重复运行相同配置
-- 自动评估指标：entropy / perplexity / repetition_penalty / diversity
-
-**可视化**：
-- 参数空间热图：2D 网格展示 temperature × top_p 对输出质量的影响
-- 帕累托前沿：速度 vs 质量的权衡曲线
-- 实验对比表：多组实验的并排对比（表格 + 雷达图）
-
-**局限性说明**：
-- 纯本地运行：大规模网格搜索（>100 组合）耗时较长
-- 自动评估：困惑度可计算，但语义质量仍需人工判断
-- 不支持分布式：单机单卡顺序执行，无法并行加速
-
-### 21. WebTransport 通信层升级
-**优先级**：低 | **类型**：需调研
-
-- 🔍 调研 WebTransport 在本项目的适用性
-- 🔍 评估技术收益：当前项目是否需要多流并行和连接迁移
-- 🔍 兼容性影响：WebTransport 需 Chrome 97+ / Firefox 114+，当前 WebSocket 降级方案
-- 🔍 实现成本：需后端支持 HTTP/3 + QUIC，当前纯静态服务器无此能力
-
-**技术分析**：
-- **当前架构**：Worker 线程内推理，主线程通过 postMessage 通信（无网络 I/O）
-- **WebTransport 收益有限**：推理不走网络，模型文件用 HTTP 缓存（Cache Storage）
-- **可能适用场景**：
-  - 多模型并行推理：同时加载多个模型，独立流传输结果（当前单模型无此需求）
-  - 实时协作：多用户共享 trace（当前单机离线工具）
-  - 模型流式下载：边下边推理（当前 Cache Storage 已够用）
-
-**结论**：
-- 🔴 **不推荐引入**：当前项目定位是"浏览器本地推理"，零后端、零网络依赖
-- WebTransport 适合高并发服务端场景，对纯前端离线工具是过度设计
-- 如未来支持云端混合推理（本地 + API 模型），再考虑升级通信层
-
-### 22. 对标成熟项目功能差距分析
-**优先级**：中 | **类型**：产品战略
-
-- 🔍 调研 langfuse 用户真实需求（GitHub issues 高频痛点）
-- 🔍 对比 LangSmith / Phoenix / LangFuse 核心功能差异
-- 🔍 识别本项目独特价值：浏览器本地 + 零后端 + 隐私优先
-- 🔍 补齐关键功能短板：Prompt 版本管理 / 成本追踪 / 团队协作
-- 🔍 产品定位澄清：Observability 工具 vs 完整 LLMOps 平台
-
-**langfuse 用户高频需求**（从 GitHub issues 提取）：
-- **性能问题**：N+1 查询、数据库优化、大规模 trace 慢查询
-- **数据完整性**：模型定价过期、重复代码、审计日志准确性
-- **开发者体验**：本地开发配置困难、文档不全、特性开关过期未清理
-- **集成能力**：多语言 SDK、第三方工具集成、导入导出格式
-
-**本项目独特优势**：
-- ✅ **零后端依赖**：langfuse 需 PostgreSQL + ClickHouse，本项目纯前端
-- ✅ **隐私优先**：所有数据本地存储，无需担心 API key 泄露或数据上传
-- ✅ **即开即用**：无需 Docker / 数据库 / 配置，打开网页即可使用
-- ✅ **可视化深度**：3D token 流、分岔树、实时熵监控（langfuse 主要是表格）
-
-**功能短板**：
-- ❌ Prompt 版本管理和 A/B 测试（langfuse 核心功能）
-- ❌ 成本追踪和预算告警（本项目无 API 调用，不适用）
-- ❌ 团队协作和权限管理（单机工具，无多用户需求）
-- ❌ 生产环境监控和告警（定位是研究工具，非生产监控）
-
-**产品定位建议**：
-- **主赛道**：本地 LLM 可观测性工具 —— 研究者 / 开发者的"显微镜"
-- **差异化**：浏览器内运行 + 隐私优先 + 深度可视化
-- **不对标**：LangSmith（云服务）、Phoenix（生产监控）的完整 LLMOps 平台
-- **补齐方向**：专业用户工具链（向量/RAG/调优），而非企业协作功能
-
-**实施路径**：
-1. 先补齐 Task #17~#20 专业工具（向量/RAG/性能/调优）
-2. 持续监控 langfuse/LangSmith 的 issues，提取可适配的需求
-3. 保持"纯前端 + 隐私优先"定位，不跟风云服务特性
-
----
-
-## 实验性功能 🔍
-
-### 23. Agent 协作可视化
-**优先级**：低 | **类型**：概念验证
-
-- 🔍 调研多 Agent 协作的 trace 格式
-- 🔍 设计 Agent 之间的消息传递可视化
-- 🔍 实现 AVP（Advisor-Validator-Planner）流程演示
-- 🔍 添加 Agent 决策树的 3D 可视化
-
-**设计约束**：
-- 不做拟人化动画（不许"AI 苏醒"）
-- 视觉焦点跟随真实事件，不伪造数据
-
-### 24. Replay 模式增强 ✅
-**优先级**：低 | **类型**：功能扩展 | **完成时间**：2026-08-05
-
-- ✅ 支持变速播放（0.25x - 4x）
-- ✅ 添加关键帧书签和跳转
-- ✅ 实现 replay 的分支对比（fork point 检测）
-- 📋 导出 replay 为视频（WebCodecs API）
-
-**已完成（2026-08-05）**：
-- **ReplayController 类**（src/lib/replayControls.ts, 354 行）：
-  - 播放控制：play(), pause(), togglePlay() 方法
-  - 速度调节：8 档速度（0.25x, 0.5x, 0.75x, 1x, 1.5x, 2x, 3x, 4x）
-  - 步进控制：stepForward(), stepBackward(), seekTo(), seekToStart(), seekToEnd()
-  - 循环播放：toggleLoop() 方法支持自动循环
-  - 观察者模式：subscribe/notify 机制实时同步状态
-  
-- **书签管理系统**：
-  - addBookmark(label, note?): 在当前步骤添加书签
-  - removeBookmark(id): 删除书签
-  - jumpToBookmark(id): 跳转到指定书签
-  - Bookmark 接口：id, step, label, note?, timestamp
-  - 自动书签：generateAutoBookmarks() 基于句子边界生成
-  
-- **Fork Point 检测**：
-  - addForkPoint(): 手动标记分支点
-  - detectForkPoints(): 自动检测犹豫点（top-2 概率差 < 30%）
-  - ForkPoint 接口：step, branchALength, branchBLength, description
-  - 可视化：进度条上显示 fork 点标记（琥珀色）
-  
-- **ReplayControlPanel 组件**（src/components/ReplayControlPanel.tsx, 328 行）：
-  - 进度条：Range slider + 步骤显示 + 百分比
-  - Fork 点标记：进度条上显示琥珀色竖线，点击跳转
-  - 书签标记：进度条上显示品牌蓝竖线，点击跳转
-  - 播放控制：跳到开始/后退/播放暂停/前进/跳到结束
-  - 速度选择：下拉菜单切换 8 档速度
-  - 循环播放：切换按钮（开启时高亮显示）
-  - 书签面板：
-    - 添加书签表单（标签 + 备注）
-    - 书签列表（显示步骤号、标签、备注）
-    - 跳转和删除按钮
-  - Fork 点列表：显示前 5 个检测到的决策点
-  
-- **集成到 ObservePage**：
-  - 初始化 ReplayController：demo trace 加载时创建控制器
-  - 状态同步：controller.subscribe() 监听状态变化并更新 demoIdx
-  - 自动暂停：拖动进度条时自动暂停播放
-  - 布局：控制面板位于演示标本台底部（absolute positioning）
-
-**技术架构**：
-- 状态管理：ReplayState 接口（currentStep, totalSteps, playing, speed, bookmarks, forkPoints, loop）
-- 播放机制：setInterval 定时器，间隔 = baseInterval (100ms) / speed
-- 观察者模式：listeners Set 存储回调，notify() 广播状态变化
-- 自动检测：基于 TokenStep.topk 概率分布检测犹豫点
-- 书签存储：Bookmark 带 UUID 和 timestamp，支持删除和跳转
-
-**性能优化**：
-- 速度切换：暂停 → 更新速度 → 重新播放（避免 timer 累积误差）
-- 步进控制：直接更新 currentStep，不走 timer 循环
-- 循环播放：到达末尾时自动重置到起点（loop 开启时）
-
-**视觉设计**：
-- 进度条：使用原生 range input + accent 主题色
-- Fork 点：琥珀色 (#ffa726) 竖线，悬停显示描述
-- 书签：品牌蓝 (accent) 竖线，悬停显示标签
-- 控制按钮：圆角边框 + 悬停高亮
-- 书签面板：可折叠，表单 + 列表布局
-
-**局限性说明**：
-- 视频导出：WebCodecs API 需 Chrome 94+，实现复杂度高（未完成）
-- 书签持久化：未存储到 localStorage，刷新后丢失（可在后续迭代添加）
-- 多控制器：当前仅支持一个活跃控制器（demo 演示场景）
-- 分支对比：仅检测 fork 点，未实现真实分支对比 UI（已有 DualEndingCard 承担）
-
-**构建影响**：
-- 主 bundle 增加约 3KB（ReplayController + ReplayControlPanel）
-- 无新依赖引入，纯 TypeScript + React 实现
-
----
-
-## 社区与生态 🏆
-
-### 25. 性能排行榜与模型接入市场
-**优先级**：中 | **类型**：社区功能 | **状态**：🚧 进行中
-
-**核心功能**：
-- ✅ 全球性能排行榜：用户提交设备型号 + 模型 + 推理速度（tokens/s）
-- 🔍 贡献者名人堂：留名 + 徽章系统（首次提交、速度王、社区贡献）
-- 🔍 模型接入市场：开发者提交模型 API endpoint，用户一键添加
-- ✅ 防作弊机制：提交时需附带完整 trace 文件验证
-
-**已完成**（阶段 1 - 完整功能）（2026-08-05）：
-- ✅ LeaderboardPage 组件：排行榜主页面，设备分类过滤（全部/集显/中端/高端）
-- ✅ LeaderboardSubmitDialog 组件：提交对话框，trace 文件上传和验证
-- ✅ Trace 文件验证：解析 .aitrace 格式，提取设备信息和速度
-- ✅ 设备档位推断：根据速度自动分类（<10=集显，10-30=中端，>30=高端）
-- ✅ 图标集成：使用 IconStar, IconArrowUp, IconClose, IconGlobe
-- ✅ leaderboard.ts 模块：完整的排行榜数据管理
-  - fetchLeaderboard()：从 GitHub Discussions 加载排行榜数据
-  - submitToLeaderboard()：提交性能成绩并验证速度真实性
-  - parseDiscussionToEntry()：解析 Discussion 内容为排行榜条目
-  - buildDiscussionBody()：构建包含完整设备信息和 trace 数据的 Markdown
-- ✅ 速度验证机制：服务端重新计算速度，差异超过 5% 视为无效
-- ✅ 防作弊：提交时需附带完整 trace 文件，验证步骤数和时间一致性
-- ✅ 导航集成：排行榜入口已存在于 WorkspacePage（"🏆 性能排行榜 →"）
-- ✅ UI 测试：对话框打开/关闭、昵称输入、设备过滤按钮均正常工作
-
-**实施路径**（渐进式）：
-
-**阶段 1: 零成本 MVP（GitHub Discussions 方案）** ✅ 已完成（2026-08-05）
-- ✅ 使用 GitHub Discussions 作为数据源，无需搭建后端
-- ✅ 用户提交成绩 → 自动创建 Discussion（标题带速度）
-- ✅ 前端读取 Discussions API → 解析 → 渲染排行榜
-- ✅ **优点**：零成本、GitHub 自带防作弊（需账号）、有评论/点赞/举报
-- ✅ **技术栈**：GitHub API + 前端 fetch + React 组件
-- ✅ **数据格式**：Discussion title = `[Benchmark] {nickname} - {device} - {speed} tokens/s`
-- ✅ **防作弊**：必须上传 trace 文件到 Discussion body，前端验证 trace 真实性
-- 🔍 **待完成**：实际 GitHub API 集成（当前为模拟提交），需配置 OAuth token 或 GitHub App
-
-**阶段 2: 轻量后端（Serverless + 数据库）** 🔍
-- 优先级：中 | 预计工期：1 周开发 + 1 周测试
-- **触发条件**：阶段 1 有 >50 个提交 + 每周 >10 新提交 + 用户活跃讨论
-- **技术栈**：Vercel Functions + Supabase PostgreSQL + Supabase Storage
-- **成本**：免费额度内（Supabase 500MB + Vercel Serverless）
-- **数据库设计**：
-  ```sql
-  -- 排行榜表
-  CREATE TABLE leaderboard (
-    id UUID PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id),
-    nickname VARCHAR(50) NOT NULL,
-    avatar_url TEXT,
-    device_name VARCHAR(100),
-    device_tier INT, -- 1=集显, 2=中端, 3=高端
-    gpu_name VARCHAR(100),
-    model_id VARCHAR(50),
-    speed FLOAT NOT NULL, -- tokens/s
-    trace_url TEXT, -- Trace 文件链接
-    verified BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT NOW()
-  );
-
-  -- 模型接入表
-  CREATE TABLE model_endpoints (
-    id UUID PRIMARY KEY,
-    provider_name VARCHAR(50),
-    provider_url TEXT,
-    contact_name VARCHAR(50),
-    api_endpoint TEXT NOT NULL,
-    model_list JSONB,
-    rating FLOAT DEFAULT 0,
-    vote_count INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT NOW()
-  );
-
-  -- 用户徽章表
-  CREATE TABLE user_badges (
-    user_id UUID REFERENCES auth.users(id),
-    badge_type VARCHAR(20), -- 'first_submit', 'speed_king', 'contributor'
-    earned_at TIMESTAMP DEFAULT NOW()
-  );
-  ```
-- **API 端点**：
-  - `GET /api/leaderboard` - 获取排行榜（按速度排序，分页）
-  - `POST /api/leaderboard` - 提交成绩（验证 trace 真实性 + 上传文件）
-  - `GET /api/model-endpoints` - 获取模型市场列表
-  - `POST /api/model-endpoints` - 提交模型接入点
-  - `POST /api/vote` - 为模型接入点评分
-- **认证系统**：Supabase Auth（GitHub/Google 一键登录）
-- **文件存储**：Supabase Storage（trace 文件上传，50MB 限制）
-
-**阶段 3: 完整社区平台（可选，长期规划）** 🔍
-- 优先级：低 | 预计工期：1 个月
-- **触发条件**：阶段 2 月活用户 >500 + 每周提交 >50
-- **新增功能**：
-  - 用户个人主页（展示所有提交、徽章墙、历史趋势图）
-  - 模型市场（浏览、搜索、一键接入、用户评价）
-  - 社区讨论（技术交流、优化技巧、问题求助）
-  - 管理后台（审核提交、封禁作弊、数据导出）
-- **技术升级**：Next.js App Router（全栈）+ Vercel Edge Cache（CDN 加速）
-
-**前端组件设计**：
-```tsx
-// src/components/LeaderboardPage.tsx
-export default function LeaderboardPage() {
-  const [rankings, setRankings] = useState<LeaderboardEntry[]>([]);
-  const [filter, setFilter] = useState<'all' | 'tier1' | 'tier2' | 'tier3'>('all');
-  
-  return (
-    <div className="leaderboard-container">
-      <h1>🏆 全球性能排行榜</h1>
-      
-      {/* 分类过滤 */}
-      <div className="filter-tabs">
-        <button onClick={() => setFilter('all')}>全部设备</button>
-        <button onClick={() => setFilter('tier1')}>集显组</button>
-        <button onClick={() => setFilter('tier2')}>中端独显组</button>
-        <button onClick={() => setFilter('tier3')}>高端显卡组</button>
+**UI 规范**：
+```typescript
+// 句子卡片
+<div className="space-y-2">
+  {sentences.map((sent, i) => (
+    <div 
+      key={i}
+      className="rounded-md border border-obs-line bg-obs-2 p-3 hover:bg-obs-3 cursor-pointer"
+      onClick={() => toggleExpand(i)}
+    >
+      <div className="flex items-center gap-3">
+        <span className="flex-1 text-sm text-obs-ink">{sent.text}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-obs-ink2 tabular-nums">
+            熵 {sent.avgEntropy.toFixed(1)}
+          </span>
+          <div className="h-2 w-24 rounded-full bg-obs overflow-hidden">
+            <div 
+              className={getEntropyColor(sent.avgEntropy)}
+              style={{ width: `${(sent.avgEntropy / 5) * 100}%` }}
+            />
+          </div>
+        </div>
       </div>
       
-      {/* 排行榜表格 */}
-      <table className="ranking-table">
-        <thead>
-          <tr>
-            <th>排名</th>
-            <th>贡献者</th>
-            <th>设备信息</th>
-            <th>模型</th>
-            <th>速度 (tokens/s)</th>
-            <th>验证</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rankings.map((r, i) => (
-            <tr key={r.id}>
-              <td className="rank">#{i + 1}</td>
-              <td className="contributor">
-                <img src={r.avatar_url} alt="" />
-                <span>{r.nickname}</span>
-                {r.badges.map(b => <Badge type={b} />)}
-              </td>
-              <td className="device">{r.device_name}</td>
-              <td className="model">{r.model_id}</td>
-              <td className="speed">{r.speed.toFixed(1)}</td>
-              <td className="trace">
-                <a href={r.trace_url} target="_blank">查看 Trace →</a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      
-      {/* 提交按钮 */}
-      <button className="submit-cta" onClick={openSubmitDialog}>
-        🚀 提交我的成绩
-      </button>
+      {expanded[i] && (
+        <div className="mt-3 pt-3 border-t border-obs-line">
+          <div className="flex flex-wrap gap-1">
+            {sent.tokens.map((tok, j) => (
+              <span 
+                key={j}
+                className={tok.entropy > 3.0 ? 'bg-caution-500/20' : ''}
+              >
+                {tok.text}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-  );
-}
+  ))}
+</div>
+```
 
-// src/components/LeaderboardSubmit.tsx
-export default function LeaderboardSubmit() {
-  const [nickname, setNickname] = useState('');
-  const [traceFile, setTraceFile] = useState<File | null>(null);
-  
-  const handleSubmit = async () => {
-    // 1. 验证 trace 文件真实性
-    const isValid = await verifyTraceFile(traceFile);
-    if (!isValid) {
-      alert('无效的 trace 文件，请从 Observe 模式导出真实记录');
-      return;
-    }
-    
-    // 2. 提取设备信息和速度
-    const trace = await parseTraceFile(traceFile);
-    const speed = calculateSpeed(trace);
-    
-    // 3. 提交到后端（或创建 GitHub Discussion）
-    await submitToLeaderboard({
-      nickname,
-      device: trace.device,
-      model: trace.modelId,
-      speed,
-      traceFile,
-    });
-    
-    alert('🎉 提交成功！等待审核...');
+**颜色规则**：
+- `< 2.0`: 绿色（高置信）
+- `2.0-3.5`: 蓝色（正常）
+- `3.5-4.5`: 琥珀（谨慎）
+- `> 4.5`: 红色（警示）
+
+**数据来源**：从 `TokenStep[]` 真实拆分
+
+---
+
+#### Task 1.3：置信度报告导出（JSON/CSV）
+**优先级**：高 | **预计工期**：1 天 | **负责页面**：SentenceConfidenceView.tsx
+
+**功能描述**：
+- 导出按钮：JSON（完整数据）+ CSV（Excel 友好）
+- JSON 格式：sentences + highEntropyTokens + summary
+- CSV 格式：`句子,平均熵,Token数,高熵Token数,文本`
+
+**导出格式**：
+```typescript
+interface ConfidenceReport {
+  generatedAt: string;
+  modelId: string;
+  totalTokens: number;
+  highEntropyCount: number;
+  sentences: {
+    index: number;
+    text: string;
+    avgEntropy: number;
+    tokenCount: number;
+    highEntropyTokens: number;
+  }[];
+  summary: {
+    avgEntropy: number;
+    maxEntropy: number;
+    p50Entropy: number;
+    p90Entropy: number;
   };
-  
-  return (
-    <dialog className="submit-dialog">
-      <h2>提交性能成绩</h2>
-      <input 
-        type="text" 
-        placeholder="你的昵称" 
-        value={nickname}
-        onChange={e => setNickname(e.target.value)}
-      />
-      <input 
-        type="file" 
-        accept=".aitrace"
-        onChange={e => setTraceFile(e.target.files?.[0] || null)}
-      />
-      <p className="hint">
-        💡 Trace 文件必须来自真实推理，我们会验证数据真实性
-      </p>
-      <button onClick={handleSubmit}>提交</button>
-    </dialog>
-  );
 }
 ```
 
-**防作弊机制**：
-- **Trace 文件验证**：
-  - 检查文件格式（必须是 `.aitrace` v2 格式）
-  - 验证 TokenStep 数据完整性（概率总和=1、熵计算正确）
-  - 检查 PipelineTiming 合理性（速度不超过物理极限）
-  - 验证设备信息一致性（GPU 型号 + 显存 + 速度匹配）
-- **速度异常检测**：
-  - 对比同设备历史提交，标记异常快的结果
-  - 人工审核速度 > 平均值 2σ 的提交
-- **用户信誉系统**：
-  - 首次提交需等待审核
-  - 多次提交通过后自动信任
-  - 作弊一次永久封禁
+---
 
-**商业价值**：
-- **社区驱动增长**：用户为上榜而主动传播项目
-- **数据资产积累**：真实设备性能数据库（可用于模型推荐）
-- **开发者生态**：模型接入市场吸引第三方贡献者
-- **差异化竞争**：市面上没有"浏览器 LLM 性能排行榜"
+### Sprint 2：同一问题多次对比（Week 3）
 
-**隐私保护**：
-- Trace 文件不包含对话内容（仅概率分布 + 速度数据）
-- 用户可选匿名提交（不显示 GitHub 账号）
-- 设备信息脱敏（只显示 GPU 型号，不显示 IP/浏览器指纹）
+#### Task 1.4：同一问题多次对比（完善 CompareView）
+**优先级**：中 | **预计工期**：2 天 | **负责页面**：CompareView.tsx
 
-**实施建议**：
-1. ✅ **立即做**：完成 Task #17（Tooltip 系统），让普通用户看懂项目
-2. ✅ **下一步**：创建 GitHub Discussions 分类（5 分钟）
-3. ✅ **快速验证**：开发阶段 1 MVP（1-2 天），看用户是否真的会提交
-4. ⏳ **观察数据**：等有真实提交后，再决定是否上后端（避免过早优化）
+**功能描述**：
+- 从实验档案选 2 条相同 prompt 的记录
+- 并排对比：文本差异高亮 + 熵值曲线
+- 标注首次分岔点
+
+**UI 规范**：
+```typescript
+<div className="grid grid-cols-2 gap-6 h-full">
+  {/* 左侧：实验 A */}
+  <div className="rounded-xl border border-obs-line bg-obs-2 p-4">
+    <h3 className="text-sm font-medium text-obs-ink mb-3">实验 A</h3>
+    {/* Token 流，差异处琥珀色底 */}
+  </div>
+  
+  {/* 右侧：实验 B */}
+  <div className="rounded-xl border border-obs-line bg-obs-2 p-4">
+    <h3 className="text-sm font-medium text-obs-ink mb-3">实验 B</h3>
+  </div>
+</div>
+
+{/* 底部：熵值对比曲线 */}
+<div className="mt-6 rounded-xl border border-obs-line bg-obs-2 p-4">
+  <h3 className="text-sm font-medium text-obs-ink mb-3">熵值对比</h3>
+  <canvas ref={chartRef} width={800} height={200} />
+</div>
+```
+
+**数据来源**：复用 `experiments.ts` 的 `firstDivergence()`
 
 ---
 
-## 任务优先级总览
+### Sprint 3：开放标准推进（Week 4）
 
-### 按优先级排序
+#### Task 2.1：.aitrace 开放标准规范文档
+**优先级**：🔥 极高 | **预计工期**：2 天 | **输出物**：docs/AITRACE_SPEC.md
 
-**🔥 极高优先级**（立即执行）：
-1. **Task #17 - Tooltip 系统** (🚧 进行中，70% 完成)
-   - 目标：解决"普通用户看不懂项目"的核心痛点
-   - 剩余工作：用户测试 + 移动端适配 + 扩展到更多 UI
-   - 预计完成：1 周
+**文档结构**：
+1. 概述（什么是 .aitrace）
+2. JSON Schema（完整字段定义）
+3. TokenStep 结构
+4. 扩展规范（extensions 命名空间）
+5. 最小示例 + 真实示例
+6. 如何接入（TypeScript/Python）
 
-**⚡ 高优先级**（近期规划，1-2 个月内）：
-2. **Task #25.1 - 排行榜 MVP**（阶段 1：GitHub Discussions）
-   - 目标：社区驱动增长 + 数据资产积累
-   - 预计工期：1-2 天
-   - 前置条件：Task #17 完成（让用户看懂项目才会提交成绩）
-
-3. **Task #19 - RAG 检索增强生成**
-   - 目标：专业用户的文档理解能力增强
-   - 预计工期：2 周
-   - 商业价值：企业调试场景（节省人力成本）
-
-**📊 中优先级**（3-6 个月规划）：
-4. **Task #18 - Embedding 向量可视化**
-   - 目标：文本语义空间可视化
-   - 预计工期：1.5 周
-   - 依赖：Task #19（RAG 的基础能力）
-
-5. **Task #20 - 模型性能分析工具**
-   - 目标：推理性能剖析 + 量化精度对比
-   - 预计工期：2 周
-
-6. **Task #22 - 对标成熟项目功能差距分析**
-   - 目标：明确产品定位 + 补齐关键短板
-   - 预计工期：调研 1 周 + 实施按需
-
-7. **Task #25.2 - 排行榜后端升级**（阶段 2：Serverless + 数据库）
-   - 触发条件：阶段 1 有 >50 个提交
-   - 预计工期：1 周开发 + 1 周测试
-
-**🔬 低优先级**（6 个月后或按需）：
-8. **Task #21 - 参数调优实验平台**
-9. **Task #23 - Agent 协作可视化**
-10. **Task #24 - Replay 模式增强**
-11. **Task #25.3 - 完整社区平台**（阶段 3）
-
-**❌ 不推荐**：
-- **Task #21（WebTransport 升级）**：纯前端离线工具无此需求，过度设计
+**输出物**：
+- `docs/AITRACE_SPEC.md`（中文版）
+- `docs/AITRACE_SPEC_EN.md`（英文版）
 
 ---
 
-## 开发路线图
+### Sprint 4：API 桥接架构设计（Week 5-6）
 
-### Q3 2026（当前季度）
-- ✅ 完成 Task #17（Tooltip 系统）← **当前任务**
-- ✅ 快速验证 Task #25.1（排行榜 MVP）
-- 🚧 启动 Task #19（RAG 检索增强）
+#### Task 2.2：Cloudflare Workers API 桥接架构设计
+**优先级**：高 | **预计工期**：3 天 | **输出物**：docs/API_BRIDGE_DESIGN.md
 
-### Q4 2026
-- Task #18（向量可视化）
-- Task #20（性能分析工具）
-- Task #22（对标分析 + 功能补齐）
-- 根据 Task #25.1 数据决定是否升级到阶段 2
+**设计内容**：
+- 后端架构：CF Workers + KV（缓存）+ D1（配额）
+- API 端点：`/api/proxy`（代理 OpenAI/Anthropic）、`/api/logprobs`（规范化）
+- 安全设计：零知识、用户 API key 加密
+- 成本估算：CF 免费额度支撑用户量
 
-### 2027 H1
-- 剩余中优先级任务
-- 根据用户反馈调整优先级
-- 探索商业化路径（教育市场 / 企业工具）
+**架构草图**：
+```
+用户浏览器 (API key 加密)
+  ↓ HTTPS
+CF Worker（边缘计算）
+  ↓ 解密 API key（内存中）
+  ↓ 代理请求
+OpenAI/Anthropic API
+  ↓ 返回 logprobs
+CF Worker（规范化为 .aitrace）
+  ↓ 缓存到 KV（7天 TTL）
+用户浏览器
+```
+
+**技术栈**：
+- 存储：
+  - API key：用户浏览器 AES 加密，传到后端只用于单次请求
+  - Trace 缓存：CF KV（便宜，冷数据）或 Durable Objects（强一致性）
+  - 用户配额：CF D1（SQLite，轻量 SQL）
+- 安全：
+  - 不在后端存明文 API key
+  - 每次请求用 HMAC 签名，防重放攻击
+  - 限流：每 IP 每分钟最多 10 次请求（CF 自带）
+- 成本估算：
+  - CF Workers 免费额度：10万次请求/天
+  - KV 免费额度：10万次读、1000 次写/天
+  - 到 100 个日活用户之前，成本为 0
+
+**后端功能清单**：
+1. API 代理 — 用户输入自己的 API key（前端加密存 localStorage），后端代理请求、返回 logprobs
+2. logprobs 规范化 — OpenAI、Anthropic、Gemini 返回格式不同，后端统一转成 `.aitrace` 格式
+3. 零知识设计 — 后端不存 API key、不存对话内容，只缓存 logprobs 用于回放
+4. 费用限额 — 用户设置"本次最多花 $X"，超出自动停止
 
 ---
 
-## 任务优先级说明
+### Sprint 5：Bug 修复（Week 7）
 
-**极高优先级（🔥）**：解决核心痛点，直接影响用户留存和产品价值
-**高优先级（⚡）**：重要功能或商业价值明确，应尽快排期
-**中优先级（📊）**：重要但非紧急，可排期处理
-**低优先级（🔬）**：锦上添花的功能，资源充裕时处理
+#### Task 3.1：思考块样式延迟 Bug 修复
+**优先级**：中 | **预计工期**：1 天 | **修复文件**：src/lib/trace.ts
 
-## 开发规范
+**问题描述**：思考内容流式生成中显示为普通文本，只有 `</think>` 出现后才变卡片
 
-所有任务开始前必须：
-1. 阅读 `AGENTS.md` 和相关文档
-2. 视觉/交互改动需填写设计决策卡
-3. 通过四视角审查（Explorer/研究者/产品/视觉）
-4. 验证测试全绿（tsc/lint/vitest/build）
-5. 更新本看板状态
+**修复方案**：
+```typescript
+// splitPhases() 修改
+if (open < 0 && /^<think(ing)?>$/.test(t)) {
+  open = i;
+  tags.push({
+    type: "thinking",
+    start: open,
+    end: texts.length,  // 暂定末尾
+    closed: false,       // 标记未闭合
+  });
+}
 
-## 协作流程
+// 检测到 </think> 更新 TagSegment
+if (/^<\/think(ing)?>$/.test(t)) {
+  const unclosedTag = tags.find(tag => !tag.closed);
+  if (unclosedTag) {
+    unclosedTag.end = close + 1;
+    unclosedTag.closed = true;
+  }
+}
+```
 
-- 云端 AI 助手：完成任务后更新本文件并写回
-- 本机开发：直接编辑本文件并 commit
-- 任务状态变更：从 📋 → 🚧 → ✅，失败或搁置标注原因
+---
+
+### Sprint 6：首屏文案优化（Week 8）
+
+#### Task 4.1：LandingHero 文案改版
+**优先级**：高 | **预计工期**：1 天 | **负责文件**：src/components/LandingHero.tsx
+
+**文案改动**：
+```typescript
+// 主标题改为：
+"AI 说的哪句话是在瞎猜？"
+"每个词都有置信度，这是第一个让你看见的工具"
+
+// 副标题加一句：
+"支持浏览器本地模型（Qwen / Llama）和 API 模型（即将支持 GPT-4 / Claude）"
+```
+
+**设计原则**：
+- 用疑问句勾住用户："哪句话在瞎猜" 比 "可视化置信度" 更直接
+- 说清楚现在能干什么，也给未来留钩子
+- 避免技术黑话（logprobs、熵值），用普通人能懂的词
+
+**UI 规范**：
+```typescript
+<div className="mx-auto max-w-4xl text-center">
+  <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.15] text-obs-ink">
+    AI 说的哪句话是在瞎猜？
+  </h1>
+  <p className="mt-4 text-[clamp(1.1rem,2.5vw,1.4rem)] leading-[1.5] text-obs-ink">
+    每个词都有置信度，这是第一个让你看见的工具
+  </p>
+  <p className="mt-3 text-[13px] leading-[1.7] text-obs-ink2">
+    支持浏览器本地模型（Qwen / Llama）和 API 模型（即将支持 GPT-4 / Claude）
+  </p>
+</div>
+```
+
+---
+
+## 阶段 2 任务（Q2-Q3 2027，待细化）
+
+### API 桥接实现
+
+#### Task 5.1：Cloudflare Workers 后端开发
+**范围**：
+- API 代理端点（`/api/proxy`）
+- logprobs 规范化端点（`/api/logprobs`）
+- KV 缓存逻辑
+- D1 配额管理
+
+#### Task 5.2：前端 API 集成
+**范围**：
+- API key 加密存储（localStorage + AES）
+- 请求签名（HMAC）
+- 费用限额 UI
+- 错误处理与重试
+
+#### Task 5.3：多 API 适配层
+**范围**：
+- OpenAI API logprobs 转换
+- Anthropic API logprobs 转换
+- Google Gemini API logprobs 转换
+- 统一转为 `.aitrace` 格式
+
+### 开放标准推广
+
+#### Task 6.1：TypeScript / Python 读写库
+**输出物**：
+- `aitrace-js` npm 包
+- `aitrace-py` PyPI 包
+- 使用文档
+
+#### Task 6.2：第三方工具对接
+**目标**：
+- 联系 LangChain 贡献者，提 PR 支持 `.aitrace` 导出
+- 联系 LlamaIndex 贡献者，提 PR 支持 `.aitrace` 导出
+- 在 HN / Reddit r/LocalLLaMA 发布 "Introducing .aitrace" 帖子
+
+---
+
+## 阶段 3 任务（Q3 2027 - Q2 2028，待细化）
+
+### 浏览器插件
+
+#### Task 7.1：Chrome 扩展开发
+**功能**：
+- 在任何网页上用 ChatGPT / Claude 时，自动抓 logprobs
+- 标红低置信度内容
+- 一键保存为 `.aitrace`
+
+#### Task 7.2：Firefox 扩展适配
+
+### 工作流集成
+
+#### Task 8.1：Notion 插件
+**功能**：
+- AI 生成的内容直接带置信度高亮同步到笔记
+
+#### Task 8.2：Jupyter Notebook 插件
+**功能**：
+- 科研人员在 notebook 里调 API 时，自动记录 trace
+
+#### Task 8.3：Zotero / Mendeley 集成
+**功能**：
+- 文献管理工具里，AI 生成的摘要带可信度标注
+
+---
+
+## 现有功能评审（需决策是否完善/砍掉）
+
+| 功能 | 实现状态 | 评审意见 |
+|------|---------|----------|
+| **EmbeddingPage** | ✅ 完整 | 🔒 冻结（已可用，阶段 1 不改动） |
+| **RAGPage** | ✅ 完整 | 🔒 冻结（已可用，阶段 1 不改动） |
+| **PerformancePage** | ✅ 完整 | 🔒 冻结（已可用，阶段 1 不改动） |
+| **AgentPage** | ✅ 完整 | 🔒 冻结（演示性质，阶段 1 不改动） |
+| **JourneyPage** | ✅ 完整 | ✅ 保留（教育价值高，帮助理解 token） |
+| **FindingsPage** | ✅ 完整 | ✅ 保留（自动发现分析，审计相关） |
+| **LeaderboardPage** | ✅ 完整 | 🔒 冻结（排行榜暂不运营社区） |
+
+**决策依据**：
+- 阶段 1 焦点：科研机构 AI 审计工具
+- 这些功能都已完整实现，无需重写
+- 冻结 ≠ 砍掉，而是"现在不碰，等核心审计功能站稳再优化"
+- 研究者要的是数字，不是 3D 动画和炫酷效果
+
+---
+
+## 设计审查清单（每个 Task 开工前必查）
+
+- [ ] 颜色只用 `measure/caution/alert/brand`，禁用 indigo/violet
+- [ ] 间距用 `gap-4` `px-6` 等 token，不写 `margin-left: 23px`
+- [ ] 圆角用 `rounded-xl/full/md`，不写 `border-radius: 17px`
+- [ ] 字号用 `text-xl/sm/xs`，不写固定 `font-size: 14px`
+- [ ] 布局优先 Grid，不无脑 Flexbox
+- [ ] 交互组件定义全部 7 种状态（默认/hover/展开/加载中/失败/空态/禁用）
+- [ ] 数据来源明确标注，不伪造数据
+- [ ] 读 `GLOSSARY.md` 确认术语用词一致
+
+---
+
+## 开发时间线
+
+```
+Week 1-2 (Sprint 1): 核心审计功能
+  Mon-Tue:  Task 1.1 高熵标红 + 摘要
+  Wed-Fri:  Task 1.2 句子级置信度视图
+  Mon:      Task 1.3 置信度报告导出
+
+Week 3 (Sprint 2): 同一问题多次对比
+  Tue-Wed:  Task 1.4 CompareView 完善
+  Thu-Fri:  集成测试 + Bug 修复
+
+Week 4 (Sprint 3): 开放标准推进
+  Mon-Tue:  Task 2.1 .aitrace 规范文档
+  Wed:      Task 6.1 TypeScript/Python 读写库（启动）
+
+Week 5-6 (Sprint 4): API 桥接架构设计
+  Mon-Wed:  Task 2.2 CF Workers 架构设计文档
+  Thu-Fri:  技术验证 POC（API 代理 + logprobs 规范化）
+
+Week 7 (Sprint 5): Bug 修复
+  Mon:      Task 3.1 思考块样式延迟修复
+  Tue-Fri:  集成测试 + 用户文档更新
+
+Week 8 (Sprint 6): 首屏优化
+  Mon:      Task 4.1 LandingHero 文案改版
+  Tue-Fri:  用户测试准备 + GitHub Discussion 引导
+
+--- 阶段 1 里程碑：科研场景验证 (3-6 个月) ---
+
+Q2 2027: API 桥接实现（Task 5.1-5.3）
+Q2-Q3 2027: 开放标准推广（Task 6.2）
+Q3 2027 - Q2 2028: 工作流集成（Task 7.1-8.3）
+```
+
+---
+
+## 不走的路（战略边界）
+
+| 方向 | 决策 | 原因 |
+|------|------|------|
+| **帮你写论文** | ❌ 不做 | 坚持只做观测，不做生成 |
+| **模型训练** | ❌ 不做 | 只观测别人的模型，不自己造模型 |
+| **社区内容运营** | ❌ 不做 | 不做 Discord 社群运营，保持工具属性 |
+| **3D 可视化** | ❌ 不做 | 研究者要数字，不是表演 |
+| **Agent/RAG 新功能** | ⏸️ 冻结 | 等主流程站稳再说 |
+
+---
+
+**快速索引**：
+- 已完成任务存档：[docs/COMPLETED_TASKS.md](./docs/COMPLETED_TASKS.md)
+- 已完成任务快速索引：[docs/COMPLETED_TASKS_INDEX.md](./docs/COMPLETED_TASKS_INDEX.md)
+- 设计规范：[docs/合规速查表.md](./docs/合规速查表.md)
+- 快速上手：[docs/00-START-HERE.md](./docs/00-START-HERE.md)
+
+---
+
+## 第一个月详细任务清单（Week 1-4）
+
+### Week 1：核心审计功能启动 + 技术债清理
+**目标**：让用户在 5 秒内看懂"哪里不可信"
+
+| 任务 | 工期 | 优先级 | 输出物 |
+|------|------|--------|--------|
+| Task 1.1：高熵 token 自动标红 + 摘要 | 2 天 | 🔥 P0 | ObservePage 顶部摘要卡片 + TokenText 高亮 |
+| Task 3.1：思考块样式延迟 Bug 修复 | 1 天 | 🔥 P0 | splitPhases() 逻辑修复 |
+| Task 4.1：首屏文案改版 | 1 天 | 🔥 P0 | LandingHero 新文案 |
+
+**验收标准**：
+- ✅ 用户打开 ObservePage 立即看到"⚠ 本次回答 N 处模型不确定"
+- ✅ 熵值 > 3.0 的 token 自动琥珀色底色标记
+- ✅ 思考块流式生成中立即显示卡片样式
+- ✅ 首屏主标题改为"AI 说的哪句话是在瞎猜？"
+
+**不做**：
+- ❌ 句子级置信度（Week 2 再做）
+- ❌ 导出功能（Week 2 再做）
+- ❌ 后端相关（6 个月后）
+
+---
+
+### Week 2：句子级置信度视图 + 报告导出
+**目标**：研究者要段落级结论，不是 token 级细节
+
+| 任务 | 工期 | 优先级 | 输出物 |
+|------|------|--------|--------|
+| Task 1.2：句子级置信度视图 | 3 天 | 🔥 P0 | SentenceConfidenceView.tsx 组件 |
+| Task 1.3：置信度报告导出 | 1 天 | 高 | JSON/CSV 导出功能 |
+
+**验收标准**：
+- ✅ 按句子拆分 token 流（识别 `.` `!` `?` `。` 等）
+- ✅ 每句显示平均熵值 + 颜色条（< 2.0 绿色，> 4.5 红色）
+- ✅ 点击句子展开内部 token
+- ✅ 导出 JSON 包含 sentences + summary + highEntropyTokens
+- ✅ 导出 CSV 可直接在 Excel 打开
+
+**技术实现**：
+```typescript
+// lib/sentenceAnalysis.ts
+interface Sentence {
+  index: number;
+  text: string;
+  tokens: TokenStep[];
+  avgEntropy: number;
+  highEntropyCount: number;
+}
+
+function splitSentences(steps: TokenStep[]): Sentence[] {
+  // 按标点符号拆分
+  // 计算每句的平均熵
+}
+```
+
+---
+
+### Week 3：同一问题多次对比
+**目标**：直接回答"为什么 AI 每次回答不一样"
+
+| 任务 | 工期 | 优先级 | 输出物 |
+|------|------|--------|--------|
+| Task 1.4：CompareView 完善 | 2 天 | 中 | 并排对比 + 分岔点检测 |
+| 集成测试 + Bug 修复 | 2 天 | 高 | 测试覆盖率报告 |
+
+**验收标准**：
+- ✅ 从实验档案选 2 条相同 prompt 的记录
+- ✅ 并排对比文本差异（差异处琥珀色底）
+- ✅ 底部熵值曲线对比
+- ✅ 标注首次分岔点（firstDivergence）
+
+**UI 规范**：
+```typescript
+<div className="grid grid-cols-2 gap-6">
+  {/* 左右两栏：实验 A vs 实验 B */}
+  <div>Token 流，差异处琥珀色底</div>
+  <div>Token 流，差异处琥珀色底</div>
+</div>
+
+{/* 底部：熵值对比曲线 */}
+<canvas ref={chartRef} width={800} height={200} />
+```
+
+---
+
+### Week 4：开放标准推进（文档阶段）
+**目标**：让其他工具能导出 .aitrace 格式
+
+| 任务 | 工期 | 优先级 | 输出物 |
+|------|------|--------|--------|
+| Task 2.1：.aitrace 规范文档 | 2 天 | 🔥 P0 | docs/AITRACE_SPEC.md（中英文） |
+| Task 6.1：TypeScript 读写库（启动） | 2 天 | 中 | aitrace-js npm 包骨架 |
+
+**验收标准**：
+- ✅ AITRACE_SPEC.md 包含完整 JSON Schema
+- ✅ 提供最小示例（3-token trace）
+- ✅ 提供真实示例（完整对话 trace）
+- ✅ 定义 extensions 命名空间规范
+- ✅ 写清楚"如何接入"（给其他工具作者看）
+
+**文档结构**：
+```markdown
+# .aitrace Open Standard
+
+## 概述
+什么是 .aitrace — 1 段话说清楚
+
+## JSON Schema
+完整字段定义（基于 GenerationTrace 接口）
+
+## TokenStep 结构
+```json
+{
+  "id": 0,
+  "text": "Hello",
+  "prob": 0.95,
+  "entropy": 0.23,
+  "dt": 45,
+  "topk": [...]
+}
+```
+
+## 扩展字段规范
+extensions 命名空间约定
+
+## 示例
+最小示例 + 真实示例
+
+## 如何接入
+TypeScript / Python 示例代码
+```
+
+---
+
+## 第一个月里程碑
+
+**Week 1 结束时**：
+- ✅ 用户能在 5 秒内看懂"哪里不可信"
+- ✅ 技术债清理（思考块 Bug）
+- ✅ 首屏文案吸引对的用户
+
+**Week 2 结束时**：
+- ✅ 研究者能看到段落级置信度
+- ✅ 能导出报告到 Excel/Python
+
+**Week 3 结束时**：
+- ✅ 能对比同一问题的多次回答
+- ✅ 能看到首次分岔点
+
+**Week 4 结束时**：
+- ✅ .aitrace 规范文档完成
+- ✅ 其他工具作者能看懂如何接入
+
+---
+
+## 立即启动（Week 1 Day 1）
+
+### 今天要做的（按顺序）
+1. ✅ Task 3.1：思考块 Bug 修复（1 小时）
+2. ✅ Task 4.1：首屏文案改版（1 小时）
+3. ✅ Task 1.1：高熵标红（启动，完成 TokenText 组件修改）
+
+### 为什么这个顺序？
+- **思考块 Bug**：最快修完，扫清技术债
+- **首屏文案**：最简单，快速胜利
+- **高熵标红**：核心功能，需要 2 天完成

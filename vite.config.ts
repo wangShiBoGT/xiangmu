@@ -88,6 +88,7 @@ function searchProxy(): Plugin {
 // WebGPU 仅在安全上下文（https 或 localhost）下可用，
 // 局域网 IP 访问必须走 https，故启用自签证书
 export default defineConfig({
+  base: '/',  // 自定义域名使用根路径
   plugins: [react(), tailwindcss(), searchProxy()],  // 暂时禁用 SSL 以便预览
   // 监听 0.0.0.0：启动时终端会额外打印 Network 地址（https://<局域网IP>:5173），
   // 同一局域网内其他设备可直接访问（自签证书需在对方浏览器手动信任一次）

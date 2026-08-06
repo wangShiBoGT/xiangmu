@@ -96,11 +96,13 @@ import {
   IconStop,
   IconGlobe,
   IconAperture,
+  IconCheck,
 } from "./icons";
 import { PrimaryAction } from "./ds";
 import { Term } from "./Term";
 import ReplayControlPanel from "./ReplayControlPanel";
 import { ReplayController } from "../lib/replayControls";
+import SentenceConfidenceView from "./SentenceConfidenceView";
 
 // Ocean 三维视图懒加载：three 只在第一次打开时下载
 const OceanView = lazy(() => import("./OceanView"));
@@ -2798,16 +2800,51 @@ export default function ObservePage({
             )}
 
             {displaySteps.length > 0 && (
-              <TokenText
-                steps={displaySteps}
-                selected={selected}
-                running={phase === "running"}
-                annotations={annotations}
-                onSelect={setSelected}
-                onInteract={dismissHint}
-                heat={heat}
-                director={director}
-              />
+              <>
+                {/* 高熵摘要卡片：完成态显示高熵 token 数量警示 */}
+                {phase === "done" && (() => {
+                  const highEntropyCount = displaySteps.filter(s => s.entropy > 3.0).length;
+                  if (highEntropyCount === 0) {
+                    return (
+                      <div className="mb-4 rounded-xl border border-brand-500/30 bg-brand-500/10 px-4 py-3">
+                        <p className="text-sm text-obs-ink">
+                          <IconCheck className="inline h-4 w-4 text-brand-500 mr-1" />
+                          本次回答置信度正常（无高熵 token）
+                        </p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="mb-4 rounded-xl border border-caution-500/30 bg-caution-500/10 px-4 py-3">
+                      <p className="text-sm text-obs-ink">
+                        <span className="inline-flex h-4 w-4 items-center justify-center mr-1 text-caution-500">⚠</span>
+                        本次回答 <span className="font-medium text-caution-500">{highEntropyCount}</span> 处模型不确定（熵值 &gt; 3.0），建议人工核查
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* 句子级置信度视图：完成态显示 */}
+                {phase === "done" && (
+                  <div className="mb-4">
+                    <SentenceConfidenceView
+                      steps={displaySteps as TokenStep[]}
+                      modelId={modelId}
+                    />
+                  </div>
+                )}
+
+                <TokenText
+                  steps={displaySteps}
+                  selected={selected}
+                  running={phase === "running"}
+                  annotations={annotations}
+                  onSelect={setSelected}
+                  onInteract={dismissHint}
+                  heat={heat}
+                  director={director}
+                />
+              </>
             )}
 
             {error && (

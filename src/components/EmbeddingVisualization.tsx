@@ -168,7 +168,7 @@ export default function EmbeddingVisualization({
       labelDiv.className = 'text-label';
       labelDiv.textContent = pt.label;
       labelDiv.style.cssText = `
-        color: #38bdf8;
+        color: #10b981;
         font-size: 12px;
         font-weight: 500;
         background: rgba(10, 13, 18, 0.92);

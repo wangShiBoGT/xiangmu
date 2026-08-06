@@ -196,6 +196,21 @@ export default function TokenText({
           : scene === "storm"
             ? "token-scene-storm"
             : "";
+
+    // 高熵标红：熵值 > 3.0 琥珀色底，熵值 > 4.0 红色底
+    const isHighEntropy = s.entropy > 3.0;
+    const isCriticalEntropy = s.entropy > 4.0;
+    const entropyStyle = !heat && isHighEntropy
+      ? {
+          backgroundColor: isCriticalEntropy
+            ? 'rgba(201, 75, 75, 0.2)'  // alert-500/20
+            : 'rgba(185, 132, 48, 0.2)',  // caution-500/20
+          borderBottom: isCriticalEntropy
+            ? '2px solid rgb(201, 75, 75)'  // alert-500
+            : '2px solid rgb(185, 132, 48)',  // caution-500
+        }
+      : undefined;
+
     return (
       <Fragment key={i}>
       <button
@@ -208,7 +223,7 @@ export default function TokenText({
         style={
           heat
             ? { backgroundColor: `rgba(140, 150, 255, ${lvl * 0.28})` }
-            : undefined
+            : entropyStyle
         }
         disabled={running}
         onClick={() => {

@@ -358,7 +358,7 @@ export default function LandingHero({
           <IconAperture className="h-[17px] w-[17px]" />
           AI Observatory
         </span>
-        <span className="font-mono text-[12px] uppercase tracking-[0.08em] text-[#9BA0B4] select-none">
+        <span className="font-mono text-[12px] uppercase tracking-[0.08em] text-obs-ink2 select-none">
           本地模式 · Offline
         </span>
       </div>
@@ -367,14 +367,14 @@ export default function LandingHero({
           矮视口可滚动，主按钮永远可达（P4：不允许存在点不到的入口） */}
       <div className="landing-hero-scroll relative z-20 flex flex-1 flex-col overflow-y-auto px-4 sm:px-6">
        <div className="m-auto flex w-full flex-col items-center py-8 pb-80 sm:py-10 sm:pb-96">
-        <h2 className="max-w-[680px] px-4 text-center text-[clamp(22px,5vw,40px)] font-semibold tracking-[-0.02em] leading-[1.35] sm:whitespace-nowrap sm:px-0">
-          为什么同一句问题，AI 每次回答都不一样？
+        <h2 className="max-w-[680px] px-4 text-center text-[clamp(22px,5vw,40px)] font-semibold tracking-[-0.02em] leading-[1.35] sm:px-0">
+          AI 说的哪句话是在瞎猜？
         </h2>
-        <p className="mt-3 max-w-[680px] px-4 text-center text-[14px] leading-relaxed text-[#C0C4D2] sm:px-0 sm:text-[16px]">
-          因为这个答案，曾经差点变成另一个答案。
+        <p className="mt-3 max-w-[680px] px-4 text-center text-[14px] leading-relaxed text-obs-ink sm:px-0 sm:text-[16px]">
+          每个词都有置信度，这是第一个让你看见的工具
         </p>
-        <p className="mt-1.5 max-w-[680px] px-4 text-center text-[11px] tracking-wide text-[#8A8FA3] select-none sm:px-0 sm:text-[12px]">
-          理解 AI，不靠信任，靠观察 · Don&rsquo;t trust AI. Observe AI.
+        <p className="mt-1.5 max-w-[680px] px-4 text-center text-[11px] leading-relaxed text-obs-ink2 sm:px-0 sm:text-[13px]">
+          支持浏览器本地模型（Qwen / Llama）和 API 模型（即将支持 GPT-4 / Claude）
         </p>
         <div className="mt-6 flex w-full justify-center">
           <HesitationSlice
@@ -388,7 +388,7 @@ export default function LandingHero({
         {!error && status === "loading" ? (
           /* 加载中：只展示真实进度 */
           <div className="mt-8 flex w-full flex-col items-center gap-3">
-            <span className="text-[13px] text-[#8A8FA3]">
+            <span className="text-[13px] text-obs-ink2">
               {loadingMessage || "正在准备本地环境"}
             </span>
             {progressItems.length > 0 && (
@@ -419,7 +419,7 @@ export default function LandingHero({
               </button>
               {!ready && (
                 <button
-                  className="w-full rounded-md border border-white/15 bg-white/5 px-6 py-3 text-[14px] text-[#C0C4D2] transition-colors hover:border-white/30 hover:text-white sm:w-auto"
+                  className="w-full rounded-md border border-white/15 bg-white/5 px-6 py-3 text-[14px] text-obs-ink transition-colors hover:border-white/30 hover:text-white sm:w-auto"
                   onClick={() => {
                     logVisit("hero_pick_model");
                     setPickerOpen((o) => !o);
@@ -431,13 +431,13 @@ export default function LandingHero({
                 </button>
               )}
             </div>
-            <p className="mt-3 px-4 text-center text-[11px] text-[#8A8FA3] sm:px-0 sm:text-[12px]">
+            <p className="mt-3 px-4 text-center text-[11px] text-obs-ink2 sm:px-0 sm:text-[12px]">
               推理全部在本机完成，数据不出设备；不会自动下载任何模型
             </p>
             {onReplayImport && (
               <button
                 type="button"
-                className="mt-1.5 text-[12px] text-[#8A8FA3]/80 underline decoration-dotted underline-offset-2 transition-colors hover:text-[#c6c9d4]"
+                className="mt-1.5 text-[12px] text-obs-ink2/80 underline decoration-dotted underline-offset-2 transition-colors hover:text-obs-ink"
                 onClick={onReplayImport}
               >
                 收到 .aitrace 文件？无需模型，直接导入回放 →
@@ -447,7 +447,7 @@ export default function LandingHero({
             {/* 知情下载：每个模型标明体积、来源、缓存状态，用户点击才开始加载 */}
             {!ready && pickerOpen && (
               <div
-                className="mt-6 max-h-[38vh] w-full max-w-xl overflow-y-auto rounded-md border border-white/10 bg-[#101118]/85 p-2"
+                className="mt-6 max-h-[38vh] w-full max-w-xl overflow-y-auto rounded-md border border-white/10 bg-obs-2 p-2"
                 role="listbox"
                 aria-label="选择模型"
               >
@@ -469,12 +469,12 @@ export default function LandingHero({
                             <span className="rounded-md bg-[#10b981]/20 px-2 py-0.5 text-[11px] text-[#10b981]">推荐</span>
                           )}
                         </span>
-                        <span className="mt-0.5 block truncate text-[12px] text-[#8A8FA3]">
+                        <span className="mt-0.5 block truncate text-[12px] text-obs-ink2">
                           {m.vendor} · {m.params} · {m.description}
                         </span>
                       </span>
-                      <span className="shrink-0 text-right text-[11px] leading-tight text-[#8A8FA3]">
-                        <span className="block text-[12px] font-medium text-[#C0C4D2]">{formatSize(size)}</span>
+                      <span className="shrink-0 text-right text-[11px] leading-tight text-obs-ink2">
+                        <span className="block text-[12px] font-medium text-obs-ink">{formatSize(size)}</span>
                         {isCached ? (
                           <span className="text-emerald-400">已缓存 · 免下载</span>
                         ) : m.builtin ? (
@@ -486,7 +486,7 @@ export default function LandingHero({
                     </button>
                   );
                 })}
-                <p className="px-3.5 py-2 text-[11px] leading-relaxed text-[#8A8FA3]/80">
+                <p className="px-3.5 py-2 text-[11px] leading-relaxed text-obs-ink2/80">
                   模型下载后由浏览器缓存，同一地址再次打开免重下；缓存按站点地址隔离，换地址访问需重新下载
                 </p>
               </div>
@@ -497,13 +497,13 @@ export default function LandingHero({
         {error && (
           <div className="mt-9 w-full max-w-md rounded-md border border-white/10 bg-white/5 p-6 text-center">
             <p className="text-[16px] font-medium">这个模型在当前设备上加载失败</p>
-            <p className="mt-2 break-all text-[13px] leading-relaxed text-[#9BA0B4]">
+            <p className="mt-2 break-all text-[13px] leading-relaxed text-obs-ink2">
               {error}
             </p>
             <div className="mt-5 flex items-center justify-center gap-2">
               {errorActions}
             </div>
-            <p className="mt-4 text-[12px] leading-relaxed text-[#8A8FA3]">
+            <p className="mt-4 text-[12px] leading-relaxed text-obs-ink2">
               已自动尝试过更小的内置模型；也可以换用支持 WebGPU 的 Chrome/Edge 113+ 浏览器再试
             </p>
           </div>
@@ -544,24 +544,24 @@ export default function LandingHero({
               key={card.label}
               className="flex items-center gap-3.5 rounded-md border border-white/10 bg-white/[0.04] px-5 py-4"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#10A0FF]/15 text-[#10A0FF]">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-accent/15 text-accent">
                 <card.Icon className="h-5 w-5" />
               </span>
               <span className="min-w-0">
-                <span className="block text-[11px] text-[#8A8FA3]">{card.label}</span>
+                <span className="block text-[11px] text-obs-ink2">{card.label}</span>
                 <span className="block truncate text-[14px] font-medium">{card.value}</span>
-                <span className="block text-[11px] text-[#8A8FA3]">{card.sub}</span>
+                <span className="block text-[11px] text-obs-ink2">{card.sub}</span>
               </span>
             </div>
           ))}
         </div>
 
         {/* 音频驱动矩阵（可选）：真实频谱驱动背景，不播则为环境波 */}
-        <div className="mt-4 flex flex-col items-center justify-center gap-2 text-[11px] text-[#8A8FA3] sm:flex-row sm:text-[12px]">
+        <div className="mt-4 flex flex-col items-center justify-center gap-2 text-[11px] text-obs-ink2 sm:flex-row sm:text-[12px]">
           <span className="select-none">背景矩阵</span>
           {rig ? (
             <button
-              className="rounded-md border border-white/15 px-3 py-1 text-[#C0C4D2] transition-colors hover:border-white/30"
+              className="rounded-md border border-white/15 px-3 py-1 text-obs-ink transition-colors hover:border-white/30"
               onClick={stopAudio}
             >
               停止 · 回到环境波
@@ -569,13 +569,13 @@ export default function LandingHero({
           ) : (
             <>
               <button
-                className="rounded-md border border-white/15 px-3 py-1 transition-colors hover:border-white/30 hover:text-[#C0C4D2]"
+                className="rounded-md border border-white/15 px-3 py-1 transition-colors hover:border-white/30 hover:text-obs-ink"
                 onClick={() => fileRef.current?.click()}
               >
                 ♪ 用音乐驱动
               </button>
               <button
-                className="rounded-md border border-white/15 px-3 py-1 transition-colors hover:border-white/30 hover:text-[#C0C4D2]"
+                className="rounded-md border border-white/15 px-3 py-1 transition-colors hover:border-white/30 hover:text-obs-ink"
                 onClick={() => void startMic()}
               >
                 用麦克风驱动

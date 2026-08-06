@@ -142,7 +142,7 @@ export default function EmbeddingPage() {
               ? [coords[0], coords[1], coords[2]]
               : [coords[0], coords[1], 0],
           label: embeddedTexts[pt.index].text.slice(0, 40) + '...',
-          color: '#38bdf8',
+          color: '#10b981',
         };
       });
 

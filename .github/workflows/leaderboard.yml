@@ -1,0 +1,50 @@
+name: Build leaderboard
+
+# 榜单由定时任务汇总 Discussions 生成静态 public/leaderboard.json，
+# 前端只 fetch 这个文件，因此站点无需任何 token。
+# 内置 GITHUB_TOKEN 足够读取本仓库 Discussions，不需要额外 secret。
+
+on:
+  schedule:
+    # 每 6 小时（UTC）；避开整点，减少与 GitHub 定时任务高峰重叠
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  discussions: read
+
+concurrency:
+  group: "leaderboard"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Collect entries from Discussions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEADERBOARD_REPO: ${{ github.repository }}
+          LEADERBOARD_CATEGORY: leaderboard
+        run: node scripts/build-leaderboard.mjs
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- public/leaderboard.json; then
+            echo "榜单无变化，不提交"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/leaderboard.json
+          git commit -m "chore: 更新排行榜数据"
+          git push

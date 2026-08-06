@@ -123,7 +123,7 @@ export const CARD_W = 1200;
 export const CARD_H = 630;
 
 const INK = "#E8EAF2";
-const INK2 = "#8A8FA3";
+const INK2 = "#a0a0a0";
 const LINE = "rgba(232,234,242,0.12)";
 const AMBER = "#E2A33C";
 const MEASURE = "#10A0FF";

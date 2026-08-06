@@ -25,11 +25,11 @@ import {
 import { DeepRecorder, TopPWarper, TraceRecorder } from "./lib/logits";
 import type { PipelineTiming, TokenStep } from "./lib/trace";
 
-// 内置模型从本服务 public/models/ 加载；其余模型从 hf-mirror 在线下载，浏览器自动缓存
+// 内置模型从本服务 public/models/ 加载；其余模型从 huggingface.co 在线下载，浏览器自动缓存
 env.allowLocalModels = true;
 env.localModelPath = "/models/";
 env.allowRemoteModels = true;
-env.remoteHost = "https://hf-mirror.com";
+env.remoteHost = "https://huggingface.co";
 
 type Device = "webgpu" | "wasm";
 
@@ -348,7 +348,9 @@ async function runGeneration(
 
   self.postMessage({ status: "start", src });
   if (sentThinkPrefix) {
-    // 强制的 <think> 前缀在 prompt 里不会被流式输出，这里补发给 UI 用于思考面板解析
+    // 强制的 <think> 前缀在 prompt 里不会被流式输出，这里补发给 UI 用于思考面板解析。
+    // 同时补发 trace-steps，让 splitPhases 从第一个真实 token 就能识别思考段，
+    // 否则 steps 数组里永远没有 <think>，样式要等 </think> 出现后才回头渲染。
     self.postMessage({
       status: "update",
       output: "<think>\n",
@@ -356,6 +358,18 @@ async function runGeneration(
       numTokens: 0,
       src,
     });
+    if (recorder) {
+      // 合成一个哨兵 TokenStep，text = "<think>"，让 splitPhases 能立即检测到开始标签
+      const syntheticStep: TokenStep = {
+        id: -1,
+        text: "<think>",
+        prob: 1,
+        topk: [],
+        entropy: 0,
+        dt: 0,
+      };
+      self.postMessage({ status: "trace-steps", steps: [syntheticStep], src });
+    }
   }
 
   try {
