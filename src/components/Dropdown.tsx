@@ -89,7 +89,11 @@ export default function Dropdown({
       if (!rootRef.current?.contains(t) && !listRef.current?.contains(t))
         setOpen(false);
     };
-    const onAway = () => setOpen(false);
+    const onAway = (e?: Event) => {
+      // 来自 listbox 内部的滚动（scrollIntoView 触发）不关菜单
+      if (e instanceof Event && listRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    };
     document.addEventListener("mousedown", onDown);
     window.addEventListener("resize", onAway);
     window.addEventListener("scroll", onAway, true);
