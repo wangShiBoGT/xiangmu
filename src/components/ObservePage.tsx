@@ -103,6 +103,7 @@ import { Term } from "./Term";
 import ReplayControlPanel from "./ReplayControlPanel";
 import { ReplayController } from "../lib/replayControls";
 import SentenceConfidenceView from "./SentenceConfidenceView";
+import { AuditReport } from "./AuditReport";
 
 // Ocean 三维视图懒加载：three 只在第一次打开时下载
 const OceanView = lazy(() => import("./OceanView"));
@@ -863,6 +864,8 @@ export default function ObservePage({
   const stopReqRef = useRef(false);
   // 意外重载恢复：运行中页面被重载（多为低配设备内存不足）时，下次挂载诚实告知并恢复问题
   const [recoveredPrompt, setRecoveredPrompt] = useState<string | null>(null);
+  // 审计报告模式：完成态可切换到审计报告视图
+  const [auditMode, setAuditMode] = useState(false);
 
   useEffect(() => {
     if (!worker) return;
@@ -2825,7 +2828,7 @@ export default function ObservePage({
                 })()}
 
                 {/* 句子级置信度视图：完成态显示 */}
-                {phase === "done" && (
+                {phase === "done" && !auditMode && (
                   <div className="mb-4">
                     <SentenceConfidenceView
                       steps={displaySteps as TokenStep[]}
@@ -2834,16 +2837,32 @@ export default function ObservePage({
                   </div>
                 )}
 
-                <TokenText
-                  steps={displaySteps}
-                  selected={selected}
-                  running={phase === "running"}
-                  annotations={annotations}
-                  onSelect={setSelected}
-                  onInteract={dismissHint}
-                  heat={heat}
-                  director={director}
-                />
+                {/* 审计报告视图：完成态可切换 */}
+                {phase === "done" && auditMode && root?.trace && (
+                  <div className="mb-4">
+                    <AuditReport
+                      trace={root.trace}
+                      additionalTraces={root.children
+                        .map(c => c.trace)
+                        .filter((t): t is GenerationTrace => t !== undefined)}
+                      documents={undefined}
+                      onJumpToToken={jumpToToken}
+                    />
+                  </div>
+                )}
+
+                {!auditMode && (
+                  <TokenText
+                    steps={displaySteps}
+                    selected={selected}
+                    running={phase === "running"}
+                    annotations={annotations}
+                    onSelect={setSelected}
+                    onInteract={dismissHint}
+                    heat={heat}
+                    director={director}
+                  />
+                )}
               </>
             )}
 
@@ -2893,7 +2912,23 @@ export default function ObservePage({
               />
             )}
 
-            {displaySteps.length > 0 && phase === "done" && (
+            {/* 审计报告模式切换按钮 */}
+            {displaySteps.length > 0 && phase === "done" && root?.trace && (
+              <div className="mb-4">
+                <button
+                  className={`rounded-md px-4 py-2 text-[13px] font-medium transition-colors ${
+                    auditMode
+                      ? "bg-measure-500 text-white hover:opacity-85"
+                      : "border border-obs-line text-obs-ink2 hover:border-obs-ink2/50 hover:text-obs-ink"
+                  }`}
+                  onClick={() => setAuditMode(!auditMode)}
+                >
+                  {auditMode ? "← 返回正常视图" : "查看可用性审计报告 →"}
+                </button>
+              </div>
+            )}
+
+            {displaySteps.length > 0 && phase === "done" && !auditMode && (
               <ObservationSummary
                 steps={displaySteps}
                 matches={ruleMatches}

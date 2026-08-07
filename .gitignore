@@ -39,3 +39,9 @@ public/ort/
 .claude/settings.local.json
 playwright-report/
 test-results/
+
+# 生产环境密钥（含真实 secret，不提交）
+.env.production
+.env.production.local
+backend/.dev.vars
+backend/.wrangler/

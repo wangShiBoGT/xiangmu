@@ -1,0 +1,31 @@
+name = "webgpu-llm-chat-backend"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# KV 命名空间（缓存）
+[[kv_namespaces]]
+binding = "CACHE"
+id = "6e9daad9951e4b5d835e9f136260e02e"
+preview_id = "2d55d5820a71467d83514f5fd7d4f805"
+
+# D1 数据库（配额管理）
+[[d1_databases]]
+binding = "DB"
+database_name = "llm-chat-quota"
+database_id = "6267873d-5524-4b70-ab1d-2d1f522359ad"
+
+# 环境变量
+# ⚠️  ENCRYPTION_SECRET / HMAC_SECRET 通过 wrangler secret 管理，不在此文件中存储
+# 部署后执行：
+#   npx wrangler secret put ENCRYPTION_SECRET
+#   npx wrangler secret put HMAC_SECRET
+[vars]
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+
+# 开发环境
+[env.dev]
+name = "webgpu-llm-chat-backend-dev"
+
+# 生产环境
+[env.production]
+name = "webgpu-llm-chat-backend"

@@ -25,7 +25,13 @@ describe("truncateDoc", () => {
 describe("buildDocPrompt", () => {
   it("拼接文档与问题", () => {
     const p = buildDocPrompt(
-      [{ name: "报表.xlsx", text: "一月,100", truncated: false }],
+      [{
+        name: "报表.xlsx",
+        text: "一月,100",
+        truncated: false,
+        pages: [{ pageNumber: 1, text: "一月,100", charStart: 0, charEnd: 7 }],
+        metadata: { totalPages: 1, totalChars: 7, parsedPages: 1 }
+      }],
       "一月销售额是多少？",
     );
     expect(p).toContain("《报表.xlsx》");
@@ -35,7 +41,13 @@ describe("buildDocPrompt", () => {
 
   it("截断的文档带节选说明", () => {
     const p = buildDocPrompt(
-      [{ name: "长文.pdf", text: "内容", truncated: true }],
+      [{
+        name: "长文.pdf",
+        text: "内容",
+        truncated: true,
+        pages: [{ pageNumber: 1, text: "内容", charStart: 0, charEnd: 2 }],
+        metadata: { totalPages: 1, totalChars: 2, parsedPages: 1 }
+      }],
       "问",
     );
     expect(p).toContain("节选");

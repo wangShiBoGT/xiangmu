@@ -48,9 +48,55 @@
 
 ---
 
+## 当前状态（2026-08-06）
+
+### ✅ 已完成工作（Task #1-18）
+
+**Sprint 1-3（Week 1-4）**：核心审计功能
+- ✅ Task 1.1：高熵 Token 自动标红 + 摘要
+- ✅ Task 1.2：句子级置信度视图
+- ✅ Task 1.3：置信度报告导出（JSON/CSV）
+- ✅ Task 1.4：同一问题多次对比（CompareView）
+- ✅ Task 2.1：.aitrace 开放标准规范文档
+- ✅ Task 3.1：思考块样式延迟 Bug 修复
+- ✅ Task 4.1：首屏文案改版
+- ✅ Task 6.1：TypeScript 读写库（aitrace-js）
+
+**Sprint 7（Week 9-10）**：幻觉检测与可用性审计
+- ✅ Task #18：P0 阻断问题修复
+  - P0-1：AuditReport 集成到 ObservePage
+  - P0-2：文档解析重构，保留页码信息
+  - P0-3：语义一致性检测实现
+  - P0-4：移除不确定性等级汇总
+
+**输出文档**：
+- `docs/COMPLETED_TASKS.md` - Task #1-17 归档
+- `docs/P0_COMPLETION_REPORT.md` - P0 问题修复报告
+- `docs/P0_2_DOCUMENT_PARSING_IMPLEMENTATION.md` - 文档解析实现
+- `docs/P0_3_SEMANTIC_CONSISTENCY_IMPLEMENTATION.md` - 语义一致性实现
+
+---
+
+## 下一阶段重点：后端开发优先
+
+**战略调整**：
+- 🎯 **立即启动 Sprint 4**：API 桥接架构设计 + 后端开发
+- 📌 **前端冻结**：审计功能的高级特性（RAG 来源追溯、主张提取）放到后端实现
+- 🔒 **功能冻结**：现有前端功能暂不迭代，等后端就绪后前后端联调
+
+**原因**：
+1. RAG 检索、主张提取、embedding 计算等**计算密集型任务应该在后端做**
+2. 前端 WebGPU 模型太小，检索质量不够
+3. 后端可以用更强的模型（GPT-4、Claude）做审计分析
+4. 避免前端重复开发，后端一次性提供完整的审计 API
+
+---
+
 ## 当前开发计划（阶段 1 详细任务）
 
-### Sprint 1：核心审计功能（Week 1-2）
+### Sprint 4：API 桥接架构设计（Week 11-12，当前）🚧
+
+**目标**：设计后端架构，明确前后端边界
 
 #### Task 1.1：高熵 Token 自动标红 + 一句话摘要
 **优先级**：🔥 极高 | **预计工期**：2 天 | **负责页面**：ObservePage.tsx
