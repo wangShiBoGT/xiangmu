@@ -13,6 +13,16 @@ export interface ServiceWorkerStatus {
 let registration: ServiceWorkerRegistration | null = null;
 let statusCallback: ((status: ServiceWorkerStatus) => void) | null = null;
 
+function serviceWorkerUrl(): string {
+  // 用当前 Vite 入口 hash 作为 SW URL。每次发布都会得到一个新 URL，浏览器
+  // 不会因缓存的旧 sw.js 而延后更新，旧 controller 会在激活后刷新页面。
+  const entry = document.querySelector<HTMLScriptElement>(
+    'script[type="module"][src]',
+  );
+  const buildId = entry?.src ? new URL(entry.src).pathname : "unknown";
+  return `/sw.js?build=${encodeURIComponent(buildId)}`;
+}
+
 /**
  * 注册 Service Worker
  */
@@ -25,7 +35,7 @@ export async function registerServiceWorker(): Promise<boolean> {
   }
 
   try {
-    registration = await navigator.serviceWorker.register('/sw.js', {
+    registration = await navigator.serviceWorker.register(serviceWorkerUrl(), {
       scope: '/',
     });
 
