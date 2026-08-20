@@ -34,7 +34,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEADERBOARD_REPO: ${{ github.repository }}
-          LEADERBOARD_CATEGORY: leaderboard
+          LEADERBOARD_CATEGORY: show-and-tell
         run: node scripts/build-leaderboard.mjs
 
       - name: Commit if changed
