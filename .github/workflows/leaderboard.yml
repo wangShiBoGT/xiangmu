@@ -1,13 +1,13 @@
 name: Build leaderboard
 
-# 榜单由定时任务汇总 Discussions 生成静态 public/leaderboard.json，
+# 榜单由手动触发汇总 Discussions 生成静态 public/leaderboard.json，
 # 前端只 fetch 这个文件，因此站点无需任何 token。
 # 内置 GITHUB_TOKEN 足够读取本仓库 Discussions，不需要额外 secret。
 
 on:
-  schedule:
-    # 每 6 小时（UTC）；避开整点，减少与 GitHub 定时任务高峰重叠
-    - cron: "17 */6 * * *"
+  # schedule:
+  #   # 每 6 小时（UTC）；避开整点，减少与 GitHub 定时任务高峰重叠
+  #   - cron: "17 */6 * * *"
   workflow_dispatch:
 
 permissions:
